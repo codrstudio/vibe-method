@@ -1,0 +1,28 @@
+{
+  "brand": "vibe-method",
+  "title": "Vibe Method",
+  "description": "Context engineering para vibe coding progressivo.",
+  "slogan": "Transforme brainstorming em specs rastreáveis e planos executáveis por IA.",
+  "themes": {
+    "light": {
+      "primary": "#7C3AED",
+      "secondary": "#F59E0B",
+      "tertiary": "#5B21B6",
+      "accent": "#FBBF24",
+      "background": "#FAFAFA",
+      "surface": "#F5F3FF",
+      "text": "#1F2937",
+      "textMuted": "#6B7280"
+    },
+    "dark": {
+      "primary": "#A78BFA",
+      "secondary": "#FBBF24",
+      "tertiary": "#8B5CF6",
+      "accent": "#FCD34D",
+      "background": "#0C0A14",
+      "surface": "#1A1625",
+      "text": "#F9FAFB",
+      "textMuted": "#9CA3AF"
+    }
+  }
+}
