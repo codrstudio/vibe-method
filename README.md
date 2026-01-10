@@ -1,17 +1,28 @@
-# CRAFT - Code-Ready AI Framework Template
+# Vibe Method
 
-Metodologia para desenvolvimento de software 100% assistido por IA.
+**Vibe-first Incremental Blueprint Engineering**
+
+Context engineering para vibe coding progressivo.
+
+---
 
 ## O que é
 
-**CRAFT** define estrutura, padrões e instruções que permitem à IA ser produtiva em qualquer projeto de software. Não é específico de domínio - funciona para qualquer tipo de aplicação.
+**Vibe Method** é uma metodologia que estrutura contexto para IA de forma incremental, permitindo desenvolvimento fluido (vibe coding) em qualquer projeto de software.
+
+| Pilar | Significado |
+|-------|-------------|
+| **Vibe-first** | Desenvolvimento fluido assistido por IA, sem fricção |
+| **Incremental** | Fases progressivas: brainstorm → specs → plan → código |
+| **Blueprint** | Context engineering: specs, instruções e estrutura rastreáveis |
+| **Engineering** | Documentação como código, versionada junto com o projeto |
 
 ## Princípios
 
 1. **Contexto é Rei** - A IA precisa de contexto estruturado para tomar boas decisões
 2. **Rastreabilidade** - Tudo é referenciável por ID (US001, REQ014, DES030)
 3. **Documentação como Código** - Specs, prompts e padrões são versionados junto com o código
-4. **Separação de Fases** - Cada fase do projeto tem seu lugar definido
+4. **Progressão Natural** - Cada fase alimenta a próxima com contexto refinado
 
 ## Fluxo Principal
 
