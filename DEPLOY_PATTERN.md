@@ -31,6 +31,8 @@ Padrao completo para deploy de aplicacoes via Coolify com Docker Compose e Traef
 
 **Todo dado persistente DEVE estar em `./data/`**
 
+> **Padrões relacionados:** Para credenciais (PostgreSQL dual-user), seeds idempotentes e usuários de teste, ver [ENV-PATTERN.md](./ENV-PATTERN.md#postgresql-padrão-dual-user).
+
 Em caso de desastre, o restore consiste em:
 1. Clonar o repositorio
 2. Restaurar `./data/` do backup
@@ -565,7 +567,7 @@ Se os dados podem ser perdidos:
 docker compose down
 rm -rf data/
 docker compose up -d
-# Seed vai repopular a base
+# Seed vai repopular a base (ver ENV-PATTERN.md#seeds-padrão-por-ambiente)
 ```
 
 ---
