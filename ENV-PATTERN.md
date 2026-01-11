@@ -122,7 +122,7 @@ Contém **apenas** credenciais de serviços externos:
 # SECRETS - NÃO COMMITAR
 # ==============================================================================
 # Credenciais de serviços externos.
-# Em produção, podem ser injetados via CI/CD ou Coolify.
+# Em produção, podem ser injetados via CI/CD.
 
 NEXTAUTH_SECRET=sua-chave-secreta-aqui
 OPENROUTER_API_KEY=sk-or-xxx
@@ -173,7 +173,7 @@ env_file:
 
 ### Por que `.env.secrets` é opcional?
 
-Em deploys de produção (CI/CD, Kubernetes, Coolify), os secrets frequentemente são:
+Em deploys de produção (CI/CD, Kubernetes), os secrets frequentemente são:
 - Injetados via variáveis de ambiente na linha de comando
 - Gerenciados por secrets managers (Vault, AWS Secrets Manager)
 - Configurados diretamente na plataforma de deploy
@@ -595,61 +595,6 @@ docker compose -f docker-compose.dev.yml up
 
 ---
 
-## Coolify - Variáveis de Ambiente
-
-**REGRA CRÍTICA:** No Coolify, cadastrar **APENAS** as variáveis do `.env.secrets`.
-
-### Por quê?
-
-O docker-compose já carrega `.env.{environment}` via `env_file:`. Se você cadastrar essas variáveis no Coolify, elas **sobrescrevem** os valores do arquivo - inclusive com valores vazios.
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ ORDEM DE PRECEDÊNCIA (última vence)                         │
-│                                                             │
-│ 1. env_file: .env.{environment}  ← valores commitados       │
-│ 2. env_file: .env.secrets        ← secrets locais           │
-│ 3. Coolify env vars              ← SOBRESCREVE TUDO!        │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Exemplo do problema
-
-```bash
-# .env.production (commitado)
-DATABASE_URL=postgres://admin:Admin123@postgres.internal:5432/main
-
-# Coolify (cadastrado com valor vazio)
-DATABASE_URL=
-
-# Resultado: app não conecta no banco!
-```
-
-### O que cadastrar no Coolify
-
-| Cadastrar | Não cadastrar |
-|-----------|---------------|
-| `NEXTAUTH_SECRET` | `DATABASE_URL` |
-| `OPENROUTER_API_KEY` | `NODE_ENV` |
-| `GOOGLE_CLIENT_*` | `PORTAL_DOMAIN` |
-| `SMTP_*` | `REDIS_URL` |
-| `VAPID_*` | Qualquer var do `.env.{environment}` |
-
-### Como verificar
-
-```bash
-# Listar vars do Coolify
-curl -s "https://$COOLIFY_HOST/api/v1/applications/$APP_UUID/envs" \
-  -H "Authorization: Bearer $TOKEN" | jq '.[].key'
-
-# Comparar com .env.secrets
-grep -E "^[A-Z_]+=" .env.secrets | cut -d= -f1
-
-# Se houver vars no Coolify que NÃO estão em .env.secrets, REMOVER!
-```
-
----
-
 ## Carregamento em Scripts (Local)
 
 Para scripts que rodam fora do Docker, carregar na mesma ordem:
@@ -733,6 +678,6 @@ loadEnvFile('.env.secrets');        // 3. Secrets (opcional)
 - [ ] Documentados no CLAUDE.md do projeto
 - [ ] Criados apenas em dev/staging (não em prod)
 
-### Deploy (Coolify/CI)
+### Deploy (CI/CD)
 
-- [ ] **Coolify tem APENAS vars do `.env.secrets`** (nunca duplicar vars do `.env.{environment}`)
+- [ ] CI/CD tem **apenas** vars do `.env.secrets` (nunca duplicar vars do `.env.{environment}`)

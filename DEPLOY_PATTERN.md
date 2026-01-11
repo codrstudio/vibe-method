@@ -1,6 +1,6 @@
-# Padrao de Deploy - Coolify + Docker Compose
+# Padrao de Deploy - Docker Compose
 
-Padrao completo para deploy de aplicacoes via Coolify com Docker Compose e Traefik externo.
+Padrao completo para deploy de aplicacoes com Docker Compose e Traefik externo.
 
 ---
 
@@ -8,7 +8,7 @@ Padrao completo para deploy de aplicacoes via Coolify com Docker Compose e Traef
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         COOLIFY                                 │
+│                        DOCKER HOST                               │
 │  ┌─────────────────┐    ┌─────────────────┐                    │
 │  │ App: staging    │    │ App: production │                    │
 │  │ branch: develop │    │ branch: main    │                    │
@@ -237,246 +237,6 @@ networks:
 
 ---
 
-## Coolify - Configuracao Obrigatoria
-
-### Raw Compose Deployment
-
-**OBRIGATORIO** para projetos que usam docker-compose com redes externas (ex: `codr-net` para Traefik).
-
-**Onde encontrar:**
-1. Coolify Dashboard → Projects → Sua Aplicacao
-2. Aba **Advanced**
-3. Marcar checkbox **"Raw Compose Deployment"**
-
-**Por que e necessario?**
-
-Por padrao, o Coolify **regenera** o arquivo docker-compose, modificando:
-- Indentacao (troca espacos por tabs)
-- Remove redes externas (`codr-net`) e substitui pela rede interna do Coolify
-- Adiciona labels proprios (`coolify.managed=true`)
-
-**Sintoma tipico:**
-
-Seu docker-compose.yml:
-```yaml
-networks:
-    internal:
-        aliases:
-            - portal.internal
-    codr-net:        # ← rede externa para Traefik
-```
-
-Arquivo gerado pelo Coolify:
-```yaml
-networks:
-    internal:
-        aliases:
-            - portal.internal
-    p0gwccsw0cwokc0w80s8cswk: null   # ← substituiu codr-net!
-```
-
-**Resultado:** Container nao conecta na rede `codr-net`, Traefik nao enxerga, 404.
-
-**Solucao:** Marcar "Raw Compose Deployment" faz o Coolify usar o arquivo **exatamente como esta**, sem modificacoes.
-
-**Referencias:**
-- [Docker Compose | Coolify Docs](https://coolify.io/docs/knowledge-base/docker/compose)
-
----
-
-## Coolify - Criar Application
-
-### Via API (Deploy Key)
-
-```bash
-POST /api/v1/applications/private-deploy-key
-
-{
-  "project_uuid": "<PROJECT_UUID>",
-  "server_uuid": "<SERVER_UUID>",
-  "environment_name": "staging",
-  "name": "<project>-staging",
-  "git_repository": "git@github.com:<org>/<repo>.git",
-  "git_branch": "develop",
-  "private_key_uuid": "<DEPLOY_KEY_UUID>",
-  "build_pack": "dockercompose",
-  "ports_exposes": "<PORT>",
-  "instant_deploy": false
-}
-```
-
-### Configurar Compose
-
-```bash
-PATCH /api/v1/applications/<APP_UUID>
-
-# Staging
-{
-  "docker_compose_location": "/docker-compose.staging.yml",
-  "docker_compose_custom_build_command": "docker compose -f docker-compose.staging.yml build",
-  "docker_compose_custom_start_command": "docker compose -f docker-compose.staging.yml up -d"
-}
-
-# Production
-{
-  "docker_compose_location": "/docker-compose.yml",
-  "docker_compose_custom_build_command": "docker compose build",
-  "docker_compose_custom_start_command": "docker compose up -d"
-}
-```
-
-### Adicionar Env Vars
-
-> **IMPORTANTE:** Cadastrar **APENAS** variáveis do `.env.secrets`. Ver [ENV-PATTERN.md](./ENV-PATTERN.md#coolify---variáveis-de-ambiente).
-
-```bash
-POST /api/v1/applications/<APP_UUID>/envs
-
-# CORRETO - secrets que não estão no git
-{ "key": "NEXTAUTH_SECRET", "value": "..." }
-{ "key": "OPENROUTER_API_KEY", "value": "sk-or-..." }
-
-# ERRADO - já está no .env.{environment}
-# { "key": "DATABASE_URL", "value": "..." }  ← NÃO CADASTRAR!
-# { "key": "NODE_ENV", "value": "..." }      ← NÃO CADASTRAR!
-```
-
-**Por quê?** O docker-compose carrega `.env` → `.env.{environment}` via `env_file:`. Variáveis cadastradas no Coolify **sobrescrevem** esses valores - inclusive com valores vazios, quebrando a aplicação.
-
-### Trigger Deploy
-
-```bash
-POST /api/v1/deploy?uuid=<APP_UUID>
-```
-
----
-
-## API Reference
-
-### Aplicacoes
-
-| Operacao | Metodo | Endpoint |
-|----------|--------|----------|
-| Criar app (deploy key) | POST | `/api/v1/applications/private-deploy-key` |
-| Criar app (compose raw) | POST | `/api/v1/applications/dockercompose` |
-| Atualizar app | PATCH | `/api/v1/applications/<UUID>` |
-| Listar apps | GET | `/api/v1/applications` |
-| Obter app | GET | `/api/v1/applications/<UUID>` |
-| Adicionar env var | POST | `/api/v1/applications/<UUID>/envs` |
-| Logs runtime | GET | `/api/v1/applications/<UUID>/logs?lines=100` |
-
-### Deployments
-
-| Operacao | Metodo | Endpoint |
-|----------|--------|----------|
-| Trigger deploy | GET/POST | `/api/v1/deploy?uuid=<APP_UUID>` |
-| Status (sem logs) | GET | `/api/v1/deployments/<DEPLOY_UUID>` |
-| Lista com logs | GET | `/api/v1/deployments/applications/<APP_UUID>` |
-| Cancelar | POST | `/api/v1/deployments/<DEPLOY_UUID>/cancel` |
-
-> **Nota:** O endpoint `/api/v1/deployments/<UUID>` retorna status mas NAO inclui logs de build.
-> Para obter logs de build, usar `/api/v1/deployments/applications/<APP_UUID>` que retorna lista de deployments COM logs.
-
----
-
-## Workflow Completo de Deploy
-
-Variaveis necessarias:
-```bash
-COOLIFY_HOST="docker.codrstudio.dev"    # Seu host Coolify
-COOLIFY_API_TOKEN="seu-token"            # Token da API
-APP_UUID="uuid-da-aplicacao"             # UUID do app no Coolify
-DOMAIN="seu-dominio.com"                 # Dominio da aplicacao
-```
-
-### 1. Push (opcional)
-
-Se houver mudancas para commitar:
-```bash
-git add . && git commit -m "feat: descricao" && git push origin <branch>
-```
-
-> **Nota:** Este passo e opcional. O trigger de deploy (Step 2) funciona mesmo sem mudancas - faz re-deploy do ultimo commit.
-
-### 2. Trigger Deploy
-
-```bash
-curl -s -X GET "https://$COOLIFY_HOST/api/v1/deploy?uuid=$APP_UUID" \
-  -H "Authorization: Bearer $COOLIFY_API_TOKEN"
-```
-
-Resposta:
-```json
-{"deployments":[{"message":"Application <name> deployment queued.","resource_uuid":"<APP_UUID>","deployment_uuid":"<DEPLOY_UUID>"}]}
-```
-
-Extrair DEPLOY_UUID (opcional, para automacao):
-```bash
-DEPLOY_UUID=$(curl -s -X GET "https://$COOLIFY_HOST/api/v1/deploy?uuid=$APP_UUID" \
-  -H "Authorization: Bearer $COOLIFY_API_TOKEN" | grep -o '"deployment_uuid":"[^"]*"' | cut -d'"' -f4)
-```
-
-### 3. Monitorar Status
-
-```bash
-curl -s "https://$COOLIFY_HOST/api/v1/deployments/$DEPLOY_UUID" \
-  -H "Authorization: Bearer $COOLIFY_API_TOKEN" | grep -o '"status":"[^"]*"'
-```
-
-Resultado: `"status":"queued"` | `"status":"in_progress"` | `"status":"finished"` | `"status":"failed"`
-
-Repetir a cada 30s ate `finished` ou `failed`.
-
-### 4. Logs de Build (se failed)
-
-```bash
-curl -s "https://$COOLIFY_HOST/api/v1/deployments/applications/$APP_UUID" \
-  -H "Authorization: Bearer $COOLIFY_API_TOKEN"
-```
-
-Retorna array `deployments[]` com campo `logs` contendo historico de build.
-
-### 5. Logs de Runtime
-
-```bash
-curl -s "https://$COOLIFY_HOST/api/v1/applications/$APP_UUID/logs?lines=50" \
-  -H "Authorization: Bearer $COOLIFY_API_TOKEN"
-```
-
-Retorna `{"logs":"..."}` com output do container.
-
-### 6. Health Check
-
-```bash
-curl -s "https://$DOMAIN/api/health"
-```
-
-Esperado: `{"status":"healthy",...}`
-
----
-
-## Configuracao de Build/Start Commands
-
-O Coolify precisa saber qual service do docker-compose buildar e iniciar.
-
-### Atualizar via API
-
-```bash
-curl -X PATCH "https://<COOLIFY_HOST>/api/v1/applications/<APP_UUID>" \
-  -H "Authorization: Bearer $COOLIFY_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "docker_compose_custom_build_command": "docker compose -f docker-compose.staging.yml build",
-    "docker_compose_custom_start_command": "docker compose -f docker-compose.staging.yml up -d"
-  }'
-```
-
-### Importante
-
-**NAO especifique service names** nos comandos build/start. O Docker Compose builda e inicia todos os services definidos no arquivo compose automaticamente.
-
----
-
 ## Convencoes
 
 ### Nomes
@@ -594,12 +354,10 @@ docker compose up -d
 
 - [ ] Criar `DEPLOY.md` com parametros especificos
 - [ ] Adicionar Deploy Key ao repositorio Git
-- [ ] Criar Application no Coolify (staging)
-- [ ] **Marcar "Raw Compose Deployment"** em Advanced (obrigatorio para redes externas)
-- [ ] Configurar docker_compose_location e custom commands
+- [ ] Configurar pipeline CI/CD (staging: branch develop, production: branch main)
 - [ ] Adicionar variáveis de ambiente (**APENAS** do `.env.secrets`)
 - [ ] Testar deploy staging
-- [ ] Repetir para production (branch main)
+- [ ] Configurar deploy production
 
 ---
 
@@ -678,7 +436,7 @@ docker compose up -d
 # Migrations rodam automaticamente no entrypoint
 ```
 
-### Traefik 404 - Container nao conecta na rede externa (Coolify)
+### Traefik 404 - Container nao conecta na rede externa
 
 **Sintoma:**
 - Traefik retorna 404
@@ -687,15 +445,13 @@ docker compose up -d
 Ao verificar no servidor:
 ```bash
 docker inspect <container> | grep -A10 Networks
-# Mostra "p0gwccsw0cwokc0w80s8cswk" em vez de "codr-net"
 ```
 
-**Causa:** Coolify regenera o docker-compose e substitui redes externas pela rede interna dele.
+**Causa:** Container nao esta conectado a rede externa `codr-net`.
 
 **Solucao:**
-1. No Coolify, ir em **Advanced**
-2. Marcar **"Raw Compose Deployment"**
-3. Redeployar
+1. Verificar se a rede esta declarada como externa no docker-compose
+2. Verificar se o container esta associado a rede
 
 **Workaround temporario:**
 ```bash

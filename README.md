@@ -53,7 +53,7 @@ Context engineering para vibe coding progressivo.
 | [BRAND-SYSTEM.md](./BRAND-SYSTEM.md) | Sistema de branding com temas e 4 cores |
 | [USER-AREA.md](./USER-AREA.md) | Sistema de usuario: login multi-etapas, avatar, seguranca |
 | [ENV-PATTERN.md](./ENV-PATTERN.md) | Padrão de variáveis de ambiente (3 níveis) |
-| [DEPLOY-PATTERN.md](./DEPLOY-PATTERN.md) | Padrão de deploy com Docker + Coolify |
+| [DEPLOY-PATTERN.md](./DEPLOY-PATTERN.md) | Padrão de deploy com Docker Compose |
 
 ## Quick Start
 
