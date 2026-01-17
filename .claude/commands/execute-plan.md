@@ -25,7 +25,7 @@ Parse $ARGUMENTS as:
 
 1. **Load context**
    - Read the target plan file from $ARGUMENTS
-   - Study @vibe-method/ completely (AI-INSTRUCTIONS, PLAN-FORMAT, SPECS-FORMAT, REFS-SNIPPETS)
+   - Study @vibe-method/ completely (INSTRUCTIONS, PLAN, FEATURES, REFS, SNIPPETS)
    - Identify all phases and their tasks
 
 2. **Execute phases in sequence** (Cycle 2)
