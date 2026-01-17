@@ -36,7 +36,7 @@ Este arquivo é o "cérebro" do contexto. Quanto mais completo, melhor a IA perf
 
 Usado quando há uma implementação complexa em andamento. Contém:
 - Tarefas com checkbox `- [ ]` / `- [x]`
-- Referências a specs (US001, REQ014)
+- Referências a specs (US-AUTH-001, REQ-AUTH-001)
 - Ordem de execução
 
 ### Arquivos de Ambiente (.env*)
@@ -64,11 +64,11 @@ docker-compose.staging.yml  # Staging (serviço exposto apenas)
 docker-compose.dev.yml      # Development (infra apenas, app roda local)
 ```
 
-### DEPLOY.md / DEPLOY_PATTERN.md
+### DEPLOY.md / DOCKER.md
 
 **Propósito**: Documentação de deploy.
 
-- `DEPLOY_PATTERN.md` - Padrão genérico (pode ser reusado entre projetos)
+- `DOCKER.md` - Padrão genérico (pode ser reusado entre projetos)
 - `DEPLOY.md` - Parâmetros específicos deste projeto
 
 ---
@@ -107,62 +107,75 @@ brainstorming/
 **Fase**: Especificação
 **Propósito**: Especificações formais e rastreáveis.
 
-Contém documentos com IDs referenciáveis:
-- User Stories (US001, US002...)
-- Requirements (REQ001, REQ002...)
-- Non-Functional Requirements (NFR001...)
-- Design Specs (DES001, DES002...)
+Contém features com IDs referenciáveis:
+- User Stories (US-{FEAT}-001, US-{FEAT}-002...)
+- Requirements (REQ-{FEAT}-001, REQ-{FEAT}-002...)
+- Design (DES-{FEAT}-001, DES-{FEAT}-002...)
 
 ```
 specs/
-├── user-stories.md          # US001..US050
-├── requirements.md          # REQ001..REQ100, NFR001..NFR050
-├── design.md                # DES001..DES100
-├── api-response.md          # Padrões de API
-├── environment.md           # Credenciais por ambiente
-└── workflows/               # Specs de workflows específicos
-    └── appointment-flow.md
+└── features/
+    ├── _template.md           # Template para novas features
+    ├── authentication.md      # US-AUTH-*, REQ-AUTH-*, DES-AUTH-*
+    ├── settings.md            # US-SETT-*, REQ-SETT-*
+    ├── stack-patterns.md      # DES-STACK-* (design only)
+    └── {feature}.md
 ```
 
 **Formato de referência**:
 ```markdown
-### US001 - Título da User Story
+### US-AUTH-001: User Login
 
-**Como** [persona]
-**Quero** [ação]
-**Para** [benefício]
+**Como** usuário,
+**Quero** fazer login com email e senha,
+**Para** acessar o sistema de forma segura.
 
 **Critérios de Aceite:**
 - [ ] Critério 1
 - [ ] Critério 2
 
-**Refs:** REQ014, DES030
+**Refs:** REQ-AUTH-001
+**Impl:** DES-AUTH-001
 ```
 
 ---
 
-### prompts/
+### apps/
 
-**Fase**: Instruções LLM
-**Propósito**: System prompts para agentes de IA do sistema.
+**Fase**: Implementação
+**Propósito**: Serviços deployáveis do sistema.
 
-Contém instruções para LLMs que fazem parte da aplicação (não para Claude Code).
+Estrutura de monorepo. Cada app é um serviço independente com porta própria.
 
 ```
-prompts/
-├── system-main.md           # Prompt principal do assistente
-├── intent-classifier.md     # Classificador de intenção
-├── entity-extractor.md      # Extrator de entidades
-├── response-generator.md    # Gerador de respostas
-├── faq-knowledge.md         # Base de conhecimento FAQ
-└── models.md                # Documentação dos modelos usados
+apps/
+├── app/              # Next.js (frontend)
+├── agents/           # LangGraph + Fastify (IA)
+├── actions/          # Mutations service
+├── docs/             # Knowledge Base (documentacao)
+└── sockets/          # WebSocket server
 ```
 
-**Uso**: Workflows de automação (n8n) referenciam estes prompts.
+**Nota**: Ver [MONOREPO.md](./MONOREPO.md) para detalhes da estrutura.
+Ver [AGENTS.md](./AGENTS.md) para a camada de agentes (inclui `prompts/` internos).
+Ver [KB.md](./KB.md) para a camada de Knowledge Base.
 
 ---
 
-### app/ (ou portal/, api/, web/, etc.)
+### packages/
+
+**Propósito**: Código compartilhado entre apps.
+
+```
+packages/
+└── types/            # Schemas Zod compartilhados
+```
+
+**Nota**: Ver [MONOREPO.md](./MONOREPO.md) para detalhes.
+
+---
+
+### app/ (legado, ou portal/, api/, web/, etc.)
 
 **Fase**: Implementação
 **Propósito**: Código fonte da aplicação.
@@ -258,7 +271,7 @@ brand/
 
 **Sistema de cores:** primary, secondary, tertiary, accent + background, surface, text, textMuted.
 
-Ver [BRAND-SYSTEM.md](./BRAND-SYSTEM.md) para documentacao completa.
+Ver [BRAND.md](./BRAND.md) para documentacao completa.
 
 ---
 
@@ -350,6 +363,7 @@ data/
 ├── postgres/
 ├── redis/
 ├── n8n/
+├── docs/             # Knowledge Base (volume /docs)
 └── ...
 ```
 
@@ -369,12 +383,19 @@ projeto/
 ├── [FASES]
 │   ├── brainstorming/       # 1. Ideação
 │   ├── specs/               # 2. Especificação
-│   ├── prompts/             # 3. Instruções LLM
-│   └── app/                 # 4. Implementação
+│   └── apps/                # 3. Implementação (monorepo)
+│       ├── app/             #    Frontend
+│       ├── agents/          #    IA (inclui prompts/)
+│       ├── actions/         #    Mutations
+│       ├── docs/            #    Knowledge Base
+│       └── sockets/         #    WebSocket
+│
+├── [PACKAGES]
+│   └── packages/types/      # Schemas compartilhados
 │
 ├── [INFRAESTRUTURA]
 │   ├── database/            # Schemas/Migrations
-│   ├── workflows/           # Automações
+│   ├── workflows/           # Automações n8n do Usuário
 │   └── scripts/             # Utilitários
 │
 ├── [ASSETS]

@@ -2,6 +2,11 @@
 
 Sistema completo de gerenciamento de usuario com autenticacao multi-metodo, perfil e seguranca.
 
+**Relacionados:**
+- [ROUTING.md](./ROUTING.md) - Roteamento URL-first, deep linking, redirect apos login
+- [PERMISSIONS.md](./PERMISSIONS.md) - Controle de acesso RBAC
+- [NEXTJS.md](./NEXTJS.md) - Stack e middleware de autenticacao
+
 ---
 
 ## Autenticacao HTTP-Only Cookie
@@ -356,6 +361,230 @@ const publicRoutes = [
   "/api/auth",   // Endpoints NextAuth
   "/api/health", // Health check
 ];
+```
+
+---
+
+## Arquitetura Multi-Contexto
+
+Sistema de autenticacao com multiplos contextos (equipe e cliente) usando cookies separados.
+
+### Estrutura de Rotas
+
+| Rota | Contexto | Descricao |
+|------|----------|-----------|
+| `/landing` | Publico | Landing page institucional |
+| `/login` | Equipe | Login da area de trabalho |
+| `/hub` | Equipe (protegido) | App de trabalho da equipe |
+| `/portal/landing` | Publico | Landing page area do cliente |
+| `/portal/login` | Cliente | Login da area do cliente |
+| `/portal` | Cliente (protegido) | Area do cliente |
+
+### Cookies por Contexto
+
+| Cookie | Contexto | Duracao | Uso |
+|--------|----------|---------|-----|
+| `session-team` | Equipe | 24h | Autenticacao do hub |
+| `session-customer` | Cliente | 7 dias | Autenticacao do portal |
+
+Ambos os cookies sao httpOnly, secure e SameSite=lax.
+
+### Redirects Automaticos
+
+```
+/ (raiz)
+├── Usuario logado (session-team) → /hub
+└── Usuario nao logado → /landing
+
+/portal
+├── Usuario logado (session-customer) → /portal (dashboard)
+└── Usuario nao logado → /portal/landing
+```
+
+### LoginForm Parametrizavel
+
+Componente unico de login reutilizado em ambos os contextos:
+
+```typescript
+// components/auth/LoginForm.tsx
+
+interface LoginFormProps {
+  apiEndpoint: string;        // "/api/auth/team" ou "/api/auth/customer"
+  cookieName: string;         // "session-team" ou "session-customer"
+  redirectTo: string;         // "/hub" ou "/portal"
+  title?: string;
+  subtitle?: string;
+}
+
+export function LoginForm({
+  apiEndpoint,
+  cookieName,
+  redirectTo,
+  title = "Login",
+  subtitle,
+}: LoginFormProps) {
+  // ... implementacao
+}
+```
+
+**Uso na area da equipe:**
+```typescript
+// app/(hub)/login/page.tsx
+
+<LoginForm
+  apiEndpoint="/api/auth/team"
+  cookieName="session-team"
+  redirectTo="/hub"
+  title="Area da Equipe"
+/>
+```
+
+**Uso na area do cliente:**
+```typescript
+// app/(portal)/portal/login/page.tsx
+
+<LoginForm
+  apiEndpoint="/api/auth/customer"
+  cookieName="session-customer"
+  redirectTo="/portal"
+  title="Area do Cliente"
+/>
+```
+
+### Middleware Multi-Contexto
+
+```typescript
+// middleware.ts
+
+export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // === Contexto Portal (Cliente) ===
+  if (pathname.startsWith("/portal")) {
+    const customerSession = request.cookies.get("session-customer");
+
+    // Rotas publicas do portal
+    if (pathname === "/portal/login" || pathname === "/portal/landing") {
+      if (customerSession) {
+        // Ja logado -> redireciona para portal
+        return NextResponse.redirect(new URL("/portal", request.url));
+      }
+      return NextResponse.next();
+    }
+
+    // Rotas protegidas do portal
+    if (!customerSession) {
+      return NextResponse.redirect(new URL("/portal/landing", request.url));
+    }
+
+    return NextResponse.next();
+  }
+
+  // === Contexto Hub (Equipe) ===
+  const teamSession = request.cookies.get("session-team");
+
+  // Rotas publicas do hub
+  if (pathname === "/login" || pathname === "/landing") {
+    if (teamSession) {
+      return NextResponse.redirect(new URL("/hub", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // Rota raiz
+  if (pathname === "/") {
+    if (teamSession) {
+      return NextResponse.redirect(new URL("/hub", request.url));
+    }
+    return NextResponse.redirect(new URL("/landing", request.url));
+  }
+
+  // Rotas protegidas do hub
+  if (!teamSession) {
+    const url = new URL("/login", request.url);
+    url.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
+}
+```
+
+### Estrutura de Pastas (Next.js App Router)
+
+```
+app/
+├── (public)/
+│   ├── landing/page.tsx         # Landing institucional
+│   └── portal/
+│       └── landing/page.tsx     # Landing do cliente
+│
+├── (hub)/
+│   ├── login/page.tsx           # Login equipe
+│   ├── hub/
+│   │   ├── layout.tsx           # Layout protegido
+│   │   └── page.tsx             # Dashboard equipe
+│   └── ...
+│
+└── (portal)/
+    └── portal/
+        ├── login/page.tsx       # Login cliente
+        ├── layout.tsx           # Layout protegido
+        └── page.tsx             # Dashboard cliente
+```
+
+### API Endpoints
+
+| Endpoint | Metodo | Cookie | Descricao |
+|----------|--------|--------|-----------|
+| `/api/auth/team` | POST | session-team | Login da equipe |
+| `/api/auth/customer` | POST | session-customer | Login do cliente |
+| `/api/auth/team/logout` | POST | - | Logout equipe |
+| `/api/auth/customer/logout` | POST | - | Logout cliente |
+
+### Validacao de Sessao
+
+```typescript
+// lib/auth/validate-session.ts
+
+export async function validateTeamSession(
+  request: NextRequest
+): Promise<TeamUser | null> {
+  const token = request.cookies.get("session-team")?.value;
+  if (!token) return null;
+
+  try {
+    const payload = await verifyJWT(token, process.env.JWT_SECRET_TEAM!);
+    return payload as TeamUser;
+  } catch {
+    return null;
+  }
+}
+
+export async function validateCustomerSession(
+  request: NextRequest
+): Promise<Customer | null> {
+  const token = request.cookies.get("session-customer")?.value;
+  if (!token) return null;
+
+  try {
+    const payload = await verifyJWT(token, process.env.JWT_SECRET_CUSTOMER!);
+    return payload as Customer;
+  } catch {
+    return null;
+  }
+}
+```
+
+### Variaveis de Ambiente
+
+```bash
+# Chaves JWT separadas por contexto
+JWT_SECRET_TEAM=chave-secreta-equipe-32-caracteres
+JWT_SECRET_CUSTOMER=chave-secreta-cliente-32-caracteres
+
+# Gerar chaves:
+openssl rand -base64 32
 ```
 
 ---

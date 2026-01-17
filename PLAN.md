@@ -9,9 +9,9 @@ Formato de planos de execução para implementação guiada por IA.
 O PLAN.md é o **elo entre specs e implementação**:
 
 ```
-specs/              →    PLAN.md           →    código
+specs/features/     →    PLAN.md           →    código
 (o que fazer)            (checklist)            (feito)
-US001, REQ014            - [ ] Tarefa           app/src/...
+US-AUTH-001              - [ ] Tarefa           app/src/...
 ```
 
 A IA lê o plano, pega uma tarefa, consulta as referências nas specs, e implementa.
@@ -46,9 +46,9 @@ usando email e senha. O fluxo consiste em...
 ```markdown
 ## Fase 1: Autenticação
 
-- [ ] Implementar login (US010, REQ040)
-- [ ] Implementar logout (US011, REQ041)
-- [ ] Adicionar proteção de rotas (REQ042)
+- [ ] Implementar login (US-AUTH-001, REQ-AUTH-001)
+- [ ] Implementar logout (US-AUTH-002, REQ-AUTH-002)
+- [ ] Adicionar proteção de rotas (REQ-AUTH-003)
 ```
 
 A descrição detalhada está nas specs. O plano só referencia.
@@ -85,22 +85,21 @@ Toda tarefa DEVE ter referências às specs como sub-itens:
 ```markdown
 - [x] FASE 2: CANAL (WhatsApp Gateway)
   - [x] Configurar webhook para BACKBONE
-    - DES011: Evolution Webhook Configuration
-    - REQ004: Webhook Dispatch
+    - DES-CANAL-001: Evolution Webhook Configuration
+    - REQ-CANAL-001: Webhook Dispatch
     - NOTA: Webhook requer URL pública
   - [x] Implementar recepção de mensagens
-    - REQ001: Message Reception
-    - US001: Patient First Contact
+    - REQ-CANAL-002: Message Reception
+    - US-CANAL-001: Patient First Contact
     - Implementado: workflows/message-handler.json
   - [ ] Implementar envio de mensagens
-    - REQ002: Message Sending
+    - REQ-CANAL-003: Message Sending
 ```
 
 Tipos de referência:
-- `US001: Nome` - User Story
-- `REQ001: Nome` - Requirement funcional
-- `NFR001: Nome` - Requirement não-funcional
-- `DES001: Nome` - Design Decision
+- `US-{FEAT}-001: Nome` - User Story
+- `REQ-{FEAT}-001: Nome` - Requirement (funcional ou não-funcional)
+- `DES-{FEAT}-001: Nome` - Design Decision
 
 Metadados opcionais:
 - `NOTA: texto` - Observação importante
@@ -118,35 +117,35 @@ A partir das specs, criar plano com fases e tarefas:
 ```markdown
 - [ ] FASE 1: Setup
   - [ ] Configurar projeto Next.js
-    - DES040: Portal Technology Stack
+    - DES-STACK-001: Portal Technology Stack
   - [ ] Configurar banco de dados
-    - DES041: Database Architecture
-    - NFR032: Docker Deployment
+    - DES-STACK-002: Database Architecture
+    - REQ-INFRA-001: Docker Deployment
 
 - [ ] FASE 2: Autenticação
   - [ ] Implementar login
-    - US010: Secretary Login
-    - REQ040: User Authentication
+    - US-AUTH-001: User Login
+    - REQ-AUTH-001: Rate Limiting
   - [ ] Implementar logout
-    - US011: Secretary Logout
+    - US-AUTH-002: User Logout
   - [ ] Proteger rotas autenticadas
-    - REQ042: Route Protection
+    - REQ-AUTH-003: Route Protection
 
 - [ ] FASE 3: Agendamentos
   - [ ] Listar horários disponíveis
-    - US002: Patient Book Appointment
-    - REQ013: Availability Query
+    - US-APPT-001: Book Appointment
+    - REQ-APPT-001: Availability Query
   - [ ] Criar agendamento
-    - REQ014: Appointment Creation
+    - REQ-APPT-002: Appointment Creation
   - [ ] Cancelar agendamento
-    - US005: Patient Cancel Appointment
+    - US-APPT-002: Cancel Appointment
 ```
 
 ### 2. Executar Tarefa
 
 A IA:
 1. Marca tarefa como `[-]` in progress
-2. Lê as referências nas specs (US002, REQ013, etc.)
+2. Lê as referências nas specs (US-APPT-001, REQ-APPT-001, etc.)
 3. Implementa baseado nas specs
 4. Adiciona metadado `Implementado:` quando concluir
 5. Marca como `[x]` done
@@ -154,13 +153,13 @@ A IA:
 ```markdown
 - [x] FASE 3: Agendamentos
   - [x] Listar horários disponíveis
-    - US002: Patient Book Appointment
-    - REQ013: Availability Query
+    - US-APPT-001: Book Appointment
+    - REQ-APPT-001: Availability Query
     - Implementado: app/api/availability/route.ts
   - [-] Criar agendamento  ← trabalhando
-    - REQ014: Appointment Creation
+    - REQ-APPT-002: Appointment Creation
   - [ ] Cancelar agendamento
-    - US005: Patient Cancel Appointment
+    - US-APPT-002: Cancel Appointment
 ```
 
 ### 3. Pausar e Resumir
@@ -197,8 +196,8 @@ PLAN-DONE.md              # Arquivo de planos concluídos
 Quando uma tarefa está bloqueada, documentar o motivo brevemente:
 
 ```markdown
-- [!] Integrar Google Calendar (REQ012) - aguardando credenciais
-- [!] Deploy staging (NFR032) - servidor indisponível
+- [!] Integrar Google Calendar (REQ-APPT-003) - aguardando credenciais
+- [!] Deploy staging (REQ-INFRA-002) - servidor indisponível
 ```
 
 O bloqueio deve ser resolvido fora do plano (conversa, pesquisa, etc.).
@@ -210,7 +209,7 @@ O bloqueio deve ser resolvido fora do plano (conversa, pesquisa, etc.).
 Use subtarefas para quebrar tarefas complexas:
 
 ```markdown
-- [-] Implementar fluxo de agendamento (US002)
+- [-] Implementar fluxo de agendamento (US-APPT-001)
   - [x] Criar UI de seleção de horário
   - [-] Implementar endpoint de criação
   - [ ] Adicionar confirmação por WhatsApp
@@ -265,16 +264,16 @@ Manter máximo 2 níveis de profundidade.
 ✅ Tarefas com referências como sub-itens
 - [ ] FASE 1: Autenticação
   - [ ] Implementar login
-    - US010: Secretary Login
-    - REQ040: User Authentication
+    - US-AUTH-001: User Login
+    - REQ-AUTH-001: Rate Limiting
   - [ ] Implementar logout
-    - US011: Secretary Logout
+    - US-AUTH-002: User Logout
 
 ✅ Metadados após conclusão
 - [x] FASE 1: Autenticação
   - [x] Implementar login
-    - US010: Secretary Login
-    - REQ040: User Authentication
+    - US-AUTH-001: User Login
+    - REQ-AUTH-001: Rate Limiting
     - Implementado: app/api/auth/login/route.ts
 ```
 

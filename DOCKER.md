@@ -7,23 +7,44 @@ Padrao completo para deploy de aplicacoes com Docker Compose e Traefik externo.
 ## Visao Geral
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        DOCKER HOST                               │
-│  ┌─────────────────┐    ┌─────────────────┐                    │
-│  │ App: staging    │    │ App: production │                    │
-│  │ branch: develop │    │ branch: main    │                    │
-│  └────────┬────────┘    └────────┬────────┘                    │
-│           │                      │                              │
-│           ▼                      ▼                              │
-│  docker-compose.staging.yml    docker-compose.yml               │
-│  (apenas servico exposto)      (stack completa + ./data/)       │
-└─────────────────────────────────────────────────────────────────┘
-                    │
-                    ▼
-            ┌───────────────┐
-            │    TRAEFIK    │  (externo, rede codr-net)
-            └───────────────┘
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                              DOCKER HOST                                       │
+│                                                                                │
+│  ┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐   │
+│  │   Development       │  │     Staging         │  │    Production       │   │
+│  │   branch: local     │  │   branch: develop   │  │   branch: main      │   │
+│  └──────────┬──────────┘  └──────────┬──────────┘  └──────────┬──────────┘   │
+│             │                        │                        │               │
+│             ▼                        ▼                        ▼               │
+│  docker-compose.dev.yml    docker-compose.staging.yml    docker-compose.yml   │
+│  (infra apenas)            (infra + apps)                (infra + apps)       │
+│  Apps rodam localmente     Stack completa                Stack completa       │
+│                                     │                        │               │
+│                                     ▼                        ▼               │
+│                              ┌───────────────┐        ┌───────────────┐      │
+│                              │    TRAEFIK    │        │    TRAEFIK    │      │
+│                              │ h.${DOMAIN}   │        │  ${DOMAIN}    │      │
+│                              └───────────────┘        └───────────────┘      │
+└───────────────────────────────────────────────────────────────────────────────┘
 ```
+
+## Matriz de Ambientes
+
+| Aspecto | **dev** | **staging** | **production** |
+|---------|---------|-------------|----------------|
+| **Infraestrutura** | ✅ Roda no Docker | ✅ Roda no Docker | ✅ Roda no Docker |
+| **Apps/Servicos** | ❌ Rodam localmente (`pnpm dev`) | ✅ Rodam no Docker | ✅ Rodam no Docker |
+| **Init permissions** | `chmod 777` (Windows) | `chown UID:GID` (Linux) | `chown UID:GID` (Linux) |
+| **Rede** | `internal` apenas | `internal` + `codr-net` | `internal` + `codr-net` |
+| **Traefik labels** | ❌ Nao | ✅ Sim | ✅ Sim |
+| **Dominio** | `localhost:XXxx` | `h.${DOMAIN}` | `${DOMAIN}` |
+| **./data/** | ✅ Sim | ✅ Sim | ✅ Sim |
+| **Branch** | local | develop | main |
+
+**Resumo:**
+- **dev** = infraestrutura apenas (apps rodam local com hot-reload)
+- **staging** = stack completa (infra + apps) em `h.${DOMAIN}`
+- **production** = stack completa (infra + apps) em `${DOMAIN}`
 
 ---
 
@@ -31,7 +52,115 @@ Padrao completo para deploy de aplicacoes com Docker Compose e Traefik externo.
 
 **Todo dado persistente DEVE estar em `./data/`**
 
-> **Padrões relacionados:** Para credenciais (PostgreSQL dual-user), seeds idempotentes e usuários de teste, ver [ENV-PATTERN.md](./ENV-PATTERN.md#postgresql-padrão-dual-user).
+---
+
+## Regra de Ouro: Parametros em .env, NAO em docker-compose
+
+> **docker-compose NAO e local de definir parametros.**
+> **Parametros vao na estrutura .env.**
+
+O configurador (pessoa que faz deploy) **NAO TEM AUTORIZACAO** para mexer em docker-compose.
+Se nao for possivel configurar via `.env`, o projeto **falhara em modo deploy**.
+
+### Formas Permitidas de Parametrizacao
+
+**1. Import de .env files**
+
+Todo container DEVE importar os 3 arquivos .env:
+
+```yaml
+services:
+  app:
+    env_file:
+      - .env                      # 1. Base (valores padrao)
+      - .env.${ENVIRONMENT}       # 2. Sobrescritas do ambiente
+      - path: .env.secrets        # 3. Secrets (opcional)
+        required: false
+```
+
+**2. Environment com referencia a variavel**
+
+Quando necessario passar variavel especifica, usar referencia:
+
+```yaml
+services:
+  postgres:
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+```
+
+### Formas PROIBIDAS
+
+```yaml
+# ERRADO - Valor hardcoded
+environment:
+  POSTGRES_PASSWORD: Admin123
+
+# ERRADO - Valor inline sem referencia
+environment:
+  - DATABASE_URL=postgresql://admin:Admin123@localhost:5432/main
+
+# ERRADO - Porta hardcoded
+ports:
+  - "5432:5432"
+```
+
+### Formas CORRETAS
+
+```yaml
+# CERTO - Referencia a variavel
+environment:
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+# CERTO - Import de .env
+env_file:
+  - .env
+  - .env.${ENVIRONMENT}
+
+# CERTO - Porta via variavel
+ports:
+  - "${POSTGRES_PORT}:5432"
+```
+
+### Por que essa regra?
+
+1. **Seguranca:** Configurador nao precisa ver/editar codigo
+2. **Flexibilidade:** Mesmo compose funciona em qualquer ambiente
+3. **Auditoria:** Todas as configs em um lugar (.env files)
+4. **CI/CD:** Deploy automatizado le variaveis de ambiente, nao edita arquivos
+
+---
+
+## Regra de Ouro: Consistencia entre docker-compose
+
+> **Alteracoes em docker-compose DEVEM ser refletidas nos 3 arquivos.**
+> **NAO e permitido modificar um sem considerar os demais.**
+
+Os 3 arquivos docker-compose (dev, staging, production) DEVEM ter os mesmos servicos de infraestrutura.
+Quebrar essa regra causa falhas em deploy que so aparecem em ambientes especificos.
+
+### O que DEVE ser identico
+
+- Lista de servicos de infraestrutura (postgres, redis, mongo, etc.)
+- Estrutura de pastas em ./data/
+- Variaveis de ambiente referenciadas
+- Healthchecks
+- Networks internas
+
+### O que PODE diferir
+
+| Aspecto | dev | staging | production |
+|---------|-----|---------|------------|
+| Container names | `${PROJECT}-dev-*` | `${PROJECT}-staging-*` | `${PROJECT}-*` |
+| Init permissions | `chmod 777` | `chown UID:GID` | `chown UID:GID` |
+| Servicos de app | ❌ (rodam local) | ✅ | ✅ |
+| Labels Traefik | ❌ | ✅ (`h.${DOMAIN}`) | ✅ (`${DOMAIN}`) |
+| Rede externa | ❌ | `codr-net` | `codr-net` |
+| Portas expostas | Sim (localhost) | Nao (via Traefik) | Nao (via Traefik) |
+
+> **Padrões relacionados:** Para credenciais (PostgreSQL dual-user), seeds idempotentes e usuários de teste, ver [ENV.md](./ENV.md#postgresql-padrão-dual-user).
 
 Em caso de desastre, o restore consiste em:
 1. Clonar o repositorio
@@ -46,9 +175,9 @@ Se faltar qualquer informacao apos esse processo, o padrao falhou.
 
 ```
 /projeto/
-├── docker-compose.yml            # Production (stack completa)
-├── docker-compose.staging.yml    # Staging (apenas servico exposto)
-├── docker-compose.dev.yml        # Development (infra apenas)
+├── docker-compose.yml            # Production (stack completa: infra + apps)
+├── docker-compose.staging.yml    # Staging (stack completa: infra + apps)
+├── docker-compose.dev.yml        # Development (infra apenas, apps rodam local)
 ├── DEPLOY.md                     # Parametros especificos do projeto
 ├── .env                          # Config base compartilhada (commitado)
 ├── .env.development              # Sobrescritas para dev (commitado)
@@ -186,10 +315,51 @@ networks:
 
 ## Docker Compose - Staging
 
-Apenas o servico exposto (infraestrutura externa/compartilhada):
+Stack completa com infraestrutura propria e servicos de aplicacao.
+Identico ao production, mas com prefixo `-staging` nos nomes e dominio `h.${DOMAIN}`.
 
 ```yaml
 services:
+  # =============================================================================
+  # Init - Cria estrutura de pastas com permissoes (Linux)
+  # =============================================================================
+  init:
+    image: busybox:latest
+    container_name: ${PROJECT}-staging-init
+    command: |
+      sh -c "
+        mkdir -p /data/postgres /data/redis /data/... &&
+        chown -R 999:999 /data/postgres &&
+        chown -R 999:999 /data/redis &&
+        echo 'Init complete'
+      "
+    volumes:
+      - ./data:/data
+    restart: "no"
+
+  # =============================================================================
+  # Infraestrutura (mesma do production)
+  # =============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: ${PROJECT}-staging-postgres
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      internal:
+        aliases:
+          - postgres.internal
+    # ... (healthcheck, environment)
+
+  redis:
+    # ... (mesmo padrao)
+
+  # =============================================================================
+  # Servicos de aplicacao (com labels Traefik)
+  # =============================================================================
   app:
     build:
       context: ./app
@@ -201,6 +371,11 @@ services:
       - .env.staging              # 2. Sobrescritas staging
       - path: .env.secrets        # 3. Secrets (opcional)
         required: false
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     labels:
       - traefik.enable=true
       - traefik.docker.network=codr-net
@@ -209,12 +384,23 @@ services:
       - traefik.http.routers.${PROJECT}-staging.tls.certresolver=letsencrypt
       - traefik.http.services.${PROJECT}-staging.loadbalancer.server.port=${PORT}
     networks:
-      - codr-net
+      internal:
+        aliases:
+          - app.internal
+      codr-net:
 
 networks:
+  internal:
+    driver: bridge
   codr-net:
     external: true
 ```
+
+**Diferencas do Production:**
+- Prefixo `-staging` em todos os container names
+- Dominio `h.${DOMAIN}` ao inves de `${DOMAIN}`
+- Router names com `-staging` (ex: `${PROJECT}-staging` ao inves de `${PROJECT}`)
+- Usa `.env.staging` ao inves de `.env.production`
 
 ---
 
@@ -234,6 +420,78 @@ networks:
 | Keycloak | `/opt/keycloak/data` | 1000:1000 | Realm configs |
 | Elasticsearch | `/usr/share/elasticsearch/data` | 1000:1000 | Indices |
 | InfluxDB | `/var/lib/influxdb2` | 1000:1000 | Time series |
+| Meilisearch | `/meili_data` | root | Search indices |
+| Ollama | `/root/.ollama` | root | LLM models |
+
+---
+
+## Ollama - LLMs Locais
+
+Ollama permite rodar modelos de linguagem localmente sem GPU. Configuracao via variaveis de ambiente com prefixo `OLLAMA_`.
+
+### Variaveis de Ambiente
+
+```env
+# Hardware disponivel
+OLLAMA_HAS_GPU=false
+OLLAMA_RAM_MB=16384
+OLLAMA_CPU_CORES=8
+
+# Limites de modelo
+OLLAMA_MAX_PARAMS_B=7
+OLLAMA_MAX_CTX=4096
+OLLAMA_MIN_QUANT=Q4
+
+# Limites de execucao
+OLLAMA_MAX_CONCURRENCY=1
+OLLAMA_MAX_OUTPUT_TOKENS=512
+```
+
+### Proposito dos Limitadores
+
+| Variavel | Proposito |
+|----------|-----------|
+| `OLLAMA_HAS_GPU` | Indica se GPU esta disponivel |
+| `OLLAMA_RAM_MB` | RAM disponivel para filtrar modelos |
+| `OLLAMA_CPU_CORES` | Cores disponiveis |
+| `OLLAMA_MAX_PARAMS_B` | Maximo de bilhoes de parametros (ex: 7 = 7B max) |
+| `OLLAMA_MAX_CTX` | Contexto maximo permitido |
+| `OLLAMA_MIN_QUANT` | Quantizacao minima (Q4, Q5, Q8) |
+| `OLLAMA_MAX_CONCURRENCY` | Requests simultaneos |
+| `OLLAMA_MAX_OUTPUT_TOKENS` | Tokens de saida por request |
+
+### Docker Compose
+
+```yaml
+ollama:
+  image: ollama/ollama:latest
+  container_name: ${PROJECT}-ollama
+  restart: unless-stopped
+  depends_on:
+    init:
+      condition: service_completed_successfully
+  volumes:
+    - ./data/ollama:/root/.ollama
+  networks:
+    internal:
+      aliases:
+        - ollama.internal
+  healthcheck:
+    test: ["CMD-SHELL", "curl -f http://localhost:11434/api/tags || exit 1"]
+    interval: 30s
+    timeout: 10s
+    retries: 5
+    start_period: 60s
+```
+
+### Portas
+
+> Ver [ECOSYSTEM.md](./ECOSYSTEM.md#padrao-de-portas) para o padrao completo.
+
+| Ambiente | Porta |
+|----------|-------|
+| Internal | 11434 |
+| Dev | XX56 (ex: 2256 para PREFIX=22) |
 
 ---
 
@@ -327,7 +585,7 @@ Se os dados podem ser perdidos:
 docker compose down
 rm -rf data/
 docker compose up -d
-# Seed vai repopular a base (ver ENV-PATTERN.md#seeds-padrão-por-ambiente)
+# Seed vai repopular a base (ver ENV.md#seeds-padrão-por-ambiente)
 ```
 
 ---
@@ -345,10 +603,12 @@ docker compose up -d
 
 ### Docker Compose
 
-- [ ] Criar `docker-compose.yml` (production) com init + ./data/
-- [ ] Criar `docker-compose.staging.yml` (apenas servico exposto)
-- [ ] Criar `docker-compose.dev.yml` (infra para desenvolvimento local)
+- [ ] Criar `docker-compose.yml` (production) com init + infra + apps + ./data/
+- [ ] Criar `docker-compose.staging.yml` (espelho de production com prefixo -staging)
+- [ ] Criar `docker-compose.dev.yml` (infra apenas, apps rodam localmente)
 - [ ] Todos os compose usam `env_file: [.env, .env.{env}, .env.secrets]`
+- [ ] Mesmos servicos de infraestrutura em dev, staging e production
+- [ ] Staging e production identicos (exceto nomes, dominio, env_file)
 
 ### Deploy
 
@@ -467,13 +727,15 @@ docker network connect codr-net <container-name>
 - Dados em paths absolutos (`/var/data/projeto:/path`)
 - Configs hardcoded no container
 - Secrets fora do .env.{environment}/.env.secrets ou ./data/
-- Staging com stack completa de infra local
+- Staging diferente de production (exceto nomes e dominio)
+- Infraestrutura compartilhada entre staging e production
 
 **FACA:**
 - Bind mounts relativos (`./data/servico:/path`)
 - Servico init para criar estrutura
-- Staging apenas com servico exposto
+- Staging como espelho de production (mesma infra, mesmos servicos)
 - Tudo restauravel com git clone + restore de ./data/
+- Consistencia total entre os 3 docker-compose (dev, staging, production)
 
 ---
 
@@ -490,15 +752,15 @@ Separar o que precisa de hot-reload (codigo) do que e estatico (infra):
 │  DOCKER (docker-compose.dev.yml)                        │
 │  ┌─────────┐ ┌─────────┐ ┌─────────┐                   │
 │  │ postgres│ │  redis  │ │  etc... │                   │
-│  │  :7032  │ │  :7079  │ │         │                   │
+│  │  :XX50  │ │  :XX51  │ │         │                   │
 │  └─────────┘ └─────────┘ └─────────┘                   │
 └────────────────────────┬────────────────────────────────┘
-                         │ localhost:70XX
+                         │ localhost:XX50-XX99
                          ▼
 ┌─────────────────────────────────────────────────────────┐
 │  LOCAL (npm run dev)                                    │
 │  ┌─────────────────────────────────────────────────┐   │
-│  │  App (hot-reload)                    :7000      │   │
+│  │  App (hot-reload)                    :XX00      │   │
 │  └─────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -512,48 +774,21 @@ Exemplo:    myapp-postgres-dev, myapp-redis-dev
 
 ### Padrao de Portas
 
-Derivar portas da porta base do app. Usar formato `{BASE}{SUFFIX}`:
+> **Fonte da verdade:** Ver [ECOSYSTEM.md](./ECOSYSTEM.md#padrao-de-portas) para o padrao completo de portas.
 
-```
-BASE = primeiros 2 digitos da porta do app (ex: 70 para porta 7000)
-SUFFIX = ultimos 2 digitos da porta padrao do servico
-
-Exemplos (app na porta 7000, BASE=70):
-  PostgreSQL (5432) → 7032 (70 + 32)
-  Redis (6379)      → 7079 (70 + 79)
-  MongoDB (27017)   → 7017 (70 + 17)
-```
-
-Para servicos especiais:
-```
-Backend/API:  {BASE}07  (ex: 7007) - padrao X00X
-Worker/Queue: {BASE}70  (ex: 7070) - padrao X0X0
-```
-
-### Portas por Ambiente
-
-Usar o padrão `X_00` onde `_` indica o ambiente:
-
-| Ambiente | Padrão | Frontend | Backend | Backbone |
-|----------|--------|----------|---------|----------|
-| **Dev** | X000 | 7000 | 7007 | 7070 |
-| **Staging local** | XX00 | 7700 | 7707 | 7770 |
-
-Isso permite rodar dev e staging local simultaneamente sem conflito de portas.
-
-```yaml
-# docker-compose.staging.yml (para teste local)
-ports:
-  - "7700:7000"  # Frontend staging em localhost:7700
-```
+Resumo:
+- **XX** = prefixo do projeto (definido em `.env` como `PORT_PREFIX`)
+- **Servicos proprios:** XX00-XX49 (App=XX00, Socket=XX01, Backbone=XX02, ...)
+- **Servicos externos:** XX50-XX99 (PostgreSQL=XX50, Redis=XX51, MongoDB=XX52, ...)
 
 ### Como Construir
 
-1. **Identificar servicos de infraestrutura** no docker-compose.yml de producao
-2. **Copiar para docker-compose.dev.yml** sem o servico do app
-3. **Renomear containers** de `-staging` ou sem sufixo para `-dev`
-4. **Expor portas** seguindo o padrao acima
-5. **Usar chmod 777** no init (Windows/NTFS compativel)
+1. **Definir `PORT_PREFIX`** no `.env` (ex: 22, 80, 90)
+2. **Identificar servicos de infraestrutura** no docker-compose.yml de producao
+3. **Copiar para docker-compose.dev.yml** sem servicos proprios (apenas externos)
+4. **Renomear containers** para `-dev`
+5. **Expor portas** seguindo o padrao XX50-XX99
+6. **Usar chmod 777** no init (Windows/NTFS compativel)
 
 ### Estrutura Generica
 
@@ -566,17 +801,23 @@ services:
     volumes: ["./data:/data"]
     restart: "no"
 
-  ${PROJECT}-<servico>-dev:
-    image: <imagem>
+  ${PROJECT}-postgres-dev:
+    image: postgres:16-alpine
     depends_on:
       ${PROJECT}-init-dev:
         condition: service_completed_successfully
     ports:
-      - "${BASE}${SUFFIX}:${PORTA_INTERNA}"
+      - "${PORT_PREFIX}50:5432"
     volumes:
-      - ./data/<servico>:<path_interno>
+      - ./data/postgres:/var/lib/postgresql/data
     networks:
       - internal
+
+  ${PROJECT}-redis-dev:
+    image: redis:7-alpine
+    ports:
+      - "${PORT_PREFIX}51:6379"
+    # ...
 
 networks:
   internal:
@@ -605,13 +846,14 @@ npm run dev:infra
 # 2. Rodar app localmente (hot-reload)
 npm run dev
 
-# App conecta em localhost:{BASE}{SUFFIX}
-# Ex: DATABASE_URL=postgres://...@localhost:7032/main
+# App conecta em localhost:XX50 (postgres), localhost:XX51 (redis), etc.
+# Ex (PORT_PREFIX=22): DATABASE_URL=postgres://...@localhost:2250/main
 ```
 
 ### Checklist
 
-- [ ] Todos os servicos de infra do production estao no dev?
-- [ ] Todas as portas seguem o padrao {BASE}{SUFFIX}?
-- [ ] O app consegue conectar via localhost nas portas expostas?
+- [ ] `PORT_PREFIX` definido no `.env`
+- [ ] Todos os servicos externos do production estao no dev?
+- [ ] Todas as portas seguem o padrao XX50-XX99?
+- [ ] O app conecta via localhost nas portas expostas?
 - [ ] O .env.development aponta para localhost:{portas}?

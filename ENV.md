@@ -2,7 +2,7 @@
 
 Padrão de variáveis de ambiente com composição em 3 níveis.
 
-> Para Docker e deploy, ver [DEPLOY_PATTERN.md](./DEPLOY_PATTERN.md)
+> Para Docker e deploy, ver [DOCKER.md](./DOCKER.md)
 
 ---
 
@@ -80,18 +80,23 @@ Contém **apenas** os valores que diferem do base:
 # ==============================================================================
 # Sobrescreve .env para ambiente de desenvolvimento.
 # App roda no host (localhost), infra roda no Docker.
+# Portas seguem padrao ECOSYSTEM.md: XX50-XX99 para servicos externos
 
 ENVIRONMENT=development
 NODE_ENV=development
 
-# URLs apontam para localhost (app fora do Docker)
-DATABASE_URL=postgres://admin:Admin123@localhost:9032/main
-REDIS_URL=redis://localhost:9079
+# Prefixo de portas (ver ECOSYSTEM.md)
+PORT_PREFIX=22
 
-# Portal
+# URLs apontam para localhost (app fora do Docker)
+# Portas: PostgreSQL=XX50, Redis=XX51 (ex: 2250, 2251 para PREFIX=22)
+DATABASE_URL=postgres://admin:Admin123@localhost:${PORT_PREFIX}50/main
+REDIS_URL=redis://localhost:${PORT_PREFIX}51
+
+# Portal (porta XX00)
 PORTAL_DOMAIN=localhost
-PORTAL_URL=http://localhost:9000
-NEXTAUTH_URL=http://localhost:9000
+PORTAL_URL=http://localhost:${PORT_PREFIX}00
+NEXTAUTH_URL=http://localhost:${PORT_PREFIX}00
 ```
 
 ```bash
@@ -282,8 +287,8 @@ hub-postgres:
 # .env (base) - usado em Docker
 DATABASE_URL=postgresql://admin:Admin123@postgres.internal:5432/main
 
-# .env.development - usado localmente
-DATABASE_URL=postgresql://admin:Admin123@localhost:9032/main
+# .env.development - usado localmente (porta XX50, ver ECOSYSTEM.md)
+DATABASE_URL=postgresql://admin:Admin123@localhost:${PORT_PREFIX}50/main
 ```
 
 **Nota:** A URL usa o usuário `admin`, não `postgres`. O superuser só é usado para setup inicial.
@@ -334,7 +339,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     ports:
-      - "2032:5432"
+      - "${PORT_PREFIX}50:5432"  # PostgreSQL = XX50 (ver ECOSYSTEM.md)
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     healthcheck:
@@ -356,7 +361,7 @@ services:
       - POSTGRES_SUPERUSER_PASSWORD=postgres
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=Admin123
-      - POSTGRES_DB=conversation_hub
+      - POSTGRES_DB=coletivos
       - ENVIRONMENT=development
     networks:
       - internal

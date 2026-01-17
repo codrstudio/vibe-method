@@ -178,9 +178,8 @@ npm run db:seed      # Popular banco
 ├── PLAN.md             # Plano de execução atual
 ├── .env                # Config base
 ├── specs/              # Especificações
-│   ├── user-stories.md
-│   ├── requirements.md
-│   └── design.md
+│   └── features/       # Specs por feature
+│       └── {feature}.md  # US + REQ + DES
 ├── app/                # Código fonte
 ├── database/           # Migrations
 └── scripts/            # Automação
@@ -215,7 +214,7 @@ Verificar se DATABASE_URL está correto em `.env.secrets`.
 ## Notas
 
 - Arquivos temporários apenas em `.tmp/`
-- Referências: `US001`, `REQ014`, `DES030`
+- Referências por feature: `US-AUTH-001`, `REQ-AUTH-001`, `DES-AUTH-001`
 - Sistema em pt-BR
 - Encoding: UTF-8
 ```
