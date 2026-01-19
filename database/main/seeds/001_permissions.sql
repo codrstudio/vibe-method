@@ -44,7 +44,15 @@ INSERT INTO permissions (name, description, category) VALUES
 -- Administracao (genérico)
 ('admin:settings', 'Acessar configuracoes do sistema', 'admin'),
 ('admin:audit', 'Visualizar logs de auditoria', 'admin'),
-('admin:integrations', 'Gerenciar integracoes', 'admin')
+('admin:integrations', 'Gerenciar integracoes', 'admin'),
+
+-- LLM (genérico)
+('llm:read', 'Visualizar intents e bindings de LLM', 'llm'),
+('llm:write', 'Configurar bindings de LLM', 'llm'),
+
+-- WhatsApp (genérico)
+('whatsapp:read', 'Visualizar canais e operacoes WhatsApp', 'whatsapp'),
+('whatsapp:write', 'Gerenciar canais WhatsApp', 'whatsapp')
 
 ON CONFLICT (name) DO NOTHING;
 
