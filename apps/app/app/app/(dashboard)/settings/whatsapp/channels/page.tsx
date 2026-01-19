@@ -44,10 +44,8 @@ async function fetchChannels(): Promise<Channel[]> {
 }
 
 async function deleteChannel(channelId: string): Promise<void> {
-  const res = await fetch("/api/whatsapp/channels", {
+  const res = await fetch(`/api/whatsapp/channels/${channelId}`, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ channelId }),
   })
   if (!res.ok) throw new Error("Failed to delete channel")
 }
