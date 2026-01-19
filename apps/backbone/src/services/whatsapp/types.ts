@@ -12,9 +12,12 @@ export const ChannelStatusEnum = z.enum([
   'degraded',
 ]);
 
+export const ChannelProviderEnum = z.enum(['evolution', 'simulator']);
+
 export const OperationNatureEnum = z.enum(['system', 'user']);
 
 export type ChannelStatus = z.infer<typeof ChannelStatusEnum>;
+export type ChannelProvider = z.infer<typeof ChannelProviderEnum>;
 export type OperationNature = z.infer<typeof OperationNatureEnum>;
 
 // =============================================================================
@@ -30,6 +33,7 @@ export const ChannelSchema = z.object({
   phoneNumber: z.string().nullable(),
   status: ChannelStatusEnum,
   statusReason: z.string().nullable(),
+  provider: ChannelProviderEnum.default('evolution'),
   qrCode: z.string().nullable(),
   qrCodeExpiresAt: z.string().nullable(),
   connectionData: z.record(z.unknown()),
@@ -48,6 +52,7 @@ export type Channel = z.infer<typeof ChannelSchema>;
 export interface CreateChannelInput {
   name: string;
   description?: string;
+  provider?: ChannelProvider;
   createdBy?: string;
 }
 

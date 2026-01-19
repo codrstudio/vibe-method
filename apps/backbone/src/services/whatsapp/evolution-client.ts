@@ -1,20 +1,16 @@
 import { config } from '../../config.js';
 import { incCounter } from '../../health/collector.js';
+import { channelsRepository } from './repository.js';
 import type {
   EvolutionInstance,
   EvolutionQrCode,
   EvolutionConnectionStatus,
+  ChannelProvider,
 } from './types.js';
 
 // =============================================================================
 // Evolution API HTTP Client
 // =============================================================================
-
-interface EvolutionApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
 
 class EvolutionApiError extends Error {
   constructor(
@@ -78,24 +74,107 @@ async function evolutionFetch<T>(
 }
 
 // =============================================================================
-// Evolution Client
+// WA-SIM HTTP Client
+// =============================================================================
+
+const WA_SIM_URL = process.env.WA_SIM_URL || 'http://localhost:8003';
+
+async function simulatorFetch<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const url = `${WA_SIM_URL}${path}`;
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  try {
+    incCounter('simulator.requests');
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      incCounter('simulator.errors');
+      const errorBody = await response.text().catch(() => '');
+      throw new EvolutionApiError(
+        `Simulator API error: ${response.status} ${response.statusText}`,
+        response.status,
+        errorBody
+      );
+    }
+
+    const data = await response.json();
+    return data as T;
+  } catch (error) {
+    if (error instanceof EvolutionApiError) {
+      throw error;
+    }
+
+    incCounter('simulator.errors');
+    throw new EvolutionApiError(
+      error instanceof Error ? error.message : 'Unknown error'
+    );
+  }
+}
+
+// =============================================================================
+// Provider Detection
+// =============================================================================
+
+async function getProvider(instanceName: string): Promise<ChannelProvider> {
+  try {
+    const channel = await channelsRepository.findByInstanceName(instanceName);
+    if (channel?.provider) {
+      return channel.provider;
+    }
+  } catch {
+    // Ignore errors, default to evolution
+  }
+  return 'evolution';
+}
+
+// =============================================================================
+// Evolution Client (with Provider Routing)
 // =============================================================================
 
 export const evolutionClient = {
   /**
    * Create a new WhatsApp instance
+   * Note: provider is determined at channel creation time
    */
   async createInstance(
     instanceName: string,
-    webhookUrl?: string
+    webhookUrl?: string,
+    provider: ChannelProvider = 'evolution'
   ): Promise<{ instanceId: string; instanceName: string }> {
+    // Route to simulator if provider is 'simulator'
+    if (provider === 'simulator') {
+      const response = await simulatorFetch<{
+        instanceId: string;
+        instanceName: string;
+      }>('/instance/create', {
+        method: 'POST',
+        body: JSON.stringify({
+          instanceName,
+          webhook: webhookUrl,
+        }),
+      });
+
+      incCounter('simulator.instances_created');
+      return response;
+    }
+
+    // Default: Evolution API
     const body: Record<string, unknown> = {
       instanceName,
       qrcode: true,
       integration: 'WHATSAPP-BAILEYS',
     };
 
-    // Configure webhook if provided
     if (webhookUrl) {
       body.webhook = {
         url: webhookUrl,
@@ -135,6 +214,16 @@ export const evolutionClient = {
    * Get connection status of an instance
    */
   async getConnectionStatus(instanceName: string): Promise<EvolutionConnectionStatus> {
+    const provider = await getProvider(instanceName);
+
+    if (provider === 'simulator') {
+      const response = await simulatorFetch<{
+        state: 'open' | 'close' | 'connecting';
+      }>(`/instance/connectionState/${instanceName}`);
+
+      return { state: response.state };
+    }
+
     const response = await evolutionFetch<{
       instance: {
         instanceName: string;
@@ -151,6 +240,30 @@ export const evolutionClient = {
    * Get current QR code for an instance
    */
   async getQrCode(instanceName: string): Promise<EvolutionQrCode | null> {
+    const provider = await getProvider(instanceName);
+
+    if (provider === 'simulator') {
+      try {
+        const response = await simulatorFetch<{
+          base64?: string;
+          code?: string;
+        }>(`/instance/connect/${instanceName}`);
+
+        if (response.base64) {
+          return {
+            base64: response.base64,
+            code: response.code,
+          };
+        }
+        return null;
+      } catch (error) {
+        if (error instanceof EvolutionApiError && error.statusCode === 400) {
+          return null;
+        }
+        throw error;
+      }
+    }
+
     try {
       const response = await evolutionFetch<{
         base64?: string;
@@ -167,7 +280,6 @@ export const evolutionClient = {
 
       return null;
     } catch (error) {
-      // Instance might be connected already
       if (error instanceof EvolutionApiError && error.statusCode === 400) {
         return null;
       }
@@ -183,6 +295,13 @@ export const evolutionClient = {
     webhookUrl: string,
     events: string[] = ['QRCODE_UPDATED', 'CONNECTION_UPDATE', 'MESSAGES_UPSERT', 'MESSAGES_UPDATE']
   ): Promise<void> {
+    const provider = await getProvider(instanceName);
+
+    // Simulator doesn't need webhook configuration (uses env var)
+    if (provider === 'simulator') {
+      return;
+    }
+
     await evolutionFetch(`/webhook/set/${instanceName}`, {
       method: 'POST',
       body: JSON.stringify({
@@ -201,6 +320,16 @@ export const evolutionClient = {
    * Restart/reconnect an instance
    */
   async restart(instanceName: string): Promise<void> {
+    const provider = await getProvider(instanceName);
+
+    if (provider === 'simulator') {
+      await simulatorFetch(`/instance/restart/${instanceName}`, {
+        method: 'PUT',
+      });
+      incCounter('simulator.restarts');
+      return;
+    }
+
     await evolutionFetch(`/instance/restart/${instanceName}`, {
       method: 'PUT',
     });
@@ -212,6 +341,15 @@ export const evolutionClient = {
    * Logout from WhatsApp (disconnect session)
    */
   async logout(instanceName: string): Promise<void> {
+    const provider = await getProvider(instanceName);
+
+    if (provider === 'simulator') {
+      await simulatorFetch(`/instance/logout/${instanceName}`, {
+        method: 'DELETE',
+      });
+      return;
+    }
+
     await evolutionFetch(`/instance/logout/${instanceName}`, {
       method: 'DELETE',
     });
@@ -221,6 +359,16 @@ export const evolutionClient = {
    * Delete an instance completely
    */
   async deleteInstance(instanceName: string): Promise<void> {
+    const provider = await getProvider(instanceName);
+
+    if (provider === 'simulator') {
+      await simulatorFetch(`/instance/delete/${instanceName}`, {
+        method: 'DELETE',
+      });
+      incCounter('simulator.instances_deleted');
+      return;
+    }
+
     await evolutionFetch(`/instance/delete/${instanceName}`, {
       method: 'DELETE',
     });
@@ -257,8 +405,23 @@ export const evolutionClient = {
     to: string,
     text: string
   ): Promise<{ messageId: string }> {
-    // Format number (remove non-digits, ensure country code)
+    const provider = await getProvider(instanceName);
     const formattedNumber = to.replace(/\D/g, '');
+
+    if (provider === 'simulator') {
+      const response = await simulatorFetch<{
+        key: { id: string };
+      }>(`/message/sendText/${instanceName}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          number: formattedNumber,
+          text,
+        }),
+      });
+
+      incCounter('simulator.messages_sent');
+      return { messageId: response.key.id };
+    }
 
     const response = await evolutionFetch<{
       key: {
@@ -292,9 +455,20 @@ export const evolutionClient = {
         return false;
       }
 
-      // Try to list instances as a health check
       await this.listInstances();
       return true;
+    } catch {
+      return false;
+    }
+  },
+
+  /**
+   * Check if Simulator is available
+   */
+  async simulatorHealthCheck(): Promise<boolean> {
+    try {
+      const response = await simulatorFetch<{ status: string }>('/health');
+      return response.status === 'ok';
     } catch {
       return false;
     }

@@ -19,8 +19,8 @@ import type {
 export const channelsRepository = {
   async create(input: CreateChannelInput & { instanceName: string }): Promise<Channel> {
     const [channel] = await db.query<Channel>(
-      `INSERT INTO channels (name, description, instance_name, status, created_by)
-       VALUES ($1, $2, $3, 'qr_pending', $4)
+      `INSERT INTO channels (name, description, instance_name, provider, status, created_by)
+       VALUES ($1, $2, $3, $4, 'qr_pending', $5)
        RETURNING
          id, name, description,
          instance_name as "instanceName",
@@ -28,6 +28,7 @@ export const channelsRepository = {
          phone_number as "phoneNumber",
          status,
          status_reason as "statusReason",
+         provider,
          qr_code as "qrCode",
          qr_code_expires_at as "qrCodeExpiresAt",
          connection_data as "connectionData",
@@ -39,7 +40,7 @@ export const channelsRepository = {
          created_at as "createdAt",
          updated_at as "updatedAt",
          created_by as "createdBy"`,
-      [input.name, input.description ?? null, input.instanceName, input.createdBy ?? null]
+      [input.name, input.description ?? null, input.instanceName, input.provider ?? 'evolution', input.createdBy ?? null]
     );
 
     return channel;
@@ -54,6 +55,7 @@ export const channelsRepository = {
          phone_number as "phoneNumber",
          status,
          status_reason as "statusReason",
+         provider,
          qr_code as "qrCode",
          qr_code_expires_at as "qrCodeExpiresAt",
          connection_data as "connectionData",
@@ -80,6 +82,7 @@ export const channelsRepository = {
          phone_number as "phoneNumber",
          status,
          status_reason as "statusReason",
+         provider,
          qr_code as "qrCode",
          qr_code_expires_at as "qrCodeExpiresAt",
          connection_data as "connectionData",
@@ -106,6 +109,7 @@ export const channelsRepository = {
          phone_number as "phoneNumber",
          status,
          status_reason as "statusReason",
+         provider,
          qr_code as "qrCode",
          qr_code_expires_at as "qrCodeExpiresAt",
          connection_data as "connectionData",
@@ -131,6 +135,7 @@ export const channelsRepository = {
          phone_number as "phoneNumber",
          status,
          status_reason as "statusReason",
+         provider,
          qr_code as "qrCode",
          qr_code_expires_at as "qrCodeExpiresAt",
          connection_data as "connectionData",
@@ -216,6 +221,7 @@ export const channelsRepository = {
          phone_number as "phoneNumber",
          status,
          status_reason as "statusReason",
+         provider,
          qr_code as "qrCode",
          qr_code_expires_at as "qrCodeExpiresAt",
          connection_data as "connectionData",
