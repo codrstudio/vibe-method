@@ -1,0 +1,6 @@
+{
+  "exclusions": [
+    "**/node_modules/**",
+    "**/.git/**"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "workspace",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "tooling"
+  ],
+  "scripts": {
+    "dev": "dotenv -o -e .env -e .env.development -e .env.secrets -- concurrently -n app,socket,backbone -c blue,magenta,yellow \"npm run dev -w @workspace/app\" \"npm run dev -w @workspace/socket\" \"npm run dev -w @workspace/backbone\"",
+    "build": "npm run build --workspaces --if-present",
+    "docker:up": "docker compose -f docker-compose.dev.yml up -d",
+    "docker:down": "docker compose -f docker-compose.dev.yml down",
+    "migrate:main": "dotenv -o -e .env -e .env.development -e .env.secrets -- node scripts/migrate-db.mjs main",
+    "migrate:analytics": "dotenv -o -e .env -e .env.development -e .env.secrets -- node scripts/migrate-db.mjs analytics",
+    "tooling": "npm run dev -w vibe-tooling"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "concurrently": "^9.0.0",
+    "dotenv-cli": "^7.4.0",
+    "pg": "^8.17.1",
+    "playwright": "^1.57.0",
+    "png-to-ico": "^2.1.8",
+    "typescript": "^5.7.0"
+  }
+}
