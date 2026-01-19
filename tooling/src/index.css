@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 181 10% 5%;
+    --card: 0 0% 100%;
+    --card-foreground: 181 10% 5%;
+    --primary: 181 53% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 181 20% 95%;
+    --secondary-foreground: 181 30% 20%;
+    --muted: 181 15% 94%;
+    --muted-foreground: 181 10% 45%;
+    --accent: 181 40% 94%;
+    --accent-foreground: 181 53% 40%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 181 20% 88%;
+    --input: 181 20% 88%;
+    --ring: 181 53% 50%;
+    --radius: 0.5rem;
+
+    /* Sidebar */
+    --sidebar: 181 40% 95%;
+    --sidebar-foreground: 181 30% 15%;
+    --sidebar-primary: 181 53% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 181 40% 88%;
+    --sidebar-accent-foreground: 181 50% 30%;
+    --sidebar-border: 181 20% 88%;
+    --sidebar-ring: 181 53% 50%;
+  }
+
+  .dark {
+    --background: 181 30% 6%;
+    --foreground: 0 0% 98%;
+    --card: 181 25% 10%;
+    --card-foreground: 0 0% 98%;
+    --primary: 181 53% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 181 20% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 181 20% 15%;
+    --muted-foreground: 181 15% 60%;
+    --accent: 181 30% 18%;
+    --accent-foreground: 181 50% 75%;
+    --destructive: 0 60% 35%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 181 20% 18%;
+    --input: 181 20% 18%;
+    --ring: 181 53% 50%;
+
+    /* Sidebar */
+    --sidebar: 181 30% 10%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 181 53% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 181 30% 18%;
+    --sidebar-accent-foreground: 181 50% 75%;
+    --sidebar-border: 181 20% 18%;
+    --sidebar-ring: 181 53% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) hsl(var(--muted));
+  }
+}
+
+@layer utilities {
+  .bg-sidebar {
+    background-color: hsl(var(--sidebar));
+  }
+  .text-sidebar-foreground {
+    color: hsl(var(--sidebar-foreground));
+  }
+  .bg-sidebar-accent {
+    background-color: hsl(var(--sidebar-accent));
+  }
+  .text-sidebar-accent-foreground {
+    color: hsl(var(--sidebar-accent-foreground));
+  }
+  .border-sidebar-border {
+    border-color: hsl(var(--sidebar-border));
+  }
+  .ring-sidebar-ring {
+    --tw-ring-color: hsl(var(--sidebar-ring));
+  }
+}
