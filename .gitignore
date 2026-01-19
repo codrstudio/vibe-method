@@ -62,3 +62,6 @@ next-env.d.ts
 
 # Dados de bases locais
 data/
+
+# Dados irrelevantes
+brainstorming/caso-de-uso
