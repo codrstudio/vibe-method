@@ -25,15 +25,15 @@ export default function InfrastructurePage() {
   const { overview, probes, llm, modules, alerts, loading, error, refresh, lastUpdate } = usePulse()
 
   const hasProbes = probes && probes.length > 0
-  const activeAlerts = alerts?.events.filter((e) => e.status === "triggered").length ?? 0
+  const activeAlerts = alerts?.events?.filter((e) => e.status === "triggered").length ?? 0
 
   return (
     <div className="flex flex-1 flex-col">
       {/* Header */}
       <BreadcrumbBar
         items={[
-          { label: "Dashboard", href: "/app" },
-          { label: "Health", href: "/app/system/health" },
+          { label: "Início", href: "/app" },
+          { label: "Status", href: "/app/system/health" },
         ]}
         currentPage="Infraestrutura"
         actions={

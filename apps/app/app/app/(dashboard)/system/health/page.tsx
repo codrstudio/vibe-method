@@ -18,6 +18,8 @@ import {
   Cpu,
   HardDrive,
   Layers,
+  Shield,
+  Bell,
 } from "lucide-react"
 
 import { BreadcrumbBar } from "@/components/breadcrumb-bar"
@@ -26,6 +28,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -55,6 +58,16 @@ interface BackboneHealth {
   version: string
   server?: ServerStats
   components: Record<string, { status: Status; latency?: number }>
+  probes?: {
+    total: number
+    healthy: number
+    degraded: number
+    unhealthy: number
+  }
+  alerts?: {
+    active: number
+    configured: number
+  }
 }
 
 interface RealtimeHealth {
@@ -124,6 +137,8 @@ export default function SystemHealthPage() {
           version: "1.0.0",
           components: {},
           server: data.server,
+          probes: data.probes,
+          alerts: data.alerts,
         })
       } else {
         setBackbone(null)
@@ -169,7 +184,7 @@ export default function SystemHealthPage() {
       {/* Header */}
       <BreadcrumbBar
         items={[
-          { label: "Dashboard", href: "/app" },
+          { label: "Início", href: "/app" },
           { label: "Sistema", href: "/app/system" },
         ]}
         currentPage="Status do Sistema"
@@ -329,71 +344,89 @@ export default function SystemHealthPage() {
 
       {/* Subsystems Grid */}
       <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
-        {/* Backbone Card */}
+        {/* Infraestrutura Card */}
         <Card className="relative overflow-hidden transition-all hover:shadow-md">
           <div className={`absolute left-0 top-0 h-full w-1 ${
             backbone?.status === "healthy" ? "bg-success" :
             backbone?.status === "degraded" ? "bg-warning" : "bg-critical"
           }`} />
           <CardHeader className="pl-4 md:pl-5 pb-2">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className={`rounded-lg p-1.5 md:p-2 ${
-                  backbone?.status === "healthy" ? "bg-success/10" :
-                  backbone?.status === "degraded" ? "bg-warning/10" : "bg-critical/10"
-                }`}>
-                  <Server className={`size-4 md:size-5 ${
-                    backbone?.status === "healthy" ? "text-success" :
-                    backbone?.status === "degraded" ? "text-warning" : "text-critical"
-                  }`} />
-                </div>
-                <div>
-                  <CardTitle className="text-sm md:text-base">Backbone</CardTitle>
-                  <CardDescription className="text-[10px] md:text-xs">Backend e APIs</CardDescription>
-                </div>
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className={`rounded-lg p-1.5 md:p-2 ${
+                backbone?.status === "healthy" ? "bg-success/10" :
+                backbone?.status === "degraded" ? "bg-warning/10" : "bg-critical/10"
+              }`}>
+                <Server className={`size-4 md:size-5 ${
+                  backbone?.status === "healthy" ? "text-success" :
+                  backbone?.status === "degraded" ? "text-warning" : "text-critical"
+                }`} />
               </div>
-              {backbone && (
-                <Badge variant="outline" className="text-[10px] md:text-xs shrink-0">
-                  v{backbone.version}
-                </Badge>
-              )}
+              <div>
+                <CardTitle className="text-sm md:text-base">Infraestrutura</CardTitle>
+                <CardDescription className="text-[10px] md:text-xs">Backend, APIs e componentes</CardDescription>
+              </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3 pl-4 md:pl-5">
+          <CardContent className="pl-4 md:pl-5 pb-3">
             {loading ? (
               <div className="space-y-2">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-3/4" />
               </div>
             ) : backbone ? (
-              <>
-                <div className="grid grid-cols-2 gap-1.5 md:gap-2">
-                  {Object.entries(backbone.components).slice(0, 4).map(([name, comp]) => (
-                    <div key={name} className="flex items-center gap-1.5 text-xs md:text-sm">
-                      <div className={`size-1.5 md:size-2 rounded-full shrink-0 ${
-                        comp.status === "healthy" ? "bg-success" :
-                        comp.status === "degraded" ? "bg-warning" : "bg-critical"
-                      }`} />
-                      <span className="capitalize truncate">{name}</span>
-                      {comp.latency && (
-                        <span className="text-[10px] md:text-xs text-muted-foreground shrink-0">{comp.latency.toFixed(0)}ms</span>
+              <div className="grid grid-cols-2 gap-3">
+                {/* Probes Status */}
+                <div className="flex items-center gap-2">
+                  <Shield className="size-4 text-muted-foreground shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] md:text-xs text-muted-foreground">Probes</p>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm md:text-base font-semibold">
+                        {backbone.probes?.healthy ?? 0}/{backbone.probes?.total ?? 0}
+                      </span>
+                      {backbone.probes?.unhealthy && backbone.probes.unhealthy > 0 ? (
+                        <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4">
+                          {backbone.probes.unhealthy} falha
+                        </Badge>
+                      ) : (
+                        <CheckCircle className="size-3 text-success" />
                       )}
                     </div>
-                  ))}
+                  </div>
                 </div>
-                <Link
-                  href="/app/system/health/backbone"
-                  className="flex items-center gap-1 text-xs md:text-sm text-primary hover:underline"
-                >
-                  Ver detalhes <ArrowRight className="size-3" />
-                </Link>
-              </>
+                {/* Alerts Status */}
+                <div className="flex items-center gap-2">
+                  <Bell className="size-4 text-muted-foreground shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] md:text-xs text-muted-foreground">Alertas</p>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm md:text-base font-semibold">
+                        {backbone.alerts?.active ?? 0}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        / {backbone.alerts?.configured ?? 0}
+                      </span>
+                      {backbone.alerts?.active && backbone.alerts.active > 0 && (
+                        <AlertCircle className="size-3 text-warning" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             ) : (
               <p className="text-xs md:text-sm text-muted-foreground">
                 Não foi possível conectar ao backbone
               </p>
             )}
           </CardContent>
+          <CardFooter className="pl-4 md:pl-5 pt-0 justify-end">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/app/system/health/backbone">
+                Detalhes
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </Button>
+          </CardFooter>
         </Card>
 
         {/* Realtime Card */}
@@ -402,71 +435,59 @@ export default function SystemHealthPage() {
             realtime.connected ? "bg-success" : "bg-critical"
           }`} />
           <CardHeader className="pl-4 md:pl-5 pb-2">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className={`rounded-lg p-1.5 md:p-2 ${
-                  realtime.connected ? "bg-success/10" : "bg-critical/10"
-                }`}>
-                  {realtime.connected ? (
-                    <Wifi className="size-4 md:size-5 text-success" />
-                  ) : (
-                    <WifiOff className="size-4 md:size-5 text-critical" />
-                  )}
-                </div>
-                <div>
-                  <CardTitle className="text-sm md:text-base">Realtime</CardTitle>
-                  <CardDescription className="text-[10px] md:text-xs">WebSocket</CardDescription>
-                </div>
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className={`rounded-lg p-1.5 md:p-2 ${
+                realtime.connected ? "bg-success/10" : "bg-critical/10"
+              }`}>
+                {realtime.connected ? (
+                  <Wifi className="size-4 md:size-5 text-success" />
+                ) : (
+                  <WifiOff className="size-4 md:size-5 text-critical" />
+                )}
               </div>
-              <Badge
-                variant="outline"
-                className={`gap-1 text-[10px] md:text-xs shrink-0 ${
-                  realtime.connected
-                    ? "bg-success/10 text-success border-success/20"
-                    : "bg-critical/10 text-critical border-critical/20"
-                }`}
-              >
-                {realtime.connected ? "Live" : "Offline"}
-              </Badge>
+              <div>
+                <CardTitle className="text-sm md:text-base">Tempo Real</CardTitle>
+                <CardDescription className="text-[10px] md:text-xs">WebSocket e conexões ativas</CardDescription>
+              </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3 pl-4 md:pl-5">
+          <CardContent className="pl-4 md:pl-5 pb-3">
             {loading ? (
               <div className="space-y-2">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-3/4" />
               </div>
             ) : realtime.connected ? (
-              <>
-                <div className="grid grid-cols-2 gap-3 md:gap-4">
-                  <div className="flex items-center gap-2">
-                    <Users className="size-3.5 md:size-4 text-muted-foreground shrink-0" />
-                    <div>
-                      <p className="text-[10px] md:text-xs text-muted-foreground">Conexões</p>
-                      <p className="text-base md:text-lg font-semibold">{realtime.connections ?? 0}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Database className="size-3.5 md:size-4 text-muted-foreground shrink-0" />
-                    <div>
-                      <p className="text-[10px] md:text-xs text-muted-foreground">Rooms</p>
-                      <p className="text-base md:text-lg font-semibold">{realtime.rooms ?? 0}</p>
-                    </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2">
+                  <Users className="size-4 text-muted-foreground shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] md:text-xs text-muted-foreground">Conexões</p>
+                    <p className="text-sm md:text-base font-semibold">{realtime.connections ?? 0}</p>
                   </div>
                 </div>
-                <Link
-                  href="/app/system/health/realtime"
-                  className="flex items-center gap-1 text-xs md:text-sm text-primary hover:underline"
-                >
-                  Ver detalhes <ArrowRight className="size-3" />
-                </Link>
-              </>
+                <div className="flex items-center gap-2">
+                  <Database className="size-4 text-muted-foreground shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] md:text-xs text-muted-foreground">Rooms</p>
+                    <p className="text-sm md:text-base font-semibold">{realtime.rooms ?? 0}</p>
+                  </div>
+                </div>
+              </div>
             ) : (
               <p className="text-xs md:text-sm text-muted-foreground">
                 Serviço indisponível
               </p>
             )}
           </CardContent>
+          <CardFooter className="pl-4 md:pl-5 pt-0 justify-end">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/app/system/health/realtime">
+                Detalhes
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </Button>
+          </CardFooter>
         </Card>
       </div>
 

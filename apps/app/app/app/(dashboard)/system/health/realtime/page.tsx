@@ -42,7 +42,7 @@ export default function RealtimeHealthPage() {
       {/* Header */}
       <BreadcrumbBar
         items={[
-          { label: 'Dashboard', href: '/app' },
+          { label: 'Início', href: '/app' },
           { label: 'Status', href: '/app/system/health' },
         ]}
         currentPage="Tempo Real"
