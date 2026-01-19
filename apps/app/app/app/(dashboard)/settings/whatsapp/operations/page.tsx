@@ -28,6 +28,12 @@ async function fetchOperations(): Promise<Operation[]> {
   const res = await fetch("/api/whatsapp/operations")
   if (!res.ok) throw new Error("Failed to fetch operations")
   const data = await res.json()
+  // Handle both response formats:
+  // - Backend returns { data: [...] } (array directly)
+  // - Expected format is { data: { operations: [...] } }
+  if (data.data && Array.isArray(data.data)) {
+    return data.data
+  }
   return data.data?.operations ?? []
 }
 

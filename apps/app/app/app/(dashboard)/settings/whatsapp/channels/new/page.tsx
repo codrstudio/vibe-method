@@ -4,6 +4,7 @@
  * New WhatsApp Channel Page
  *
  * Pagina para registrar um novo numero WhatsApp.
+ * Updated: 2026-01-19 - Fixed response format handling
  */
 
 import { useState } from "react"
@@ -43,7 +44,17 @@ async function createChannel(data: {
     const error = await res.json()
     throw new Error(error.error || "Failed to create channel")
   }
-  return res.json()
+  const response = await res.json()
+  console.log("[CreateChannel] Raw API response:", JSON.stringify(response))
+  // Handle both response formats:
+  // - Backend returns { data: { id, ... } } (channel directly in data)
+  // - Expected format is { data: { channel: { id, ... } } }
+  if (response.data && response.data.id && !response.data.channel) {
+    console.log("[CreateChannel] Transforming response to expected format")
+    return { data: { channel: response.data } }
+  }
+  console.log("[CreateChannel] Returning response as-is")
+  return response
 }
 
 export default function NewWhatsAppChannelPage() {
@@ -158,7 +169,7 @@ export default function NewWhatsAppChannelPage() {
                     {mutation.isPending && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    Criar e Conectar
+                    Criar
                   </Button>
                 </div>
               </form>

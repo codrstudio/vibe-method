@@ -34,6 +34,12 @@ async function fetchChannels(): Promise<Channel[]> {
   const res = await fetch("/api/whatsapp/channels")
   if (!res.ok) throw new Error("Failed to fetch channels")
   const data = await res.json()
+  // Handle both response formats:
+  // - Backend returns { data: [...] } (array directly)
+  // - Expected format is { data: { channels: [...] } }
+  if (data.data && Array.isArray(data.data)) {
+    return data.data
+  }
   return data.data?.channels ?? []
 }
 
