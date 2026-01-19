@@ -1,5 +1,19 @@
 # PLAN: Módulo Channels - WhatsApp Integration
 
+**Status: IMPLEMENTADO** - 2026-01-19
+
+## Sprints Status
+
+| Sprint | Descrição | Status |
+|--------|-----------|--------|
+| Sprint 1 | API Routes no Next.js (Bridge) | [x] Concluído |
+| Sprint 2 | HTTP Routes no Backbone | [x] Concluído |
+| Sprint 3 | Logging de Mensagens | [x] Concluído |
+| Sprint 4 | Triggers (Recebimento) | [x] Concluído |
+| Sprint 5 | Integração com Pulse | [x] Concluído |
+
+---
+
 ## Contexto
 
 O backbone já possui infraestrutura de WhatsApp em `apps/backbone/src/services/whatsapp/`:
