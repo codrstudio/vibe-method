@@ -1,53 +1,64 @@
-Entendido. Sou seu assistente de planejamento/especificação, você executa.                                                                                                                                                                                      
----
-Iteração 1: Passo a Passo                                                                                                         
-Passo 1.1: Camada LLM mínima                                                                                                   
-                                                                                                                                
-O que: Uma função que recebe prompt e retorna resposta do LLM
+# Iteração 1: Passo a Passo
 
-Onde: apps/backbone/src/llm/index.ts
+## Passo 1.1: Camada LLM mínima
 
-Interface:
+**O que:** Uma função que recebe prompt e retorna resposta do LLM
+
+**Onde:** `apps/backbone/src/llm/index.ts`
+
+**Interface:**
+```typescript
 async function complete(prompt: string, options?: { model?: string }): Promise<string>
+```
 
-Decisão necessária: Ollama local ou OpenRouter primeiro?
-
----
-Passo 1.2: biz-writer
-
-O que: Agente que recebe relatório e retorna mensagem humanizada
-
-Onde: apps/backbone/src/agents/biz-writer/
-
-Input: Texto do relatório original
-Output: Mensagem humanizada (1-2 parágrafos)
-
-Spec existe: cia-dashboard-vibe/specs/agents/writer.md
+**Decisão necessária:** Ollama local ou OpenRouter primeiro?
 
 ---
-Passo 1.3: biz-reviewer
 
-O que: Agente que valida a mensagem do writer
+## Passo 1.2: biz-writer
 
-Onde: apps/backbone/src/agents/biz-reviewer/
+**O que:** Agente que recebe relatório e retorna mensagem humanizada
 
-Input: Mensagem do writer + relatório original
-Output: { approved: boolean, reasons?: string[] }
+**Onde:** `apps/backbone/src/agents/biz-writer/`
 
-Spec existe: cia-dashboard-vibe/specs/agents/reviewer.md
+| Campo | Valor |
+|-------|-------|
+| Input | Texto do relatório original |
+| Output | Mensagem humanizada (1-2 parágrafos) |
+| Spec | `cia-dashboard-vibe/specs/agents/writer.md` |
 
 ---
-Passo 1.4: Script de teste
 
-O que: Script que roda o fluxo completo
+## Passo 1.3: biz-reviewer
 
-Onde: scripts/test-biz-report.ts
+**O que:** Agente que valida a mensagem do writer
 
-Fluxo:
+**Onde:** `apps/backbone/src/agents/biz-reviewer/`
+
+| Campo | Valor |
+|-------|-------|
+| Input | Mensagem do writer + relatório original |
+| Output | `{ approved: boolean, reasons?: string[] }` |
+| Spec | `cia-dashboard-vibe/specs/agents/reviewer.md` |
+
+---
+
+## Passo 1.4: Script de teste
+
+**O que:** Script que roda o fluxo completo
+
+**Onde:** `scripts/test-biz-report.ts`
+
+**Fluxo:**
 1. Lê relatório de exemplo (hardcoded ou arquivo)
 2. Chama biz-writer
 3. Chama biz-reviewer
 4. Imprime resultado
 
 ---
-Pergunta pra você: Quer começar pelo 1.1 (LLM)? Qual provider prefere - Ollama local ou OpenRouter?
+
+## Próximo Passo
+
+Quer começar pelo **1.1 (LLM)**? Qual provider prefere:
+- Ollama local
+- OpenRouter
