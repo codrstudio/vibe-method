@@ -1,0 +1,98 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-01-19T00:00:00Z",
+  "providers": {
+    "openrouter": {
+      "name": "OpenRouter",
+      "type": "cloud",
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "models": [
+        {
+          "id": "anthropic/claude-3.5-sonnet",
+          "name": "Claude 3.5 Sonnet",
+          "params": "175b",
+          "capabilities": ["json", "tools", "vision"],
+          "costTier": "premium"
+        },
+        {
+          "id": "anthropic/claude-3-haiku",
+          "name": "Claude 3 Haiku",
+          "params": "20b",
+          "capabilities": ["json", "tools"],
+          "costTier": "economy"
+        },
+        {
+          "id": "openai/gpt-4o",
+          "name": "GPT-4o",
+          "params": "200b",
+          "capabilities": ["json", "tools", "vision"],
+          "costTier": "premium"
+        },
+        {
+          "id": "openai/gpt-4o-mini",
+          "name": "GPT-4o Mini",
+          "params": "8b",
+          "capabilities": ["json", "tools"],
+          "costTier": "economy"
+        },
+        {
+          "id": "meta-llama/llama-3.1-70b-instruct",
+          "name": "Llama 3.1 70B",
+          "params": "70b",
+          "capabilities": ["json"],
+          "costTier": "standard"
+        },
+        {
+          "id": "meta-llama/llama-3.1-8b-instruct",
+          "name": "Llama 3.1 8B",
+          "params": "8b",
+          "capabilities": ["json"],
+          "costTier": "economy"
+        }
+      ]
+    },
+    "ollama": {
+      "name": "Ollama (Local)",
+      "type": "embedded",
+      "baseUrl": "http://localhost:11434",
+      "models": [
+        {
+          "id": "llama3:8b",
+          "name": "Llama 3 8B",
+          "params": "8b",
+          "capabilities": ["json"]
+        },
+        {
+          "id": "llama3:70b",
+          "name": "Llama 3 70B",
+          "params": "70b",
+          "capabilities": ["json"]
+        },
+        {
+          "id": "mistral:7b",
+          "name": "Mistral 7B",
+          "params": "7b",
+          "capabilities": ["json"]
+        },
+        {
+          "id": "mixtral:8x7b",
+          "name": "Mixtral 8x7B",
+          "params": "47b",
+          "capabilities": ["json"]
+        },
+        {
+          "id": "qwen2:7b",
+          "name": "Qwen 2 7B",
+          "params": "7b",
+          "capabilities": ["json"]
+        },
+        {
+          "id": "phi3:medium",
+          "name": "Phi-3 Medium",
+          "params": "14b",
+          "capabilities": ["json"]
+        }
+      ]
+    }
+  }
+}
