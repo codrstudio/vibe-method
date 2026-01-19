@@ -1,0 +1,563 @@
+# =============================================================================
+# CIA DASHBOARD - PRODUCTION
+# =============================================================================
+# Ambiente de producao: stack completa (infra + apps).
+#
+# Deploy: branch main
+# Domain: ${DOMAIN}
+#
+# Restore: git clone + restore ./data/ + docker compose up -d
+#
+# =============================================================================
+# REGRA DE OURO: Nenhum valor hardcoded!
+# =============================================================================
+# - Todos os parâmetros DEVEM ser referências: ${VAR}
+# - Valores vão no .env (base) ou .env.{environment} (sobrescritas)
+# - Formas permitidas:
+#     VAR: ${OUTRA_VAR}
+#     VAR: ${OUTRA_VAR}:porta_interna
+# - PROIBIDO:
+#     VAR: valor_literal
+#     VAR: "valor_literal"
+# =============================================================================
+
+name: ${PROJECT}
+
+services:
+  # ===========================================================================
+  # Init - Cria estrutura de pastas com permissoes (Linux)
+  # ===========================================================================
+  init:
+    image: busybox:latest
+    container_name: ${PROJECT}-init
+    command: |
+      sh -c "
+        mkdir -p /data/postgres-main /data/postgres-analytics /data/mongo /data/redis /data/meilisearch /data/ollama /data/n8n /data/evolution/instances /data/evolution/store &&
+        chown -R 999:999 /data/postgres-main &&
+        chown -R 999:999 /data/postgres-analytics &&
+        chown -R 999:999 /data/mongo &&
+        chown -R 999:999 /data/redis &&
+        chmod -R 755 /data/meilisearch &&
+        chown -R 1000:1000 /data/n8n &&
+        echo 'Init complete'
+      "
+    volumes:
+      - ./data:/data
+    restart: "no"
+
+  # ===========================================================================
+  # PostgreSQL MAIN (Transacional)
+  # ===========================================================================
+  postgres-main:
+    image: postgres:16-alpine
+    container_name: ${PROJECT}-postgres-main
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      POSTGRES_USER: ${POSTGRES_MAIN_SUPERUSER}
+      POSTGRES_PASSWORD: ${POSTGRES_MAIN_SUPERUSER_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_INIT_DB}
+    volumes:
+      - ./data/postgres-main:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_MAIN_SUPERUSER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      internal:
+        aliases:
+          - postgres-main.internal
+
+  # ===========================================================================
+  # PostgreSQL MAIN Init
+  # ===========================================================================
+  postgres-main-init:
+    build:
+      context: .
+      dockerfile: docker/postgres-main-init/Dockerfile
+    image: ${PROJECT}-postgres-main-init:latest
+    container_name: ${PROJECT}-postgres-main-init
+    depends_on:
+      postgres-main:
+        condition: service_healthy
+    env_file:
+      - .env
+      - .env.production
+      - path: .env.secrets
+        required: false
+    environment:
+      POSTGRES_HOST: ${POSTGRES_MAIN_HOST}
+      POSTGRES_PORT: ${POSTGRES_INTERNAL_PORT}
+      ENVIRONMENT: ${ENVIRONMENT}
+    networks:
+      - internal
+    restart: "no"
+
+  # ===========================================================================
+  # PostgreSQL ANALYTICS (OLAP - Modelo Estrela)
+  # ===========================================================================
+  postgres-analytics:
+    image: postgres:16-alpine
+    container_name: ${PROJECT}-postgres-analytics
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      POSTGRES_USER: ${POSTGRES_ANALYTICS_SUPERUSER}
+      POSTGRES_PASSWORD: ${POSTGRES_ANALYTICS_SUPERUSER_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_INIT_DB}
+    volumes:
+      - ./data/postgres-analytics:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_ANALYTICS_SUPERUSER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      internal:
+        aliases:
+          - postgres-analytics.internal
+
+  # ===========================================================================
+  # PostgreSQL ANALYTICS Init
+  # ===========================================================================
+  postgres-analytics-init:
+    build:
+      context: .
+      dockerfile: docker/postgres-analytics-init/Dockerfile
+    image: ${PROJECT}-postgres-analytics-init:latest
+    container_name: ${PROJECT}-postgres-analytics-init
+    depends_on:
+      postgres-analytics:
+        condition: service_healthy
+    env_file:
+      - .env
+      - .env.production
+      - path: .env.secrets
+        required: false
+    environment:
+      POSTGRES_HOST: ${POSTGRES_ANALYTICS_HOST}
+      POSTGRES_PORT: ${POSTGRES_INTERNAL_PORT}
+      ENVIRONMENT: ${ENVIRONMENT}
+    networks:
+      - internal
+    restart: "no"
+
+  # ===========================================================================
+  # MongoDB
+  # ===========================================================================
+  mongo:
+    image: mongo:7
+    container_name: ${PROJECT}-mongo
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - ./data/mongo:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      internal:
+        aliases:
+          - mongo.internal
+
+  # ===========================================================================
+  # Redis
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: ${PROJECT}-redis
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    volumes:
+      - ./data/redis:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      internal:
+        aliases:
+          - redis.internal
+
+  # ===========================================================================
+  # Meilisearch
+  # ===========================================================================
+  meilisearch:
+    image: getmeili/meilisearch:v1.6
+    container_name: ${PROJECT}-meilisearch
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      MEILI_ENV: ${MEILI_ENV}
+      MEILI_MASTER_KEY: ${MEILISEARCH_MASTER_KEY}
+    volumes:
+      - ./data/meilisearch:/meili_data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:${MEILISEARCH_INTERNAL_PORT}/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      internal:
+        aliases:
+          - meilisearch.internal
+
+  # ===========================================================================
+  # Ollama (Local LLM Runner)
+  # ===========================================================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ${PROJECT}-ollama
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    volumes:
+      - ./data/ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:11434/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      internal:
+        aliases:
+          - ollama.internal
+
+  # ===========================================================================
+  # Evolution API (WhatsApp)
+  # ===========================================================================
+  evolution:
+    image: evoapicloud/evolution-api:v2.3.7
+    container_name: ${PROJECT}-evolution
+    restart: unless-stopped
+    depends_on:
+      postgres-main-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_PROVIDER: ${EVOLUTION_DATABASE_PROVIDER}
+      DATABASE_CONNECTION_URI: postgresql://${POSTGRES_MAIN_USER}:${POSTGRES_MAIN_PASSWORD}@${POSTGRES_MAIN_HOST}:${POSTGRES_INTERNAL_PORT}/${EVOLUTION_DB}
+      CACHE_REDIS_ENABLED: ${EVOLUTION_CACHE_REDIS_ENABLED}
+      CACHE_REDIS_URI: ${REDIS_URL}
+      RABBITMQ_ENABLED: ${EVOLUTION_RABBITMQ_ENABLED}
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
+    volumes:
+      - ./data/evolution/instances:/evolution/instances
+      - ./data/evolution/store:/evolution/store
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:${EVOLUTION_INTERNAL_PORT}/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      internal:
+        aliases:
+          - evolution.internal
+
+  # ===========================================================================
+  # Evolution Init
+  # ===========================================================================
+  evolution-init:
+    build:
+      context: .
+      dockerfile: docker/evolution-init/Dockerfile
+    image: ${PROJECT}-evolution-init:latest
+    container_name: ${PROJECT}-evolution-init
+    depends_on:
+      evolution:
+        condition: service_healthy
+    env_file:
+      - .env
+      - .env.production
+      - path: .env.secrets
+        required: false
+    environment:
+      EVOLUTION_HOST: ${EVOLUTION_HOST}
+      EVOLUTION_PORT: ${EVOLUTION_INTERNAL_PORT}
+      BACKBONE_WEBHOOK_URL: http://api.internal:${BACKBONE_PORT}/webhook/message-received
+    networks:
+      - internal
+    restart: "no"
+
+  # ===========================================================================
+  # n8n
+  # ===========================================================================
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: ${PROJECT}-n8n
+    restart: unless-stopped
+    depends_on:
+      postgres-main-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+      - .env.production
+      - path: .env.secrets
+        required: false
+    environment:
+      N8N_HOST: ${N8N_HOST}
+      N8N_PORT: ${N8N_INTERNAL_PORT}
+      N8N_PROTOCOL: ${N8N_PROTOCOL}
+      GENERIC_TIMEZONE: ${TZ}
+      DB_TYPE: ${N8N_DB_TYPE}
+      DB_POSTGRESDB_HOST: ${POSTGRES_MAIN_HOST}
+      DB_POSTGRESDB_PORT: ${POSTGRES_INTERNAL_PORT}
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_MAIN_DB}
+      DB_POSTGRESDB_SCHEMA: ${N8N_DB_SCHEMA}
+      DB_POSTGRESDB_USER: ${POSTGRES_MAIN_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_MAIN_PASSWORD}
+      NODE_FUNCTION_ALLOW_EXTERNAL: ${N8N_FUNCTION_ALLOW_EXTERNAL}
+      NODE_FUNCTION_ALLOW_BUILTIN: ${N8N_FUNCTION_ALLOW_BUILTIN}
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: ${N8N_BLOCK_ENV_ACCESS}
+      REDIS_URL: ${REDIS_URL}
+      EVOLUTION_API_URL: ${EVOLUTION_API_URL}
+      PORTAL_URL: https://${DOMAIN}
+    volumes:
+      - ./data/n8n:/home/node/.n8n
+      - ./workflows:/home/node/workflows:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:${N8N_INTERNAL_PORT}/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      internal:
+        aliases:
+          - n8n.internal
+
+  # ===========================================================================
+  # n8n Init
+  # ===========================================================================
+  n8n-init:
+    image: node:18-alpine
+    container_name: ${PROJECT}-n8n-init
+    depends_on:
+      n8n:
+        condition: service_healthy
+    volumes:
+      - ./scripts/init-n8n.mjs:/app/init-n8n.mjs:ro
+      - ./workflows:/app/workflows:ro
+    env_file:
+      - .env
+      - .env.production
+      - path: .env.secrets
+        required: false
+    environment:
+      N8N_HOST: ${N8N_HOST}
+      N8N_PORT: ${N8N_INTERNAL_PORT}
+      WORKFLOWS_DIR: ${N8N_WORKFLOWS_DIR}
+    working_dir: /app
+    command: node init-n8n.mjs
+    networks:
+      - internal
+    restart: "no"
+
+  # ===========================================================================
+  # App (Frontend - Next.js)
+  # ===========================================================================
+  app:
+    build:
+      context: ./apps/app
+      dockerfile: Dockerfile
+    image: ${PROJECT}-app:latest
+    container_name: ${PROJECT}-app
+    restart: unless-stopped
+    env_file:
+      - .env
+      - .env.production
+      - path: .env.secrets
+        required: false
+    depends_on:
+      postgres-main-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=codr-net
+      - traefik.http.routers.${PROJECT}-app.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.${PROJECT}-app.entrypoints=websecure
+      - traefik.http.routers.${PROJECT}-app.tls.certresolver=letsencrypt
+      - traefik.http.services.${PROJECT}-app.loadbalancer.server.port=${PORT}
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:${PORT}/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      internal:
+        aliases:
+          - app.internal
+      codr-net:
+
+  # ===========================================================================
+  # API (Backend - Fastify)
+  # ===========================================================================
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    image: ${PROJECT}-api:latest
+    container_name: ${PROJECT}-api
+    restart: unless-stopped
+    env_file:
+      - .env
+      - .env.production
+      - path: .env.secrets
+        required: false
+    depends_on:
+      postgres-main-init:
+        condition: service_completed_successfully
+      postgres-analytics-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=codr-net
+      - traefik.http.routers.${PROJECT}-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.${PROJECT}-api.entrypoints=websecure
+      - traefik.http.routers.${PROJECT}-api.tls.certresolver=letsencrypt
+      - traefik.http.services.${PROJECT}-api.loadbalancer.server.port=${BACKBONE_PORT}
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:${BACKBONE_PORT}/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      internal:
+        aliases:
+          - api.internal
+      codr-net:
+
+  # ===========================================================================
+  # Agents (LangGraph)
+  # ===========================================================================
+  agents:
+    build:
+      context: ./apps/agents
+      dockerfile: Dockerfile
+    image: ${PROJECT}-agents:latest
+    container_name: ${PROJECT}-agents
+    restart: unless-stopped
+    env_file:
+      - .env
+      - .env.production
+      - path: .env.secrets
+        required: false
+    depends_on:
+      postgres-main-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:${AGENTS_PORT}/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      internal:
+        aliases:
+          - agents.internal
+
+  # ===========================================================================
+  # Actions (Mutations Service)
+  # ===========================================================================
+  actions:
+    build:
+      context: ./apps/actions
+      dockerfile: Dockerfile
+    image: ${PROJECT}-actions:latest
+    container_name: ${PROJECT}-actions
+    restart: unless-stopped
+    env_file:
+      - .env
+      - .env.production
+      - path: .env.secrets
+        required: false
+    depends_on:
+      postgres-main-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:${ACTIONS_PORT}/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      internal:
+        aliases:
+          - actions.internal
+
+  # ===========================================================================
+  # Sockets (WebSocket - Socket.io)
+  # ===========================================================================
+  sockets:
+    build:
+      context: ./apps/sockets
+      dockerfile: Dockerfile
+    image: ${PROJECT}-sockets:latest
+    container_name: ${PROJECT}-sockets
+    restart: unless-stopped
+    env_file:
+      - .env
+      - .env.production
+      - path: .env.secrets
+        required: false
+    depends_on:
+      redis:
+        condition: service_healthy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=codr-net
+      - traefik.http.routers.${PROJECT}-sockets.rule=Host(`${DOMAIN}`) && PathPrefix(`/socket.io`)
+      - traefik.http.routers.${PROJECT}-sockets.entrypoints=websecure
+      - traefik.http.routers.${PROJECT}-sockets.tls.certresolver=letsencrypt
+      - traefik.http.services.${PROJECT}-sockets.loadbalancer.server.port=${SOCKET_PORT}
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:${SOCKET_PORT}/socket.io/', (r) => process.exit(r.statusCode < 500 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      internal:
+        aliases:
+          - sockets.internal
+      codr-net:
+
+networks:
+  internal:
+    driver: bridge
+  codr-net:
+    external: true
