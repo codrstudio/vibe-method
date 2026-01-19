@@ -47,6 +47,11 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await res.json()
+    // Wrap in { channels: ... } format if backend returns { data: [...] }
+    // Frontend expects { data: { channels: [...] } }
+    if (data.data && Array.isArray(data.data)) {
+      return NextResponse.json({ data: { channels: data.data } })
+    }
     return NextResponse.json(data)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
@@ -95,6 +100,11 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await res.json()
+    // Wrap in { channel: ... } format if backend returns { data: { id, ... } }
+    // Frontend expects { data: { channel: { id, ... } } }
+    if (data.data && data.data.id && !data.data.channel) {
+      return NextResponse.json({ data: { channel: data.data } }, { status: 201 })
+    }
     return NextResponse.json(data, { status: 201 })
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {

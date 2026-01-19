@@ -17,21 +17,29 @@ async function getUserId(request: NextRequest): Promise<string | null> {
   return payload?.sub ?? null
 }
 
+interface RouteParams {
+  params: Promise<{ id: string }>
+}
+
 /**
- * GET /api/whatsapp/operations
- * List all operations
+ * GET /api/whatsapp/channels/[id]/events
+ * Get channel event history
  */
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const userId = await getUserId(request)
     if (!userId) {
       return NextResponse.json({ error: 'Nao autenticado' }, { status: 401 })
     }
 
+    const { id } = await params
+    const { searchParams } = new URL(request.url)
+    const limit = searchParams.get('limit') || '50'
+
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
-    const res = await fetch(`${BACKBONE_URL}/backbone/whatsapp/operations`, {
+    const res = await fetch(`${BACKBONE_URL}/backbone/whatsapp/channels/${id}/events?limit=${limit}`, {
       signal: controller.signal,
       headers: {
         'Accept': 'application/json',
@@ -47,11 +55,6 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await res.json()
-    // Wrap in { operations: ... } format if backend returns { data: [...] }
-    // Frontend expects { data: { operations: [...] } }
-    if (data.data && Array.isArray(data.data)) {
-      return NextResponse.json({ data: { operations: data.data } })
-    }
     return NextResponse.json(data)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {

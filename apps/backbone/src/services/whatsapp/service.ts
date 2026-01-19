@@ -31,45 +31,50 @@ export const whatsappService = {
 
   /**
    * Create a new WhatsApp channel (register number)
-   * Creates Evolution instance and returns with QR code pending status
+   * Creates channel in database first, then attempts Evolution instance creation.
+   * Channel is created even if Evolution API is unavailable.
    */
   async createChannel(input: CreateChannelInput): Promise<Channel> {
     // Generate unique instance name
     const instanceName = `wa_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
-    // Build webhook URL
-    const webhookUrl = `${config.APP_BASE_URL}/api/webhooks/evolution`;
+    // Create channel in database first (always succeeds if DB is up)
+    // Status will be 'qr_pending' by default from the repository
+    const channel = await channelsRepository.create({
+      ...input,
+      instanceName,
+    });
 
+    incCounter('whatsapp.channels_created');
+
+    // Now try to create Evolution instance
     try {
-      // Create Evolution instance
+      const webhookUrl = `${config.APP_BASE_URL}/api/webhooks/evolution`;
       const { instanceId } = await evolutionClient.createInstance(instanceName, webhookUrl);
-
-      // Create channel in database
-      const channel = await channelsRepository.create({
-        ...input,
-        instanceName,
-      });
 
       // Update with instance ID
       await channelsRepository.updateInstanceId(channel.id, instanceId);
-
-      incCounter('whatsapp.channels_created');
 
       return {
         ...channel,
         instanceId,
       };
     } catch (error) {
-      incCounter('whatsapp.channel_creation_errors');
+      // Evolution API not available - channel exists but without Evolution instance
+      // This is expected when Evolution is not running
+      console.warn(`[WhatsApp] Evolution API unavailable for channel ${channel.id}:`, error instanceof Error ? error.message : error);
 
-      // If Evolution instance was created, try to clean up
-      try {
-        await evolutionClient.deleteInstance(instanceName);
-      } catch {
-        // Ignore cleanup errors
-      }
+      // Update channel status to indicate Evolution is unavailable
+      // Status remains 'qr_pending' but with a reason explaining Evolution is down
+      await channelsRepository.updateStatus(channel.id, {
+        status: 'qr_pending',
+        statusReason: 'Evolution API não disponível - aguardando conexão',
+      });
 
-      throw error;
+      incCounter('whatsapp.evolution_unavailable');
+
+      // Return the channel anyway - user can retry Evolution connection later
+      return channel;
     }
   },
 

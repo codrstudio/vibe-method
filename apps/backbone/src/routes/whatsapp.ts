@@ -48,7 +48,7 @@ export const whatsappRoutes: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get('/channels', async (_request, reply) => {
     const channels = await whatsappService.listChannels();
-    return reply.send({ data: channels });
+    return reply.send({ data: { channels } });
   });
 
   /**
@@ -68,7 +68,7 @@ export const whatsappRoutes: FastifyPluginAsync = async (fastify) => {
         ...result.data,
         createdBy: userId,
       });
-      return reply.status(201).send({ data: channel });
+      return reply.status(201).send({ data: { channel } });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create channel';
       return reply.status(500).send({ error: message });
@@ -87,6 +87,7 @@ export const whatsappRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.status(404).send({ error: 'Channel not found' });
     }
 
+    // Channel already includes assignments from service
     return reply.send({ data: channel });
   });
 
@@ -181,7 +182,7 @@ export const whatsappRoutes: FastifyPluginAsync = async (fastify) => {
 
       try {
         const events = await whatsappService.getChannelEvents(id, limit);
-        return reply.send({ data: events });
+        return reply.send({ data: { events } });
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Failed to get events';
         return reply.status(500).send({ error: message });
@@ -199,7 +200,7 @@ export const whatsappRoutes: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get('/operations', async (_request, reply) => {
     const operations = await whatsappService.listOperations();
-    return reply.send({ data: operations });
+    return reply.send({ data: { operations } });
   });
 
   /**
@@ -233,7 +234,7 @@ export const whatsappRoutes: FastifyPluginAsync = async (fastify) => {
 
     try {
       const assignment = await whatsappService.assignChannel(result.data);
-      return reply.status(201).send({ data: assignment });
+      return reply.status(201).send({ data: { assignment } });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create assignment';
       if (message.includes('not found')) {
