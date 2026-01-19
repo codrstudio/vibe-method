@@ -1,4 +1,4 @@
-import { ChatOllama } from '@langchain/ollama';
+import { ChatOpenAI } from '@langchain/openai';
 import { incCounter, startTimer } from '../../health/collector.js';
 
 export interface OllamaConfig {
@@ -10,6 +10,8 @@ export interface OllamaConfig {
 
 /**
  * Create Ollama LLM instance with instrumentation
+ *
+ * Usa ChatOpenAI com endpoint customizado, pois Ollama expõe API compatível com OpenAI
  */
 export function createOllamaLLM(options: OllamaConfig) {
   const {
@@ -19,11 +21,17 @@ export function createOllamaLLM(options: OllamaConfig) {
     maxTokens,
   } = options;
 
-  const llm = new ChatOllama({
-    model,
-    baseUrl,
+  // Ollama expõe endpoint compatível com OpenAI em /v1
+  const ollamaOpenAIUrl = baseUrl.endsWith('/v1') ? baseUrl : `${baseUrl}/v1`;
+
+  const llm = new ChatOpenAI({
+    modelName: model,
     temperature,
-    numPredict: maxTokens,
+    maxTokens,
+    configuration: {
+      baseURL: ollamaOpenAIUrl,
+      apiKey: 'ollama', // Ollama não precisa de API key, mas o SDK exige algo
+    },
   });
 
   // Wrap invoke to track metrics
