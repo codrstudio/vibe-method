@@ -1,5 +1,11 @@
 import { incCounter } from '../../health/collector.js';
-import { channelsRepository, eventsRepository } from './repository.js';
+import {
+  channelsRepository,
+  eventsRepository,
+  assignmentsRepository,
+  operationsRepository,
+} from './repository.js';
+import { messageLogsRepository, type MessageType } from './message-logs-repository.js';
 import { evolutionClient } from './evolution-client.js';
 import { alertService } from './alert-service.js';
 import {
@@ -431,31 +437,230 @@ async function handleReconnectionFailed(
 }
 
 // =============================================================================
-// Message Handlers (Future expansion)
+// Message Handlers
 // =============================================================================
+
+interface MessageData {
+  key?: {
+    id?: string;
+    remoteJid?: string;
+    fromMe?: boolean;
+  };
+  message?: {
+    conversation?: string;
+    extendedTextMessage?: { text?: string };
+    imageMessage?: { mimetype?: string; fileLength?: string; caption?: string };
+    audioMessage?: { mimetype?: string; fileLength?: string; seconds?: number };
+    videoMessage?: { mimetype?: string; fileLength?: string; caption?: string };
+    documentMessage?: { mimetype?: string; fileLength?: string; fileName?: string };
+    stickerMessage?: { mimetype?: string };
+    contactMessage?: { displayName?: string };
+    locationMessage?: { degreesLatitude?: number; degreesLongitude?: number };
+  };
+  messageTimestamp?: number | string;
+}
+
+function detectMessageType(message: MessageData['message']): MessageType {
+  if (!message) return 'unknown';
+  if (message.conversation || message.extendedTextMessage) return 'text';
+  if (message.imageMessage) return 'image';
+  if (message.audioMessage) return 'audio';
+  if (message.videoMessage) return 'video';
+  if (message.documentMessage) return 'document';
+  if (message.stickerMessage) return 'sticker';
+  if (message.contactMessage) return 'contact';
+  if (message.locationMessage) return 'location';
+  return 'unknown';
+}
+
+function extractTextContent(message: MessageData['message']): string | undefined {
+  if (!message) return undefined;
+  if (message.conversation) return message.conversation;
+  if (message.extendedTextMessage?.text) return message.extendedTextMessage.text;
+  if (message.imageMessage?.caption) return message.imageMessage.caption;
+  if (message.videoMessage?.caption) return message.videoMessage.caption;
+  return undefined;
+}
+
+function extractAttachmentInfo(message: MessageData['message']): Record<string, unknown> | undefined {
+  if (!message) return undefined;
+
+  if (message.imageMessage) {
+    return {
+      type: 'image',
+      mimetype: message.imageMessage.mimetype,
+      size: message.imageMessage.fileLength ? parseInt(message.imageMessage.fileLength, 10) : undefined,
+    };
+  }
+
+  if (message.audioMessage) {
+    return {
+      type: 'audio',
+      mimetype: message.audioMessage.mimetype,
+      size: message.audioMessage.fileLength ? parseInt(message.audioMessage.fileLength, 10) : undefined,
+      duration: message.audioMessage.seconds,
+    };
+  }
+
+  if (message.videoMessage) {
+    return {
+      type: 'video',
+      mimetype: message.videoMessage.mimetype,
+      size: message.videoMessage.fileLength ? parseInt(message.videoMessage.fileLength, 10) : undefined,
+    };
+  }
+
+  if (message.documentMessage) {
+    return {
+      type: 'document',
+      mimetype: message.documentMessage.mimetype,
+      size: message.documentMessage.fileLength ? parseInt(message.documentMessage.fileLength, 10) : undefined,
+      filename: message.documentMessage.fileName,
+    };
+  }
+
+  if (message.stickerMessage) {
+    return {
+      type: 'sticker',
+      mimetype: message.stickerMessage.mimetype,
+    };
+  }
+
+  return undefined;
+}
 
 async function handleMessageReceived(
   channel: Channel,
   data: Record<string, unknown>
 ): Promise<void> {
-  // TODO: Route to interested operations based on event_interests
-  // This will be used to forward messages to specific handlers
+  incCounter('whatsapp.messages.inbound');
 
-  incCounter('whatsapp.messages_received');
+  const messageData = data as MessageData;
+  const key = messageData.key;
+  const message = messageData.message;
 
-  // Emit to channel watchers for real-time updates
-  emitToRoom(channel.id, 'whatsapp:message_received', {
+  if (!key?.remoteJid) {
+    console.warn('[WhatsApp] Message received without remoteJid');
+    return;
+  }
+
+  // Skip messages sent by us
+  if (key.fromMe) {
+    return;
+  }
+
+  const messageType = detectMessageType(message);
+  const textContent = extractTextContent(message);
+  const attachmentInfo = extractAttachmentInfo(message);
+
+  // 1. Log message if logging is enabled
+  const loggingEnabled = await messageLogsRepository.isLoggingEnabled(channel.id);
+  if (loggingEnabled) {
+    try {
+      await messageLogsRepository.create({
+        channelId: channel.id,
+        direction: 'inbound',
+        remoteJid: key.remoteJid,
+        messageId: key.id,
+        messageType,
+        content: textContent,
+        attachmentInfo: attachmentInfo as Record<string, unknown> | undefined,
+        metadata: {
+          timestamp: messageData.messageTimestamp,
+        },
+      });
+    } catch (error) {
+      console.error('[WhatsApp] Failed to log inbound message:', error);
+    }
+  }
+
+  // 2. Find assignment for this channel (1:1 relationship)
+  const assignments = await assignmentsRepository.findByChannel(channel.id);
+  if (!assignments.length) {
+    // No operation assigned to this channel
+    emitToRoom(channel.id, 'whatsapp:message_received', {
+      channelId: channel.id,
+      data,
+    });
+    return;
+  }
+
+  const assignment = assignments[0];
+  const operation = await operationsRepository.findById(assignment.operationId);
+
+  if (!operation) {
+    emitToRoom(channel.id, 'whatsapp:message_received', {
+      channelId: channel.id,
+      data,
+    });
+    return;
+  }
+
+  // 3. Check if operation is interested in MESSAGES_UPSERT
+  if (!operation.eventInterests.includes('MESSAGES_UPSERT')) {
+    emitToRoom(channel.id, 'whatsapp:message_received', {
+      channelId: channel.id,
+      data,
+    });
+    return;
+  }
+
+  // 4. Build trigger payload
+  const triggerPayload = {
     channelId: channel.id,
-    data,
-  });
+    operationId: operation.id,
+    operationSlug: operation.slug,
+    message: {
+      id: key.id,
+      from: key.remoteJid,
+      type: messageType,
+      content: textContent,
+      attachmentInfo,
+      timestamp: messageData.messageTimestamp,
+    },
+    raw: data,
+  };
+
+  // 5. Emit to channel-specific room
+  emitToRoom(channel.id, 'whatsapp:message_received', triggerPayload);
+
+  // 6. Emit to operation-specific room (for agents listening to this operation)
+  if (socketEmitter) {
+    socketEmitter(`operation:${operation.slug}`, 'whatsapp:trigger', triggerPayload);
+  }
+
+  incCounter('whatsapp.triggers.emitted');
+  console.log(`[WhatsApp] Trigger emitted for operation ${operation.slug}`);
 }
 
 async function handleMessageUpdate(
   channel: Channel,
   data: Record<string, unknown>
 ): Promise<void> {
-  // Message delivery/read status updates
   incCounter('whatsapp.message_updates');
+
+  // Try to update message status in logs
+  const updateData = data as {
+    key?: { id?: string };
+    update?: { status?: string };
+  };
+
+  if (updateData.key?.id && updateData.update?.status) {
+    try {
+      const statusMap: Record<string, 'sent' | 'delivered' | 'read'> = {
+        DELIVERY_ACK: 'delivered',
+        READ: 'read',
+        PLAYED: 'read',
+      };
+
+      const newStatus = statusMap[updateData.update.status];
+      if (newStatus) {
+        await messageLogsRepository.updateStatus(updateData.key.id, newStatus);
+      }
+    } catch (error) {
+      console.error('[WhatsApp] Failed to update message status:', error);
+    }
+  }
 
   emitToRoom(channel.id, 'whatsapp:message_updated', {
     channelId: channel.id,

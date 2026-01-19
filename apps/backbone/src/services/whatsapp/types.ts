@@ -37,6 +37,7 @@ export const ChannelSchema = z.object({
   lastDisconnectReason: z.number().nullable(),
   lastDisconnectAt: z.string().nullable(),
   lastHealthCheck: z.string().nullable(),
+  loggingEnabled: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
   createdBy: z.string().uuid().nullable(),

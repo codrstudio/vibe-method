@@ -12,6 +12,7 @@ import { agentsRoutes } from './routes/agents.js';
 import { knowledgeRoutes } from './routes/knowledge.js';
 import { authRoutes } from './routes/auth.js';
 import { webhooksRoutes } from './routes/webhooks/index.js';
+import { whatsappRoutes } from './routes/whatsapp.js';
 
 const app = Fastify({
   logger: {
@@ -33,6 +34,7 @@ async function main() {
   await app.register(knowledgeRoutes, { prefix: '/backbone/kb' });
   await app.register(authRoutes, { prefix: '/backbone/auth' });
   await app.register(webhooksRoutes, { prefix: '/backbone/webhooks' });
+  await app.register(whatsappRoutes, { prefix: '/backbone/whatsapp' });
 
   // Start server
   try {

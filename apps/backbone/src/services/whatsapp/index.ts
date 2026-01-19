@@ -9,6 +9,8 @@ export {
   eventsRepository,
 } from './repository.js';
 
+export { messageLogsRepository } from './message-logs-repository.js';
+
 // Services
 export { whatsappService } from './service.js';
 export { evolutionClient, EvolutionApiError } from './evolution-client.js';

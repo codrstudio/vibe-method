@@ -3,6 +3,7 @@ import { redisShallowProbe, redisDeepProbe } from './redis.probe.js';
 import { llmShallowProbe, llmDeepProbe } from './llm.probe.js';
 import { ollamaShallowProbe, ollamaDeepProbe } from './ollama.probe.js';
 import { knowledgeShallowProbe, knowledgeDeepProbe } from './knowledge.probe.js';
+import { whatsappShallowProbe, whatsappDeepProbe } from './whatsapp.probe.js';
 import type { HealthProbe, ProbeResult } from '../types.js';
 
 const shallowProbes: HealthProbe[] = [
@@ -10,6 +11,7 @@ const shallowProbes: HealthProbe[] = [
   redisShallowProbe,
   llmShallowProbe,
   ollamaShallowProbe,
+  whatsappShallowProbe,
 ];
 
 const deepProbes: HealthProbe[] = [
@@ -18,6 +20,7 @@ const deepProbes: HealthProbe[] = [
   llmDeepProbe,
   ollamaDeepProbe,
   knowledgeDeepProbe,
+  whatsappDeepProbe,
 ];
 
 const allProbes: Record<string, { shallow: HealthProbe; deep: HealthProbe }> = {
@@ -26,6 +29,7 @@ const allProbes: Record<string, { shallow: HealthProbe; deep: HealthProbe }> = {
   llm: { shallow: llmShallowProbe, deep: llmDeepProbe },
   ollama: { shallow: ollamaShallowProbe, deep: ollamaDeepProbe },
   knowledge: { shallow: knowledgeShallowProbe, deep: knowledgeDeepProbe },
+  whatsapp: { shallow: whatsappShallowProbe, deep: whatsappDeepProbe },
 };
 
 export async function runProbes(options?: { deep?: boolean }): Promise<ProbeResult[]> {
@@ -58,4 +62,6 @@ export {
   ollamaDeepProbe,
   knowledgeShallowProbe,
   knowledgeDeepProbe,
+  whatsappShallowProbe,
+  whatsappDeepProbe,
 };

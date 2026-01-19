@@ -35,6 +35,7 @@ export const channelsRepository = {
          last_disconnect_reason as "lastDisconnectReason",
          last_disconnect_at as "lastDisconnectAt",
          last_health_check as "lastHealthCheck",
+         logging_enabled as "loggingEnabled",
          created_at as "createdAt",
          updated_at as "updatedAt",
          created_by as "createdBy"`,
@@ -60,6 +61,7 @@ export const channelsRepository = {
          last_disconnect_reason as "lastDisconnectReason",
          last_disconnect_at as "lastDisconnectAt",
          last_health_check as "lastHealthCheck",
+         logging_enabled as "loggingEnabled",
          created_at as "createdAt",
          updated_at as "updatedAt",
          created_by as "createdBy"
@@ -85,6 +87,7 @@ export const channelsRepository = {
          last_disconnect_reason as "lastDisconnectReason",
          last_disconnect_at as "lastDisconnectAt",
          last_health_check as "lastHealthCheck",
+         logging_enabled as "loggingEnabled",
          created_at as "createdAt",
          updated_at as "updatedAt",
          created_by as "createdBy"
@@ -110,6 +113,7 @@ export const channelsRepository = {
          last_disconnect_reason as "lastDisconnectReason",
          last_disconnect_at as "lastDisconnectAt",
          last_health_check as "lastHealthCheck",
+         logging_enabled as "loggingEnabled",
          created_at as "createdAt",
          updated_at as "updatedAt",
          created_by as "createdBy"
@@ -134,6 +138,7 @@ export const channelsRepository = {
          last_disconnect_reason as "lastDisconnectReason",
          last_disconnect_at as "lastDisconnectAt",
          last_health_check as "lastHealthCheck",
+         logging_enabled as "loggingEnabled",
          created_at as "createdAt",
          updated_at as "updatedAt",
          created_by as "createdBy"
@@ -218,6 +223,7 @@ export const channelsRepository = {
          last_disconnect_reason as "lastDisconnectReason",
          last_disconnect_at as "lastDisconnectAt",
          last_health_check as "lastHealthCheck",
+         logging_enabled as "loggingEnabled",
          created_at as "createdAt",
          updated_at as "updatedAt",
          created_by as "createdBy"`,

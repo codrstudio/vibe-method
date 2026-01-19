@@ -1,11 +1,12 @@
 import { config } from '../../config.js';
-import { incCounter } from '../../health/collector.js';
+import { incCounter, observeHistogram } from '../../health/collector.js';
 import {
   channelsRepository,
   operationsRepository,
   assignmentsRepository,
   eventsRepository,
 } from './repository.js';
+import { messageLogsRepository } from './message-logs-repository.js';
 import { evolutionClient, EvolutionApiError } from './evolution-client.js';
 import type {
   Channel,
@@ -348,11 +349,53 @@ export const whatsappService = {
       throw new Error('Channel is not connected');
     }
 
-    const result = await evolutionClient.sendTextMessage(channel.instanceName, to, text);
+    const startTime = Date.now();
 
-    incCounter('whatsapp.test_messages_sent');
+    // Log outbound message before sending
+    let logEntry: { id: string } | null = null;
+    const loggingEnabled = await messageLogsRepository.isLoggingEnabled(channelId);
 
-    return result;
+    if (loggingEnabled) {
+      try {
+        logEntry = await messageLogsRepository.create({
+          channelId,
+          direction: 'outbound',
+          remoteJid: to,
+          messageType: 'text',
+          content: text,
+          status: 'pending',
+        });
+      } catch (error) {
+        console.error('[WhatsApp] Failed to log outbound message:', error);
+      }
+    }
+
+    try {
+      const result = await evolutionClient.sendTextMessage(channel.instanceName, to, text);
+
+      // Update log with success
+      if (logEntry) {
+        await messageLogsRepository.updateStatusById(logEntry.id, 'sent');
+      }
+
+      incCounter('whatsapp.messages.outbound');
+      incCounter('whatsapp.messages.outbound.success');
+      observeHistogram('whatsapp.send.latency', Date.now() - startTime);
+
+      return result;
+    } catch (error) {
+      // Update log with failure
+      if (logEntry) {
+        await messageLogsRepository.updateStatusById(
+          logEntry.id,
+          'failed',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+      }
+
+      incCounter('whatsapp.messages.outbound.errors');
+      throw error;
+    }
   },
 
   /**
@@ -369,12 +412,60 @@ export const whatsappService = {
       throw new Error(`No connected channel available for operation: ${operationSlug}`);
     }
 
-    const result = await evolutionClient.sendTextMessage(channel.instanceName, to, text);
+    // Get operation for logging
+    const operation = await operationsRepository.findBySlug(operationSlug);
 
-    return {
-      messageId: result.messageId,
-      channelId: channel.id,
-    };
+    const startTime = Date.now();
+
+    // Log outbound message before sending
+    let logEntry: { id: string } | null = null;
+    const loggingEnabled = await messageLogsRepository.isLoggingEnabled(channel.id);
+
+    if (loggingEnabled) {
+      try {
+        logEntry = await messageLogsRepository.create({
+          channelId: channel.id,
+          operationId: operation?.id,
+          direction: 'outbound',
+          remoteJid: to,
+          messageType: 'text',
+          content: text,
+          status: 'pending',
+        });
+      } catch (error) {
+        console.error('[WhatsApp] Failed to log outbound message:', error);
+      }
+    }
+
+    try {
+      const result = await evolutionClient.sendTextMessage(channel.instanceName, to, text);
+
+      // Update log with success and messageId
+      if (logEntry) {
+        await messageLogsRepository.updateStatusById(logEntry.id, 'sent');
+      }
+
+      incCounter('whatsapp.messages.outbound');
+      incCounter('whatsapp.messages.outbound.success');
+      observeHistogram('whatsapp.send.latency', Date.now() - startTime);
+
+      return {
+        messageId: result.messageId,
+        channelId: channel.id,
+      };
+    } catch (error) {
+      // Update log with failure
+      if (logEntry) {
+        await messageLogsRepository.updateStatusById(
+          logEntry.id,
+          'failed',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+      }
+
+      incCounter('whatsapp.messages.outbound.errors');
+      throw error;
+    }
   },
 
   // ---------------------------------------------------------------------------
