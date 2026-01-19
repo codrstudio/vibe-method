@@ -1,0 +1,98 @@
+# =============================================================================
+# Template: Boas-vindas
+# =============================================================================
+# Enviado apos o primeiro login ou criacao de conta.
+# Apresenta a plataforma e orienta proximos passos.
+#
+# Variaveis obrigatorias: user_name
+# =============================================================================
+
+id: welcome
+name: Boas-vindas
+description: "Email de boas-vindas enviado apos cadastro"
+category: auth
+
+channels:
+  email:
+    enabled: true
+    subject: "Bem-vindo ao {{app_name}}!"
+    body_html: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f4f5; margin: 0; padding: 20px;">
+        <div style="max-width: 480px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+
+          <!-- Header -->
+          <div style="background: #18181b; padding: 24px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 20px; font-weight: 600;">{{app_name}}</h1>
+          </div>
+
+          <!-- Content -->
+          <div style="padding: 32px 24px;">
+            <h2 style="color: #18181b; font-size: 24px; margin: 0 0 16px;">
+              Bem-vindo, {{user_name}}!
+            </h2>
+
+            <p style="color: #3f3f46; font-size: 16px; margin: 0 0 24px; line-height: 1.6;">
+              Sua conta foi criada com sucesso. Estamos felizes em ter voce conosco.
+            </p>
+
+            <p style="color: #3f3f46; font-size: 16px; margin: 0 0 24px; line-height: 1.6;">
+              Para comecar, acesse o painel e explore as funcionalidades disponiveis.
+            </p>
+
+            <!-- CTA Button -->
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="{{app_url}}/dashboard" style="display: inline-block; background: #18181b; color: white; text-decoration: none; padding: 12px 32px; border-radius: 6px; font-weight: 600; font-size: 14px;">
+                Acessar Painel
+              </a>
+            </div>
+
+            <p style="color: #71717a; font-size: 14px; margin: 0;">
+              Precisa de ajuda? Entre em contato pelo {{support_email}}.
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="background: #fafafa; padding: 16px 24px; border-top: 1px solid #e4e4e7;">
+            <p style="color: #a1a1aa; font-size: 12px; margin: 0; text-align: center;">
+              {{app_name}} &bull; {{current_year}}
+            </p>
+          </div>
+
+        </div>
+      </body>
+      </html>
+    body_text: |
+      Bem-vindo, {{user_name}}!
+
+      Sua conta foi criada com sucesso. Estamos felizes em ter voce conosco.
+
+      Para comecar, acesse o painel:
+      {{app_url}}/dashboard
+
+      Precisa de ajuda? Entre em contato pelo {{support_email}}.
+
+      --
+      {{app_name}}
+
+  whatsapp:
+    enabled: false
+    body: |
+      Ola {{user_name}}!
+
+      Bem-vindo ao *{{app_name}}*!
+
+      Sua conta foi criada com sucesso. Acesse: {{app_url}}
+
+variables:
+  - key: user_name
+    label: "Nome do usuario"
+    example: "Joao Silva"
+    required: true
+
+settings: {}

@@ -1,0 +1,112 @@
+{
+  "brand": "cia",
+  "title": "Cia Cuidadores",
+  "description": "Plataforma de gestao para cuidadores de idosos.",
+  "slogan": "Cuidado que transforma vidas.",
+  "themes": {
+    "light": {
+      "palette": {
+        "background": "#FAF7ED",
+        "foreground": "#282828",
+        "card": "#FFFFFF",
+        "primary": "#836BAE",
+        "secondary": "#FFFFFF",
+        "muted": "#F1EEE4",
+        "accent": "#F2CE45",
+        "border": "#E5E2D9",
+        "input": "#E5E2D9",
+        "ring": "#836BAE"
+      },
+      "tokens": {
+        "card-foreground": "{foreground}",
+        "popover": "{card}",
+        "popover-foreground": "{foreground}",
+        "primary-foreground": "#FFFFFF",
+        "secondary-foreground": "{foreground}",
+        "muted-foreground": "#3B2D52CC",
+        "accent-foreground": "{foreground}",
+        "destructive": "#C45B5B",
+        "destructive-foreground": "#FFFFFF",
+        "sidebar": "#342B46",
+        "sidebar-foreground": "#FFFFFF",
+        "sidebar-primary": "{primary}",
+        "sidebar-primary-foreground": "#FFFFFF",
+        "sidebar-accent": "#4F4068",
+        "sidebar-accent-foreground": "#FFFFFF",
+        "sidebar-border": "#4F4068",
+        "sidebar-ring": "{primary}",
+        "chart-1": "{primary}",
+        "chart-2": "{accent}",
+        "chart-3": "#4A9D7C",
+        "chart-4": "#5B8BD4",
+        "chart-5": "#C45B5B"
+      },
+      "custom": {
+        "trace": "#8B7FA3",
+        "trace-foreground": "#FFFFFF",
+        "info": "#5B8BD4",
+        "info-foreground": "#FFFFFF",
+        "highlight": "#7B5DAD",
+        "highlight-foreground": "#FFFFFF",
+        "success": "#4A9D7C",
+        "success-foreground": "#FFFFFF",
+        "warning": "#D4A84B",
+        "warning-foreground": "{foreground}",
+        "critical": "#B84A8A",
+        "critical-foreground": "#FFFFFF"
+      }
+    },
+    "dark": {
+      "palette": {
+        "background": "#2A2135",
+        "foreground": "#F5F2E8",
+        "card": "#3B2D52",
+        "primary": "#836BAE",
+        "secondary": "#3B2D52",
+        "muted": "#352A45",
+        "accent": "#F2CE45",
+        "border": "#4A3D5F",
+        "input": "#4A3D5F",
+        "ring": "#836BAE"
+      },
+      "tokens": {
+        "card-foreground": "{foreground}",
+        "popover": "{card}",
+        "popover-foreground": "{foreground}",
+        "primary-foreground": "{foreground}",
+        "secondary-foreground": "{foreground}",
+        "muted-foreground": "#F5F2E8CC",
+        "accent-foreground": "#2A2135",
+        "destructive": "#E07A7A",
+        "destructive-foreground": "{foreground}",
+        "sidebar": "{card}",
+        "sidebar-foreground": "{foreground}",
+        "sidebar-primary": "{primary}",
+        "sidebar-primary-foreground": "{foreground}",
+        "sidebar-accent": "{muted}",
+        "sidebar-accent-foreground": "{foreground}",
+        "sidebar-border": "#4A3D5F",
+        "sidebar-ring": "{primary}",
+        "chart-1": "#A88FCC",
+        "chart-2": "{accent}",
+        "chart-3": "#6BBF9A",
+        "chart-4": "#7BA3E0",
+        "chart-5": "#E07A7A"
+      },
+      "custom": {
+        "trace": "#9D94B0",
+        "trace-foreground": "{foreground}",
+        "info": "#7BA3E0",
+        "info-foreground": "#2A2135",
+        "highlight": "#A88FCC",
+        "highlight-foreground": "{foreground}",
+        "success": "#6BBF9A",
+        "success-foreground": "#2A2135",
+        "warning": "#E8C45E",
+        "warning-foreground": "#2A2135",
+        "critical": "#D470A8",
+        "critical-foreground": "{foreground}"
+      }
+    }
+  }
+}

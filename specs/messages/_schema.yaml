@@ -1,0 +1,163 @@
+# =============================================================================
+# Schema: Message Templates
+# =============================================================================
+# Define a estrutura de um template de mensagem do sistema.
+# Templates sao artefatos consumidos pelo motor de envio.
+#
+# Uso:
+#   - Especificador edita o conteudo via UI
+#   - Motor renderiza e envia pelo canal configurado
+#   - Variaveis sao substituidas em runtime
+#
+# Ref: plans/message-templates/PLAN.md
+# =============================================================================
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "message-template"
+title: "Message Template"
+description: "Template de mensagem do sistema"
+
+type: object
+required:
+  - id
+  - name
+  - category
+  - channels
+  - variables
+
+properties:
+  # --------------------------------------------------------------------------
+  # Identificacao
+  # --------------------------------------------------------------------------
+  id:
+    type: string
+    pattern: "^[a-z0-9-]+$"
+    description: "ID unico do template (slug)"
+    examples:
+      - "otp-login"
+      - "welcome"
+      - "password-reset"
+
+  name:
+    type: string
+    minLength: 3
+    maxLength: 100
+    description: "Nome legivel do template"
+    examples:
+      - "OTP de Login"
+      - "Boas-vindas"
+
+  description:
+    type: string
+    description: "Descricao do proposito do template"
+
+  # --------------------------------------------------------------------------
+  # Categorizacao
+  # --------------------------------------------------------------------------
+  category:
+    type: string
+    enum:
+      - auth           # Autenticacao (OTP, reset senha, etc)
+      - notification   # Notificacoes gerais
+      - alert          # Alertas do sistema
+      - transactional  # Transacionais (pedido, pagamento)
+    description: "Categoria do template"
+
+  # --------------------------------------------------------------------------
+  # Canais de Envio
+  # --------------------------------------------------------------------------
+  channels:
+    type: object
+    description: "Configuracao por canal"
+    properties:
+
+      email:
+        type: object
+        description: "Configuracao do canal email"
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          subject:
+            type: string
+            description: "Assunto do email (suporta variaveis)"
+          body_html:
+            type: string
+            description: "Corpo em HTML (suporta variaveis)"
+          body_text:
+            type: string
+            description: "Corpo em texto puro (fallback)"
+
+      whatsapp:
+        type: object
+        description: "Configuracao do canal WhatsApp"
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          body:
+            type: string
+            description: "Mensagem (suporta variaveis)"
+
+      push:
+        type: object
+        description: "Configuracao do canal push notification"
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          title:
+            type: string
+          body:
+            type: string
+
+  # --------------------------------------------------------------------------
+  # Variaveis
+  # --------------------------------------------------------------------------
+  variables:
+    type: array
+    description: "Variaveis disponiveis para interpolacao"
+    items:
+      type: object
+      required:
+        - key
+        - label
+      properties:
+        key:
+          type: string
+          pattern: "^[a-z_]+$"
+          description: "Chave da variavel (usada no template como {{key}})"
+        label:
+          type: string
+          description: "Label legivel para o editor"
+        example:
+          type: string
+          description: "Valor exemplo para preview"
+        required:
+          type: boolean
+          default: false
+          description: "Se a variavel e obrigatoria"
+
+  # --------------------------------------------------------------------------
+  # Configuracoes
+  # --------------------------------------------------------------------------
+  settings:
+    type: object
+    description: "Configuracoes especificas do template"
+    additionalProperties: true
+    examples:
+      - otp_length: 6
+        ttl_minutes: 5
+
+# =============================================================================
+# Variaveis Globais
+# =============================================================================
+# Variaveis sempre disponiveis em todos os templates:
+#
+# | Variavel     | Descricao              | Exemplo            |
+# |--------------|------------------------|--------------------|
+# | app_name     | Nome da aplicacao      | "CIA Dashboard"    |
+# | app_url      | URL base               | "https://app.com"  |
+# | current_year | Ano atual              | "2025"             |
+# | support_email| Email de suporte       | "suporte@app.com"  |
+# =============================================================================

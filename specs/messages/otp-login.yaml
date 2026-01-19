@@ -1,0 +1,116 @@
+# =============================================================================
+# Template: OTP de Login
+# =============================================================================
+# Envia codigo de verificacao para autenticacao via email.
+# Usado quando AUTH_VALIDATION_ENABLED inclui 'otp-email'.
+#
+# Variaveis obrigatorias: user_name, user_email, otp_code, ttl_minutes
+# =============================================================================
+
+id: otp-login
+name: OTP de Login
+description: "Codigo de verificacao enviado durante o login"
+category: auth
+
+channels:
+  email:
+    enabled: true
+    subject: "{{otp_code}} - Seu codigo de acesso"
+    body_html: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f4f5; margin: 0; padding: 20px;">
+        <div style="max-width: 480px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+
+          <!-- Header -->
+          <div style="background: #18181b; padding: 24px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 20px; font-weight: 600;">{{app_name}}</h1>
+          </div>
+
+          <!-- Content -->
+          <div style="padding: 32px 24px;">
+            <p style="color: #3f3f46; font-size: 16px; margin: 0 0 24px;">
+              Ola <strong>{{user_name}}</strong>,
+            </p>
+
+            <p style="color: #3f3f46; font-size: 16px; margin: 0 0 24px;">
+              Use o codigo abaixo para acessar sua conta:
+            </p>
+
+            <!-- OTP Box -->
+            <div style="background: #f4f4f5; border-radius: 8px; padding: 24px; text-align: center; margin: 0 0 24px;">
+              <span style="font-family: monospace; font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #18181b;">
+                {{otp_code}}
+              </span>
+            </div>
+
+            <p style="color: #71717a; font-size: 14px; margin: 0 0 8px;">
+              Este codigo expira em <strong>{{ttl_minutes}} minutos</strong>.
+            </p>
+
+            <p style="color: #71717a; font-size: 14px; margin: 0;">
+              Se voce nao solicitou este codigo, ignore este email.
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="background: #fafafa; padding: 16px 24px; border-top: 1px solid #e4e4e7;">
+            <p style="color: #a1a1aa; font-size: 12px; margin: 0; text-align: center;">
+              {{app_name}} &bull; {{current_year}}
+            </p>
+          </div>
+
+        </div>
+      </body>
+      </html>
+    body_text: |
+      Ola {{user_name}},
+
+      Use o codigo abaixo para acessar sua conta:
+
+      {{otp_code}}
+
+      Este codigo expira em {{ttl_minutes}} minutos.
+
+      Se voce nao solicitou este codigo, ignore este email.
+
+      --
+      {{app_name}}
+
+  whatsapp:
+    enabled: false
+    body: |
+      *{{app_name}}*
+
+      Seu codigo de acesso: *{{otp_code}}*
+
+      Valido por {{ttl_minutes}} minutos.
+
+variables:
+  - key: user_name
+    label: "Nome do usuario"
+    example: "Joao Silva"
+    required: true
+
+  - key: user_email
+    label: "Email do usuario"
+    example: "joao@email.com"
+    required: true
+
+  - key: otp_code
+    label: "Codigo OTP"
+    example: "482951"
+    required: true
+
+  - key: ttl_minutes
+    label: "Tempo de expiracao (minutos)"
+    example: "5"
+    required: true
+
+settings:
+  otp_length: 6
+  ttl_minutes: 5

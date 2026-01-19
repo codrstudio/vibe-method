@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "brand.schema.json",
+  "title": "Brand",
+  "description": "Schema de definição de brand para o Vibe Method",
+  "type": "object",
+  "required": ["brand", "title", "description", "slogan", "themes"],
+  "properties": {
+    "brand": {
+      "type": "string",
+      "description": "Identificador único do brand (slug)",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "minLength": 2,
+      "maxLength": 32
+    },
+    "title": {
+      "type": "string",
+      "description": "Nome de exibição do brand",
+      "minLength": 2,
+      "maxLength": 64
+    },
+    "description": {
+      "type": "string",
+      "description": "Descrição curta do brand",
+      "maxLength": 256
+    },
+    "slogan": {
+      "type": "string",
+      "description": "Slogan ou tagline do brand",
+      "maxLength": 128
+    },
+    "themes": {
+      "type": "object",
+      "description": "Temas de cores (light e dark)",
+      "required": ["light", "dark"],
+      "properties": {
+        "light": { "$ref": "#/$defs/theme" },
+        "dark": { "$ref": "#/$defs/theme" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "hexColor": {
+      "type": "string",
+      "pattern": "^#[A-Fa-f0-9]{6}([A-Fa-f0-9]{2})?$",
+      "description": "Cor em formato hexadecimal (#RRGGBB ou #RRGGBBAA)"
+    },
+    "colorReference": {
+      "type": "string",
+      "pattern": "^\\{[a-z][a-z0-9-]*\\}$",
+      "description": "Referência a outra cor ({nome-da-cor})"
+    },
+    "colorValue": {
+      "oneOf": [
+        { "$ref": "#/$defs/hexColor" },
+        { "$ref": "#/$defs/colorReference" }
+      ],
+      "description": "Cor hexadecimal ou referência"
+    },
+    "palette": {
+      "type": "object",
+      "description": "Paleta de cores base (cores fundamentais do tema)",
+      "required": ["background", "foreground", "card", "primary", "secondary", "muted", "accent", "border", "input", "ring"],
+      "properties": {
+        "background": { "$ref": "#/$defs/hexColor", "description": "Cor de fundo principal" },
+        "foreground": { "$ref": "#/$defs/hexColor", "description": "Cor de texto principal" },
+        "card": { "$ref": "#/$defs/hexColor", "description": "Cor de fundo de cards" },
+        "primary": { "$ref": "#/$defs/hexColor", "description": "Cor primária da marca" },
+        "secondary": { "$ref": "#/$defs/hexColor", "description": "Cor secundária" },
+        "muted": { "$ref": "#/$defs/hexColor", "description": "Cor para elementos sutis" },
+        "accent": { "$ref": "#/$defs/hexColor", "description": "Cor de destaque/ênfase" },
+        "border": { "$ref": "#/$defs/hexColor", "description": "Cor de bordas" },
+        "input": { "$ref": "#/$defs/hexColor", "description": "Cor de borda de inputs" },
+        "ring": { "$ref": "#/$defs/hexColor", "description": "Cor de focus ring" }
+      },
+      "additionalProperties": false
+    },
+    "tokens": {
+      "type": "object",
+      "description": "Tokens semânticos derivados da paleta",
+      "required": [
+        "card-foreground", "popover", "popover-foreground",
+        "primary-foreground", "secondary-foreground", "muted-foreground", "accent-foreground",
+        "destructive", "destructive-foreground",
+        "sidebar", "sidebar-foreground", "sidebar-primary", "sidebar-primary-foreground",
+        "sidebar-accent", "sidebar-accent-foreground", "sidebar-border", "sidebar-ring",
+        "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"
+      ],
+      "properties": {
+        "card-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto em cards" },
+        "popover": { "$ref": "#/$defs/colorValue", "description": "Fundo de popovers" },
+        "popover-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto em popovers" },
+        "primary-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto sobre cor primária" },
+        "secondary-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto sobre cor secundária" },
+        "muted-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto sutil/desabilitado" },
+        "accent-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto sobre cor de destaque" },
+        "destructive": { "$ref": "#/$defs/colorValue", "description": "Cor para ações destrutivas" },
+        "destructive-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto sobre destrutivo" },
+        "sidebar": { "$ref": "#/$defs/colorValue", "description": "Fundo da sidebar" },
+        "sidebar-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto da sidebar" },
+        "sidebar-primary": { "$ref": "#/$defs/colorValue", "description": "Cor primária na sidebar" },
+        "sidebar-primary-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto sobre primária na sidebar" },
+        "sidebar-accent": { "$ref": "#/$defs/colorValue", "description": "Cor de destaque na sidebar" },
+        "sidebar-accent-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto sobre destaque na sidebar" },
+        "sidebar-border": { "$ref": "#/$defs/colorValue", "description": "Borda da sidebar" },
+        "sidebar-ring": { "$ref": "#/$defs/colorValue", "description": "Focus ring na sidebar" },
+        "chart-1": { "$ref": "#/$defs/colorValue", "description": "Cor de gráfico 1" },
+        "chart-2": { "$ref": "#/$defs/colorValue", "description": "Cor de gráfico 2" },
+        "chart-3": { "$ref": "#/$defs/colorValue", "description": "Cor de gráfico 3" },
+        "chart-4": { "$ref": "#/$defs/colorValue", "description": "Cor de gráfico 4" },
+        "chart-5": { "$ref": "#/$defs/colorValue", "description": "Cor de gráfico 5" }
+      },
+      "additionalProperties": false
+    },
+    "custom": {
+      "type": "object",
+      "description": "Tokens customizados para estados e feedback",
+      "required": [
+        "trace", "trace-foreground",
+        "info", "info-foreground",
+        "highlight", "highlight-foreground",
+        "success", "success-foreground",
+        "warning", "warning-foreground",
+        "critical", "critical-foreground"
+      ],
+      "properties": {
+        "trace": { "$ref": "#/$defs/colorValue", "description": "Cor para traces/logs" },
+        "trace-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto sobre trace" },
+        "info": { "$ref": "#/$defs/colorValue", "description": "Cor informativa" },
+        "info-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto sobre info" },
+        "highlight": { "$ref": "#/$defs/colorValue", "description": "Cor de destaque especial" },
+        "highlight-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto sobre highlight" },
+        "success": { "$ref": "#/$defs/colorValue", "description": "Cor de sucesso" },
+        "success-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto sobre sucesso" },
+        "warning": { "$ref": "#/$defs/colorValue", "description": "Cor de aviso" },
+        "warning-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto sobre aviso" },
+        "critical": { "$ref": "#/$defs/colorValue", "description": "Cor crítica" },
+        "critical-foreground": { "$ref": "#/$defs/colorValue", "description": "Texto sobre crítico" }
+      },
+      "additionalProperties": false
+    },
+    "theme": {
+      "type": "object",
+      "description": "Definição de um tema completo",
+      "required": ["palette", "tokens", "custom"],
+      "properties": {
+        "palette": { "$ref": "#/$defs/palette" },
+        "tokens": { "$ref": "#/$defs/tokens" },
+        "custom": { "$ref": "#/$defs/custom" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
