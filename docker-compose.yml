@@ -556,6 +556,35 @@ services:
           - sockets.internal
       codr-net:
 
+  # ===========================================================================
+  # WA-SIM (WhatsApp Simulator)
+  # ===========================================================================
+  wa-sim:
+    build:
+      context: ./apps/wa-sim
+      dockerfile: Dockerfile
+    image: ${PROJECT}-wa-sim:latest
+    container_name: ${PROJECT}-wa-sim
+    restart: unless-stopped
+    env_file:
+      - .env
+      - .env.production
+      - path: .env.secrets
+        required: false
+    environment:
+      WA_SIM_PORT: ${WA_SIM_PORT}
+      BACKBONE_WEBHOOK_URL: http://api.internal:${BACKBONE_PORT}/backbone/whatsapp/webhook
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:${WA_SIM_PORT}/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      internal:
+        aliases:
+          - wa-sim.internal
+
 networks:
   internal:
     driver: bridge

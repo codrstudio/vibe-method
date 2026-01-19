@@ -8,7 +8,8 @@
     "tooling"
   ],
   "scripts": {
-    "dev": "dotenv -o -e .env -e .env.development -e .env.secrets -- concurrently -n app,socket,backbone -c blue,magenta,yellow \"npm run dev -w @workspace/app\" \"npm run dev -w @workspace/socket\" \"npm run dev -w @workspace/backbone\"",
+    "dev": "dotenv -o -e .env -e .env.development -e .env.secrets -- concurrently -n app,socket,backbone,wa-sim -c blue,magenta,yellow,cyan \"npm run dev -w @workspace/app\" \"npm run dev -w @workspace/socket\" \"npm run dev -w @workspace/backbone\" \"npm run dev -w @workspace/wa-sim\"",
+    "dev:wa-sim": "dotenv -o -e .env -e .env.development -e .env.secrets -- npm run dev -w @workspace/wa-sim",
     "build": "npm run build --workspaces --if-present",
     "docker:up": "docker compose -f docker-compose.dev.yml up -d",
     "docker:down": "docker compose -f docker-compose.dev.yml down",
