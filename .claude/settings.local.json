@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(curl:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(npx playwright:*)",
+      "Bash(npm run build:*)",
+      "Bash(echo:*)",
+      "Bash(cat:*)",
+      "Bash(tree:*)",
+      "Bash(rm:*)",
+      "Bash(xargs:*)",
+      "Bash(while read commit rest)",
+      "Bash(do git show \"$commit\":src/app/src/components/FloatingActionStack.tsx)",
+      "Bash(done)",
+      "Bash(while read hash msg)",
+      "Bash(do git diff-tree --no-commit-id --name-only -r \"$hash\")",
+      "Bash(docker compose:*)",
+      "Bash(ls:*)",
+      "Bash(npm install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(node .tmp/investigate.mjs:*)",
+      "Bash(find:*)",
+      "Bash(node:*)",
+      "Bash(netstat:*)",
+      "WebFetch(domain:leapcell.io)",
+      "WebFetch(domain:ui.shadcn.com)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(grep:*)",
+      "WebFetch(domain:doc.evolution-api.com)",
+      "Bash(docker exec:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker ps:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
