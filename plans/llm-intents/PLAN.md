@@ -6,17 +6,17 @@
 
 ---
 
-## Fase 1: Database (Motor)
+## Fase 1: Database (Motor) ✅
 
 ### 1.1 Migration - Tabelas base
-- [ ] Criar `database/main/migrations/012_llm_intents.sql`
+- [x] Criar `database/main/migrations/012_llm_intents.sql`
   - Tabela `llm_intents` (slug, title, subtitle, icon, description, profile)
   - Tabela `llm_bindings` (intent_id, provider, model, temperature, max_tokens, is_active, priority)
   - Índices e triggers de updated_at
   - Comentários nas tabelas
 
 ### 1.2 Seed - Intents iniciais
-- [ ] Criar `database/main/seeds/004_llm_intents.sql`
+- [x] Criar `database/main/seeds/004_llm_intents.sql`
   - Intent `classify` - Classificar mensagem
   - Intent `generate` - Gerar resposta
   - Intent `extract` - Extrair dados estruturados
@@ -25,10 +25,10 @@
 
 ---
 
-## Fase 2: Backend - Core (Motor)
+## Fase 2: Backend - Core (Motor) ✅
 
 ### 2.1 Types
-- [ ] Criar `apps/backbone/src/llm/types.ts`
+- [x] Criar `apps/backbone/src/llm/types.ts`
   - Interface `LLMIntent`
   - Interface `LLMBinding`
   - Interface `IntentProfile`
@@ -38,10 +38,10 @@
   - Interface `ResolvedLLM`
 
 ### 2.2 Catalog Loader (Hot Reload)
-- [ ] Criar `apps/backbone/src/llm/models-catalog.json`
+- [x] Criar `apps/backbone/src/llm/models-catalog.json`
   - Provider `openrouter` com modelos curados
   - Provider `ollama` com modelos locais
-- [ ] Criar `apps/backbone/src/llm/catalog-loader.ts`
+- [x] Criar `apps/backbone/src/llm/catalog-loader.ts`
   - Classe `CatalogLoader` com EventEmitter
   - Método `load()` - carrega catalog do arquivo
   - Método `watch()` - observa mudanças no arquivo
@@ -49,7 +49,7 @@
   - Export singleton `catalogLoader`
 
 ### 2.3 Repository
-- [ ] Criar `apps/backbone/src/llm/repository.ts`
+- [x] Criar `apps/backbone/src/llm/repository.ts`
   - `intentsRepository.findAll()`
   - `intentsRepository.findBySlug()`
   - `bindingsRepository.findByIntent()`
@@ -59,25 +59,25 @@
   - `bindingsRepository.setActive()`
 
 ### 2.4 Resolver
-- [ ] Criar `apps/backbone/src/llm/resolver.ts`
+- [x] Criar `apps/backbone/src/llm/resolver.ts`
   - Função `resolveLLM(intentSlug)` - retorna provider + model + config
   - Fallback para modelo padrão se não houver binding
   - Cache em memória com invalidação
 
 ### 2.5 Provider Factory
-- [ ] Criar `apps/backbone/src/llm/providers/index.ts`
+- [x] Criar `apps/backbone/src/llm/providers/index.ts`
   - Export barrel
-- [ ] Criar `apps/backbone/src/llm/providers/openrouter.ts`
+- [x] Criar `apps/backbone/src/llm/providers/openrouter.ts`
   - Função `createOpenRouterLLM(model, config)`
   - Usa `ChatOpenAI` do LangChain com baseURL customizado
-- [ ] Criar `apps/backbone/src/llm/providers/ollama.ts`
+- [x] Criar `apps/backbone/src/llm/providers/ollama.ts`
   - Função `createOllamaLLM(model, config)`
   - Usa `ChatOllama` do LangChain
-- [ ] Criar `apps/backbone/src/llm/providers/factory.ts`
+- [x] Criar `apps/backbone/src/llm/providers/factory.ts`
   - Função `createLLM(provider, model, config)` - factory pattern
 
 ### 2.6 Service
-- [ ] Criar `apps/backbone/src/llm/service.ts`
+- [x] Criar `apps/backbone/src/llm/service.ts`
   - `llmService.getIntents()` - lista intents com bindings
   - `llmService.getIntent(slug)` - detalhe de um intent
   - `llmService.getCatalog()` - retorna catalog atual
@@ -88,54 +88,55 @@
   - `llmService.resolve(intentSlug)` - resolve e cria instância LLM
 
 ### 2.7 Index (Export barrel)
-- [ ] Criar `apps/backbone/src/llm/index.ts`
+- [x] Criar `apps/backbone/src/llm/index.ts`
   - Exports públicos do módulo
 
 ---
 
-## Fase 3: Backend - API (Actions)
+## Fase 3: Backend - API (Actions) ✅
 
 > Segue padrão existente: `ActionDefinition` com name, description, keywords (min 3), inputSchema, outputSchema, permissions, execute. Registra via `registry.register()`.
 
 ### 3.1 Actions - Leitura
-- [ ] Criar `apps/backbone/src/actions/catalog/llm/listIntents.ts`
+- [x] Criar `apps/backbone/src/actions/catalog/llm/listIntents.ts`
   - name: `llm.listIntents`
   - Lista todos os intents com seus bindings ativos
   - permissions: `['llm:read']`
-- [ ] Criar `apps/backbone/src/actions/catalog/llm/getIntent.ts`
+- [x] Criar `apps/backbone/src/actions/catalog/llm/getIntent.ts`
   - name: `llm.getIntent`
   - Retorna detalhe de um intent por slug
   - permissions: `['llm:read']`
-- [ ] Criar `apps/backbone/src/actions/catalog/llm/getCatalog.ts`
+- [x] Criar `apps/backbone/src/actions/catalog/llm/getCatalog.ts`
   - name: `llm.getCatalog`
   - Retorna catalog de modelos (providers + models)
   - permissions: `['llm:read']`
-- [ ] Criar `apps/backbone/src/actions/catalog/llm/getModelsForIntent.ts`
+- [x] Criar `apps/backbone/src/actions/catalog/llm/getModelsForIntent.ts`
   - name: `llm.getModelsForIntent`
   - Retorna modelos compatíveis filtrados pelo profile do intent
   - permissions: `['llm:read']`
 
 ### 3.2 Actions - Escrita
-- [ ] Criar `apps/backbone/src/actions/catalog/llm/createBinding.ts`
+- [x] Criar `apps/backbone/src/actions/catalog/llm/createBinding.ts`
   - name: `llm.createBinding`
   - Cria binding intent → provider/model
   - permissions: `['llm:write']`
-- [ ] Criar `apps/backbone/src/actions/catalog/llm/updateBinding.ts`
+- [x] Criar `apps/backbone/src/actions/catalog/llm/updateBinding.ts`
   - name: `llm.updateBinding`
   - Atualiza binding existente (model, temperature, etc)
   - permissions: `['llm:write']`
-- [ ] Criar `apps/backbone/src/actions/catalog/llm/deleteBinding.ts`
+- [x] Criar `apps/backbone/src/actions/catalog/llm/deleteBinding.ts`
   - name: `llm.deleteBinding`
   - Remove binding
   - permissions: `['llm:write']`
 
 ### 3.3 Index e Registro
-- [ ] Criar `apps/backbone/src/actions/catalog/llm/index.ts`
+- [x] Criar `apps/backbone/src/actions/catalog/llm/index.ts`
   - Import de todas as actions
   - Re-export para acesso de tipos
-- [ ] Atualizar `apps/backbone/src/actions/catalog/index.ts`
+- [x] Atualizar `apps/backbone/src/actions/catalog/index.ts`
   - Adicionar `import './llm/index.js';`
   - Adicionar `export * from './llm/index.js';`
+- [x] Adicionar permissões `llm:read` e `llm:write` em `seeds/001_permissions.sql`
 
 ### 3.4 Routes (opcional, se necessário REST direto)
 - [ ] Criar `apps/backbone/src/routes/llm.ts`
