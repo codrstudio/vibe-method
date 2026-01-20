@@ -1,6 +1,13 @@
+---
+up: brainstorming\PLAN.md
+---
+# Tarefas
+
+Baseado em brainstorming\PLAN.md
+
 # Iteração 1: Passo a Passo
 
-## Passo 1.1: Camada LLM mínima
+## [x] Passo 1.1: Camada LLM mínima
 
 **O que:** Uma função que recebe prompt e retorna resposta do LLM
 
@@ -15,7 +22,7 @@ async function complete(prompt: string, options?: { model?: string }): Promise<s
 
 ---
 
-## Passo 1.2: biz-writer
+## [x] Passo 1.2: biz-writer
 
 **O que:** Agente que recebe relatório e retorna mensagem humanizada
 
@@ -29,7 +36,7 @@ async function complete(prompt: string, options?: { model?: string }): Promise<s
 
 ---
 
-## Passo 1.3: biz-reviewer
+## [x] Passo 1.3: biz-reviewer
 
 **O que:** Agente que valida a mensagem do writer
 
@@ -43,7 +50,7 @@ async function complete(prompt: string, options?: { model?: string }): Promise<s
 
 ---
 
-## Passo 1.4: Script de teste
+## [x] Passo 1.4: Script de teste
 
 **O que:** Script que roda o fluxo completo
 

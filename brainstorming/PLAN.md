@@ -8,7 +8,7 @@ Plano de implementacao estilo bazaar: funciona a cada passo.
 
 ---
 
-## Iteracao 1: Prova de Conceito
+## Iteracao 1: Prova de Conceito ✅
 
 **Objetivo:** Relatorio entra, mensagem humanizada sai
 
@@ -16,12 +16,16 @@ Plano de implementacao estilo bazaar: funciona a cada passo.
 Input (texto) → Writer → Reviewer → Output (console)
 ```
 
-- [ ] Camada LLM minima (uma funcao que chama Ollama/OpenRouter)
-- [ ] biz-writer que recebe texto e retorna mensagem
-- [ ] biz-reviewer que recebe mensagem e retorna approved/rejected
-- [ ] Script de teste que roda o fluxo
+- [x] Camada LLM minima (uma funcao que chama Ollama/OpenRouter)
+- [x] biz-writer que recebe texto e retorna mensagem
+- [x] biz-reviewer que recebe mensagem e retorna approved/rejected
+- [x] Script de teste que roda o fluxo
 
 **Entrega:** `npm run test:biz-report` funciona
+
+**Extras entregues:**
+- [x] WorkflowExecution para auditoria
+- [x] Checklist de qualidade para agentes
 
 ---
 

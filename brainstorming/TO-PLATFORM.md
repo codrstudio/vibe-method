@@ -4,28 +4,56 @@ Artefatos criados no fork (cia-dashboard-vibe) que devem ser incorporados na pla
 
 ---
 
-## Para Adicionar na Plataforma
+## Incorporados
 
 ### specs/
 
 | Arquivo | Status | Destino |
 |---------|--------|---------|
-| `AI-INSTRUCTIONS.md` | pendente | `scaffold/specs/AI-INSTRUCTIONS.md` |
+| `AI-INSTRUCTIONS.md` | incorporado | `specs/AI-INSTRUCTIONS.md` |
 
 ### docs/reference/
 
 | Arquivo | Status | Destino |
 |---------|--------|---------|
-| `llm/intents.md` | criado | `docs/reference/llm/intents.md` |
-| `llm/bindings.md` | criado | `docs/reference/llm/bindings.md` |
-| `llm/resolver.md` | criado | `docs/reference/llm/resolver.md` |
-| `configuration/ai-instructions.md` | criado | `docs/reference/configuration/ai-instructions.md` |
+| `llm/intents.md` | incorporado | `docs/reference/llm/intents.md` |
+| `llm/bindings.md` | incorporado | `docs/reference/llm/bindings.md` |
+| `llm/resolver.md` | incorporado | `docs/reference/llm/resolver.md` |
+| `configuration/ai-instructions.md` | incorporado | `docs/reference/configuration/ai-instructions.md` |
 
 ### .claude/commands/
 
 | Arquivo | Status | Destino |
 |---------|--------|---------|
-| `biz/generate-agent.md` | criado | `scaffold/.claude/commands/biz/generate-agent.md` |
+| `biz/generate-agent.md` | incorporado | `.claude/commands/biz/generate-agent.md` |
+
+### Estruturas Criadas
+
+| Item | Local |
+|------|-------|
+| Pasta platform-requests | `specs/platform-requests/` |
+
+---
+
+## Para Adicionar (Futuro)
+
+### specs/
+
+| Arquivo | Status | Destino |
+|---------|--------|---------|
+| - | - | - |
+
+### docs/reference/
+
+| Arquivo | Status | Destino |
+|---------|--------|---------|
+| - | - | - |
+
+### .claude/commands/
+
+| Arquivo | Status | Destino |
+|---------|--------|---------|
+| - | - | - |
 
 ---
 
@@ -35,23 +63,13 @@ Artefatos criados no fork (cia-dashboard-vibe) que devem ser incorporados na pla
 |---------|--------|
 | `specs/AI-INSTRUCTIONS.local.md` | Especifico do projeto |
 | `specs/company/profile.md` | Contexto do cliente |
-| `specs/agents/biz-writer.md` | Agente de negocio |
-| `specs/agents/biz-reviewer.md` | Agente de negocio |
-| `specs/entities/biz-report.yaml` | Entidade de negocio |
-
-## Notas
-
-- Puxar para a plataforma tudo em: .claude\commands\biz
-- Regra Motor vs Negocio: `biz-*` = livre, `sem biz-` = requer aprovacao
-- Pattern `specs/platform-requests/` para feedback loop com plataforma
-- `llmService.createLLM(intent)` eh o pattern real (nao `resolveLLM`)
+| `specs/agents/biz-*.md` | Agentes de negocio |
+| `specs/entities/biz-*.yaml` | Entidades de negocio |
 
 ---
 
-## Checklist
+## Notas
 
-Antes de copiar para plataforma:
-
-- [ ] Remover referencias especificas do cliente
-- [ ] Generalizar exemplos
-- [ ] Validar que funciona no scaffold limpo
+- Regra Motor vs Negocio: `biz-*` = livre, `sem biz-` = requer aprovacao
+- Pattern `specs/platform-requests/` para feedback loop com plataforma
+- `llmService.createLLM(intent)` eh o pattern real (nao `resolveLLM`)

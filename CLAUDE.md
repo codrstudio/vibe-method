@@ -4,10 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Purpose
 
-This is the **Vibe Method** documentation repository - a methodology for AI-assisted development with context engineering. It contains:
-
-1. **Documentation** (`01-filosofia/` through `07-seguranca/`) - Methodology guides
-2. **Scaffold** (`scaffold/`) - Template for new projects following this methodology
+This is the **Vibe Method Platform** - a fork-ready monorepo for AI-assisted development with context engineering. Fork this repository to start new projects following the Vibe Method methodology.
 
 ## Core Philosophy
 
@@ -17,21 +14,93 @@ This is the **Vibe Method** documentation repository - a methodology for AI-assi
 SYSTEM <-> motor <-> ARTIFACT <-> tool <-> BUSINESS
 ```
 
-- **Motor**: Code that reads, validates, executes (stable)
+- **Motor**: Code that reads, validates, executes (stable, rarely changes)
 - **Artifact**: Declarative behavior definition (changes frequently)
 - **Tool**: Produces valid artifacts
 
-## Documentation Structure
+---
 
-| Folder | Content |
-|--------|---------|
-| `01-filosofia/` | Principles, mindset, workflows |
-| `02-metodo/` | Workflow phases, artifacts, layout |
-| `03-arquitetura/` | Monorepo, infrastructure |
-| `04-frontend/` | Next.js, routing, brand |
-| `05-backend/` | Backbone hub, real-time |
-| `06-ia/` | Agents, actions, copilot, OpenRouter |
-| `07-seguranca/` | Auth and permissions |
+## Localization
+
+**This project targets Brazilian users. Internally, prefer English, but for user-facing data use pt-BR.**
+
+---
+
+## Development Commands
+
+```bash
+npm install                 # Install all workspace dependencies
+npm run docker:up           # Start infrastructure (PostgreSQL, Redis, MongoDB, etc.)
+npm run migrate:main        # Run migrations + seeds for main database
+npm run migrate:analytics   # Run migrations for analytics database
+npm run dev                 # Start all apps concurrently
+```
+
+**Individual Apps:**
+
+```bash
+npm run dev:wa-sim          # WhatsApp simulator backend only
+npm run dev:wa-sim-ui       # WhatsApp simulator UI only
+npm run tooling             # Internal tooling app
+```
+
+**Infrastructure:**
+
+```bash
+npm run docker:down         # Stop infrastructure
+npm run docker:rebuild      # Stop + rebuild + start
+```
+
+## Architecture Overview
+
+### Apps (Monorepo Workspaces)
+
+| App | Tech | Port | Purpose |
+|-----|------|------|---------|
+| `apps/app` | Next.js 15, React 19 | 8000 | Main frontend |
+| `apps/sockets` | Socket.io 4.7+ | 8001 | Real-time WebSocket layer |
+| `apps/backbone` | Fastify 5 | 8002 | Backend API hub |
+| `apps/wa-sim` | Fastify 4.26+ | 8003 | WhatsApp simulator backend |
+| `apps/wa-sim-ui` | React + Vite | 8004 | WhatsApp simulator frontend |
+
+### Infrastructure Ports (Docker)
+
+| Service | Port |
+|---------|------|
+| PostgreSQL MAIN | 8050 |
+| Redis | 8051 |
+| MongoDB | 8052 |
+| Meilisearch | 8053 |
+| n8n | 8054 |
+| Evolution API | 8055 |
+| Ollama | 8056 |
+| Adminer | 8057 |
+| PostgreSQL ANALYTICS | 8058 |
+
+### Key Directories
+
+| Directory | Purpose |
+|-----------|---------|
+| `specs/` | Context engineering artifacts (business logic definitions) |
+| `plans/` | Implementation plans (`/plans/{name}/PLAN.md`) |
+| `brainstorming/` | Raw material and task tracking |
+| `database/main/migrations/` | SQL migrations (0XX = motor, 1XX+ = business) |
+| `methodology/` | Vibe Method documentation |
+
+### Motor vs Business Separation
+
+**Motor (platform core - rarely modify):**
+- `apps/*/src/lib/`
+- `apps/*/src/index.ts`
+- `packages/`
+- `database/migrations/00*.sql`
+
+**Business (project-specific - modify freely):**
+- `apps/*/src/agents/biz-*/`
+- `apps/*/src/actions/biz-*/`
+- `apps/app/src/app/(app)/biz-*/`
+- `database/migrations/1XX+_biz*.sql`
+- `specs/`
 
 ## Reference System
 
@@ -59,28 +128,9 @@ from client        Requirements      references        implementation
 | `[x]` | Done |
 | `[!]` | Blocked |
 
-### Refs vs Snippets
-
-- **Refs** (`specs/refs/`): Consult BEFORE implementing - external patterns
-- **Snippets** (`specs/snippets/`): Register AFTER implementing - project decisions
-
 ---
 
-## Scaffold Template
-
-The `scaffold/` directory contains a starter template. For scaffold-specific rules, see `scaffold/CLAUDE.md`.
-
-### Scaffold Commands
-
-```bash
-cd scaffold
-npm install
-npm run dev              # All apps via concurrently
-npm run dev:app          # Next.js only
-npm run docker:up        # Start infrastructure
-```
-
-### UI Rule: Component-First
+## UI Rule: Component-First
 
 **shadcn is mandatory for UI elements. Native HTML is prohibited.**
 
@@ -94,80 +144,71 @@ Layout uses `div` + Tailwind. UI uses shadcn components.
 
 ---
 
-## Database Commands
+## Database
 
-```bash
-npm run migrate:main       # Roda migrations + seeds no banco principal
-npm run migrate:analytics  # Roda migrations no banco analytics
-```
+**Migrations numbering:**
+- `0XX`: Motor (platform core structure)
+- `1XX+`: Business entities
 
-**Importante**: As migrations em `database/main/migrations/` devem conter apenas estrutura genérica do motor. Tabelas e regras específicas de negócio devem ser definidas em artefatos (`specs/`) e carregadas via seeds do projeto.
+**Important**: Migrations in `database/main/migrations/` contain only generic motor structure. Business-specific tables should be defined in artifacts (`specs/`) and loaded via project seeds.
+
+---
+
+## Environment Configuration
+
+**Hierarchy:**
+1. `.env` - Base configuration
+2. `.env.{environment}` - Environment overrides (development, staging, production)
+3. `.env.secrets` - Sensitive data (gitignored, copy from `.env.secrets.example`)
+
+**dotenv-cli:** Always use `-o` flag: `dotenv -o -e .env ...`
+
+Without `-o`, system variables take precedence over `.env` files.
+
+---
+
+## Plans
+
+Implementation plans are saved in `/plans/{plan-name}/PLAN.md`.
+
+**Rules:**
+- Folder name must clearly identify the plan
+- Plan file must be named `PLAN.md`
+- Folder may contain additional relevant resources
+- Create or update plan before implementation
+
+---
+
+## Test Users
+
+Predictable test user pattern:
+- Email: `{role}@mail.com`
+- Password: `12345678`
+
+Example: `admin@mail.com` / `12345678`
 
 ---
 
 ## Playwright
 
-- **Testes de playwright devem ser feitos em .tmp\playwright**
-- **Antes dos testes escaneie os arquivos .env e .env.development para descobrir as rotas**
-
----
-
-## dotenv-cli
-
-Sempre usar flag `-o`: `dotenv -o -e .env ...`
-
-Sem `-o`, variáveis do sistema têm prioridade sobre os arquivos `.env`.
+- Tests must be created in `.tmp/playwright`
+- Scan `.env` and `.env.development` files to discover routes before testing
 
 ---
 
 ## Mobile-first
 
-Sempre planeja as paginas responsivas.
-Este app deve ser 100% utilizável no mobile.
-
---
-
-## Plans
-
-Planos de implementação devem ser salvos e mantidos atualizados para referência.
-Estrutura:
-
-/plans/{nome do plano}/PLAN.md
-
-**Regras**:
-
-- O nome da pasta deve claramente identificar o plano.
-- O nome do plano deve ser obrigatoriamente PLAN.md.
-- A pasta pode conter recursos adicionais relevantes para o plano.
-
-Antes da implementação o plano deve ser criado ou atualizado, se ja existir um para mesma finalidade.
-
----
-
-## Usuarios de teste
-
-Usamos um modelo previsivel de usuarios de teste:
-- {role}@mail.com
-- Senha: 12345678
-
-Por exemplo:
-- admin@mail.com
-- 12345678
+Always design responsive pages.
+This app must be 100% usable on mobile.
 
 ---
 
 ## Critical Rules
 
 - **UTF-8 encoding always**
-- **Temporary files only in `.tmp/` — jamais crie testes rápidos e arquivos temporários na estrutura do projeto**
-- **Never use `kill`/`taskkill` to terminate Node.js processes**
-- **Never change ports** - report if occupied
+- **Temporary files only in `.tmp/`** — never create quick tests or temp files in project structure
+- **Never use `kill`/`taskkill`** to terminate Node.js processes (use hot-reload)
+- **Never change ports** — report if occupied
 - **Never use destructive git commands on main** (`reset --hard`, `push --force`)
 - **Diagnostic mode**: When asked to diagnose, only read and analyze - do NOT modify code
-- **Lembre-se: a interface é shadcn component first — use HTML customizado apenas quando estritamente necessário.**
-
-## Available Skills
-
-| Skill | Trigger Keywords |
-|-------|------------------|
-| | |
+- **shadcn component-first** — use custom HTML only when strictly necessary
