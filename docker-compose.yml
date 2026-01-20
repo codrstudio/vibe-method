@@ -244,6 +244,30 @@ services:
           - ollama.internal
 
   # ===========================================================================
+  # Ollama Init (Pull Models)
+  # ===========================================================================
+  ollama-init:
+    build:
+      context: .
+      dockerfile: docker/ollama-init/Dockerfile
+    image: ${PROJECT}-ollama-init:latest
+    container_name: ${PROJECT}-ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    env_file:
+      - .env
+      - .env.production
+      - path: .env.secrets
+        required: false
+    environment:
+      OLLAMA_HOST: ${OLLAMA_HOST}
+      OLLAMA_PORT: ${OLLAMA_INTERNAL_PORT}
+    networks:
+      - internal
+    restart: "no"
+
+  # ===========================================================================
   # Evolution API (WhatsApp)
   # ===========================================================================
   evolution:
