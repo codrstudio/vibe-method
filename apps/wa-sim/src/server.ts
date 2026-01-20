@@ -1,18 +1,30 @@
 /**
  * WhatsApp Simulator Server
- * Servidor Fastify standalone
+ * Servidor Fastify standalone com Socket.IO
  */
 
+import { createServer } from 'http'
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { simulatorRoutes } from './routes.js'
+import { initSocketServer } from './socket.js'
 
 const PORT = parseInt(process.env.WA_SIM_PORT || '8003', 10)
 const HOST = process.env.WA_SIM_HOST || '0.0.0.0'
 
+// Criar HTTP server para Fastify + Socket.IO
+const httpServer = createServer()
+
 const fastify = Fastify({
   logger: process.env.NODE_ENV !== 'production',
+  serverFactory: (handler) => {
+    httpServer.on('request', handler)
+    return httpServer
+  }
 })
+
+// Inicializar Socket.IO
+const io = initSocketServer(httpServer)
 
 async function start() {
   // CORS
@@ -36,6 +48,7 @@ async function start() {
 ║  Port: ${PORT}                                          ║
 ║  Status: http://localhost:${PORT}/status                ║
 ║  Health: http://localhost:${PORT}/health                ║
+║  Socket.IO: ws://localhost:${PORT}                      ║
 ║                                                       ║
 ║  Instrumentation:                                     ║
 ║  - GET  /instances          List all                  ║
