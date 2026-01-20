@@ -85,7 +85,7 @@ export function Sidebar() {
                   <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
                   <div className="absolute right-0 top-full mt-1 bg-wa-bg-dropdown rounded-lg shadow-lg border border-wa-border py-1 z-20 min-w-[120px]">
                     <button
-                      onClick={() => window.location.href = '/app'}
+                      onClick={() => window.close()}
                       className="w-full px-4 py-2 text-left text-sm text-wa-text-primary hover:bg-wa-bg-hover flex items-center gap-2"
                     >
                       <LogOut className="w-4 h-4" />

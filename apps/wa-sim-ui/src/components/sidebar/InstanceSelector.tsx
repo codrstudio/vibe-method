@@ -1,38 +1,78 @@
+import { ChevronRight, Radio } from 'lucide-react'
 import { useInstanceStore } from '../../stores/instanceStore'
+import { ChannelSelectionModal } from '../channels'
 
 export function InstanceSelector() {
-  const { instances, selectedInstance, setSelectedInstance, loading } = useInstanceStore()
+  const {
+    instances,
+    selectedInstance,
+    loading,
+    showChannelSelector,
+    setShowChannelSelector
+  } = useInstanceStore()
 
   const connectedInstances = instances.filter(i => i.status === 'connected')
+  const currentInstance = connectedInstances.find(i => i.instanceName === selectedInstance)
+
+  function handleClick() {
+    setShowChannelSelector(true)
+  }
+
+  function handleClose() {
+    setShowChannelSelector(false)
+  }
 
   if (loading) {
     return (
-      <div className="text-sm text-wa-text-secondary">
+      <div className="text-sm text-wa-text-secondary px-3 py-2">
         Carregando instancias...
       </div>
     )
   }
 
-  if (connectedInstances.length === 0) {
-    return (
-      <div className="text-sm text-wa-text-secondary">
-        Nenhuma instancia conectada
-      </div>
-    )
-  }
-
   return (
-    <select
-      value={selectedInstance || ''}
-      onChange={(e) => setSelectedInstance(e.target.value || null)}
-      className="w-full px-3 py-2 text-sm bg-wa-bg-input text-wa-text-primary border border-wa-border rounded-lg focus:outline-none focus:ring-2 focus:ring-wa-green-primary"
-    >
-      <option value="">Selecione uma instancia</option>
-      {connectedInstances.map((instance) => (
-        <option key={instance.instanceName} value={instance.instanceName}>
-          {instance.instanceName} ({instance.phoneNumber || 'Sem numero'})
-        </option>
-      ))}
-    </select>
+    <>
+      <button
+        onClick={handleClick}
+        className="w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-wa-bg-hover active:bg-wa-bg-active transition-colors"
+      >
+        <div className="w-10 h-10 rounded-full bg-wa-green-primary/20 flex items-center justify-center shrink-0">
+          <Radio className="w-5 h-5 text-wa-green-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          {currentInstance ? (
+            <>
+              <p className="text-base font-medium text-wa-text-primary truncate">
+                {currentInstance.instanceName}
+              </p>
+              <p className="text-sm text-wa-text-secondary truncate">
+                {currentInstance.phoneNumber || 'Sem numero'}
+              </p>
+            </>
+          ) : connectedInstances.length > 0 ? (
+            <>
+              <p className="text-base font-medium text-wa-text-primary">
+                Selecionar canal
+              </p>
+              <p className="text-sm text-wa-text-secondary">
+                {connectedInstances.length} canal(is) disponivel(is)
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-base font-medium text-wa-text-primary">
+                Nenhum canal
+              </p>
+              <p className="text-sm text-wa-text-secondary">
+                Conecte um canal no painel
+              </p>
+            </>
+          )}
+        </div>
+        <ChevronRight className="w-5 h-5 text-wa-text-secondary shrink-0" />
+      </button>
+
+      <ChannelSelectionModal open={showChannelSelector} onClose={handleClose} />
+    </>
   )
 }

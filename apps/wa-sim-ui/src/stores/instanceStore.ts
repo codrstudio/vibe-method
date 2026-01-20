@@ -24,10 +24,12 @@ interface InstanceState {
   instances: Instance[]
   selectedInstance: string | null
   loading: boolean
+  showChannelSelector: boolean
 
   setInstances: (instances: Instance[]) => void
   setSelectedInstance: (instanceName: string | null) => void
   setLoading: (loading: boolean) => void
+  setShowChannelSelector: (show: boolean) => void
   initFromUrl: () => void
 }
 
@@ -35,8 +37,11 @@ export const useInstanceStore = create<InstanceState>((set) => ({
   instances: [],
   selectedInstance: getInstanceFromUrl(),
   loading: false,
+  showChannelSelector: false,
 
   setInstances: (instances) => set({ instances }),
+
+  setShowChannelSelector: (show) => set({ showChannelSelector: show }),
 
   setSelectedInstance: (instanceName) => {
     set({ selectedInstance: instanceName })

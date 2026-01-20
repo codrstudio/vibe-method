@@ -4,6 +4,7 @@ import { MessageBubble } from './MessageBubble'
 import { TypingIndicator } from './TypingIndicator'
 import { format, isSameDay } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { MessageCircle } from 'lucide-react'
 
 interface MessageListProps {
   contactId: string
@@ -63,10 +64,16 @@ export function MessageList({ contactId, highlightedMessageId }: MessageListProp
 
   if (messages.length === 0 && !isTyping) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-wa-bg-chat chat-bg">
-        <div className="bg-wa-bg-modal px-4 py-2 rounded-lg shadow-sm">
-          <p className="text-sm text-wa-text-secondary">
-            Nenhuma mensagem ainda. Envie uma mensagem para iniciar a conversa.
+      <div className="flex-1 flex items-center justify-center bg-wa-bg-chat chat-bg px-8">
+        <div className="flex flex-col items-center text-center">
+          <div className="rounded-full bg-wa-bg-modal p-4 mb-4 shadow-sm">
+            <MessageCircle className="size-8 text-wa-text-secondary" />
+          </div>
+          <h3 className="text-lg font-medium text-wa-text-primary mb-1">
+            Nenhuma mensagem ainda
+          </h3>
+          <p className="text-sm text-wa-text-secondary max-w-xs">
+            Envie uma mensagem para iniciar a conversa
           </p>
         </div>
       </div>

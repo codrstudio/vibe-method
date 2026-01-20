@@ -5,7 +5,7 @@ import { ChatHeader } from './ChatHeader'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
 import { SearchBar } from './SearchBar'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, Unplug } from 'lucide-react'
 
 export function ChatArea() {
   const { selectedContactId, contacts } = useContactStore()
@@ -42,10 +42,16 @@ export function ChatArea() {
     return (
       <div className="flex-1 flex flex-col">
         <ChatHeader contact={selectedContact} onOpenSearch={() => setShowSearch(true)} />
-        <div className="flex-1 flex items-center justify-center bg-wa-bg-chat chat-bg">
-          <div className="bg-wa-bg-modal p-6 rounded-lg shadow-sm text-center">
-            <p className="text-wa-text-secondary">
-              Selecione uma instancia conectada para enviar mensagens.
+        <div className="flex-1 flex items-center justify-center bg-wa-bg-chat chat-bg px-8">
+          <div className="flex flex-col items-center text-center">
+            <div className="rounded-full bg-wa-bg-modal p-4 mb-4 shadow-sm">
+              <Unplug className="size-8 text-wa-text-secondary" />
+            </div>
+            <h3 className="text-lg font-medium text-wa-text-primary mb-1">
+              Nenhuma instância conectada
+            </h3>
+            <p className="text-sm text-wa-text-secondary max-w-xs">
+              Selecione uma instância no menu superior para enviar mensagens
             </p>
           </div>
         </div>

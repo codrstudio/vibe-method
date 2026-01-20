@@ -7,6 +7,7 @@ import { simulatorState } from './state.js'
 import type { SimulatedMessage, EvolutionWebhookPayload } from './types.js'
 
 const BACKBONE_WEBHOOK_URL = process.env.BACKBONE_WEBHOOK_URL || 'http://localhost:8002/backbone/webhooks/evolution'
+const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || 'evolution-key'
 
 async function sendWebhook(payload: EvolutionWebhookPayload): Promise<void> {
   try {
@@ -14,6 +15,7 @@ async function sendWebhook(payload: EvolutionWebhookPayload): Promise<void> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'apikey': EVOLUTION_API_KEY,
       },
       body: JSON.stringify(payload),
     })
