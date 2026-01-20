@@ -16,7 +16,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { BreadcrumbBar } from "@/components/breadcrumb-bar"
 import { Loader2, Phone, ArrowLeft, Smartphone, FlaskConical } from "lucide-react"
 import Link from "next/link"
@@ -151,40 +157,35 @@ export default function NewWhatsAppChannelPage() {
 
                 {/* Provider */}
                 <div className="space-y-3">
-                  <Label>Tipo de Conexão</Label>
-                  <RadioGroup
+                  <Label htmlFor="provider">Tipo de Conexão</Label>
+                  <Select
                     value={provider}
                     onValueChange={(value) => setProvider(value as "evolution" | "simulator")}
                     disabled={mutation.isPending}
-                    className="grid gap-3"
                   >
-                    <div className="flex items-start space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                      <RadioGroupItem value="evolution" id="evolution" className="mt-1" />
-                      <div className="flex-1 space-y-1">
-                        <Label htmlFor="evolution" className="flex items-center gap-2 cursor-pointer font-medium">
+                    <SelectTrigger id="provider">
+                      <SelectValue placeholder="Selecione o tipo de conexão" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="evolution">
+                        <span className="flex items-center gap-2">
                           <Smartphone className="h-4 w-4" />
                           Evolution API (número real)
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Conecte um número WhatsApp real para atendimento em produção.
-                          Requer escaneamento de QR code.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                      <RadioGroupItem value="simulator" id="simulator" className="mt-1" />
-                      <div className="flex-1 space-y-1">
-                        <Label htmlFor="simulator" className="flex items-center gap-2 cursor-pointer font-medium">
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="simulator">
+                        <span className="flex items-center gap-2">
                           <FlaskConical className="h-4 w-4" />
                           Simulador (ambiente de teste)
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Use o simulador para testar fluxos sem um número real.
-                          Ideal para desenvolvimento e homologação.
-                        </p>
-                      </div>
-                    </div>
-                  </RadioGroup>
+                        </span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    {provider === "evolution"
+                      ? "Conecte um número WhatsApp real. Requer QR code."
+                      : "Use o simulador para testar fluxos sem um número real."}
+                  </p>
                 </div>
 
                 {/* Error */}

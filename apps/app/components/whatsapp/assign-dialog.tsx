@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Link as LinkIcon, Bell } from 'lucide-react';
+import { Loader2, Link as LinkIcon } from 'lucide-react';
 
 interface Operation {
   id: string;
@@ -70,8 +70,6 @@ export function AssignDialog({
   const [selectedOperation, setSelectedOperation] = useState<string>('');
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [priority, setPriority] = useState(0);
-  const [notificationEmail, setNotificationEmail] = useState('');
-  const [notificationPhone, setNotificationPhone] = useState('');
 
   const selectedOperationData = operations.find((o) => o.id === selectedOperation);
   const isUserOperation = selectedOperationData?.nature === 'user';
@@ -89,16 +87,12 @@ export function AssignDialog({
         operationId: selectedOperation,
         userId: isUserOperation ? selectedUser : undefined,
         priority,
-        notificationEmail: notificationEmail || undefined,
-        notificationPhone: notificationPhone || undefined,
       });
 
       // Reset form
       setSelectedOperation('');
       setSelectedUser('');
       setPriority(0);
-      setNotificationEmail('');
-      setNotificationPhone('');
       onOpenChange(false);
     } finally {
       setIsLoading(false);
@@ -180,36 +174,6 @@ export function AssignDialog({
             <p className="text-xs text-muted-foreground">
               Maior prioridade = usado primeiro no fallback
             </p>
-          </div>
-
-          {/* Notifications */}
-          <div className="space-y-4 rounded-lg border p-4">
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4" />
-              <span className="font-medium">Notificacoes de Alerta</span>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="notificationEmail">Email</Label>
-              <Input
-                id="notificationEmail"
-                type="email"
-                value={notificationEmail}
-                onChange={(e) => setNotificationEmail(e.target.value)}
-                placeholder="alerta@empresa.com"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="notificationPhone">Telefone (SMS)</Label>
-              <Input
-                id="notificationPhone"
-                type="tel"
-                value={notificationPhone}
-                onChange={(e) => setNotificationPhone(e.target.value)}
-                placeholder="+5511999999999"
-              />
-            </div>
           </div>
 
           <DialogFooter>

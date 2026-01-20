@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { BreadcrumbBar } from "@/components/breadcrumb-bar"
 import {
   ConnectionStatus,
@@ -173,6 +174,8 @@ export default function WhatsAppChannelDetailPage() {
   const channelId = params.id as string
 
   const [showAssignDialog, setShowAssignDialog] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [assignmentToRemove, setAssignmentToRemove] = useState<Assignment | null>(null)
 
   // Fetch channel data
   const { data: channelData, isLoading } = useQuery({
@@ -442,9 +445,8 @@ export default function WhatsAppChannelDetailPage() {
                             variant="ghost"
                             size="icon"
                             onClick={() => {
-                              if (confirm("Remover esta atribuição?")) {
-                                unassignMutation.mutate(assignment.id)
-                              }
+                              setAssignmentToRemove(assignment)
+                              setConfirmOpen(true)
                             }}
                             disabled={unassignMutation.isPending}
                           >
@@ -525,6 +527,26 @@ export default function WhatsAppChannelDetailPage() {
             ...data,
           })
         }}
+      />
+
+      {/* Remove Assignment Confirm Dialog */}
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={(open) => {
+          setConfirmOpen(open)
+          if (!open) setAssignmentToRemove(null)
+        }}
+        title="Remover atribuição?"
+        description={`Remover a atribuição da operação "${assignmentToRemove?.operation?.name || 'Operação'}" deste canal?`}
+        onConfirm={() => {
+          if (assignmentToRemove) {
+            unassignMutation.mutate(assignmentToRemove.id)
+          }
+          setConfirmOpen(false)
+          setAssignmentToRemove(null)
+        }}
+        confirmText="Remover"
+        loading={unassignMutation.isPending}
       />
     </div>
   )

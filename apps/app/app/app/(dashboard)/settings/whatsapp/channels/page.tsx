@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { BreadcrumbBar } from "@/components/breadcrumb-bar"
 import { ChannelCard } from "@/components/whatsapp"
 import type { ChannelStatus } from "@/hooks/use-whatsapp-channel"
@@ -65,6 +66,8 @@ export default function WhatsAppChannelsPage() {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [channelToDelete, setChannelToDelete] = useState<Channel | null>(null)
 
   const { data: channels = [], isLoading } = useQuery({
     queryKey: ["whatsapp-channels"],
@@ -206,9 +209,8 @@ export default function WhatsAppChannelsPage() {
                   createdAt={channel.createdAt}
                   onRefreshQr={() => refreshMutation.mutate(channel.id)}
                   onDelete={() => {
-                    if (confirm(`Excluir "${channel.name}"? Esta ação não pode ser desfeita.`)) {
-                      deleteMutation.mutate(channel.id)
-                    }
+                    setChannelToDelete(channel)
+                    setConfirmOpen(true)
                   }}
                   isLoading={deleteMutation.isPending || refreshMutation.isPending}
                 />
@@ -241,6 +243,25 @@ export default function WhatsAppChannelsPage() {
           )}
         </div>
       </main>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={(open) => {
+          setConfirmOpen(open)
+          if (!open) setChannelToDelete(null)
+        }}
+        title={`Excluir "${channelToDelete?.name}"?`}
+        description="Esta ação não pode ser desfeita."
+        onConfirm={() => {
+          if (channelToDelete) {
+            deleteMutation.mutate(channelToDelete.id)
+          }
+          setConfirmOpen(false)
+          setChannelToDelete(null)
+        }}
+        confirmText="Excluir"
+        loading={deleteMutation.isPending}
+      />
     </div>
   )
 }
