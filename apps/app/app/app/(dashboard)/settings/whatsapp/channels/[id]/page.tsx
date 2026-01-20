@@ -30,6 +30,7 @@ import {
   AssignDialog,
   TestMessageForm,
   SimulatorConnectionPanel,
+  TestModesCard,
 } from "@/components/whatsapp"
 import { useWhatsAppChannel } from "@/hooks/use-whatsapp-channel"
 import {
@@ -59,6 +60,9 @@ interface Channel {
   qrCodeExpiresAt: string | null
   retryCount: number
   provider: "evolution" | "simulator"
+  echoEnabled: boolean
+  echoToNumber: string | null
+  redirectToNumber: string | null
   createdAt: string
   updatedAt: string
 }
@@ -167,6 +171,22 @@ async function sendTestMessage(
   return { success: true, messageId: data.data?.messageId }
 }
 
+async function updateTestModes(
+  channelId: string,
+  updates: {
+    echoEnabled?: boolean
+    echoToNumber?: string | null
+    redirectToNumber?: string | null
+  }
+): Promise<void> {
+  const res = await fetch(`/api/whatsapp/channels/${channelId}/test-modes`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  })
+  if (!res.ok) throw new Error("Failed to update test modes")
+}
+
 export default function WhatsAppChannelDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -226,6 +246,17 @@ export default function WhatsAppChannelDetailPage() {
     },
   })
 
+  const testModesMutation = useMutation({
+    mutationFn: (updates: {
+      echoEnabled?: boolean
+      echoToNumber?: string | null
+      redirectToNumber?: string | null
+    }) => updateTestModes(channelId, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["whatsapp-channel", channelId] })
+    },
+  })
+
   // Merge server data with realtime state
   const channel = channelData
     ? {
@@ -235,6 +266,9 @@ export default function WhatsAppChannelDetailPage() {
         qrCodeExpiresAt: realtimeState.qrCodeExpiresAt ?? channelData.qrCodeExpiresAt,
         phoneNumber: realtimeState.phoneNumber ?? channelData.phoneNumber,
         provider: channelData.provider || "evolution", // Default to evolution for backwards compatibility
+        echoEnabled: channelData.echoEnabled ?? false,
+        echoToNumber: channelData.echoToNumber ?? null,
+        redirectToNumber: channelData.redirectToNumber ?? null,
       }
     : null
 
@@ -337,6 +371,10 @@ export default function WhatsAppChannelDetailPage() {
                 Teste
               </TabsTrigger>
               <TabsTrigger value="events">Histórico</TabsTrigger>
+              <TabsTrigger value="dev" className="gap-1">
+                <FlaskConical className="h-3.5 w-3.5" />
+                Dev
+              </TabsTrigger>
             </TabsList>
 
             {/* Connection Tab */}
@@ -509,6 +547,19 @@ export default function WhatsAppChannelDetailPage() {
                   </CardContent>
                 </Card>
               )}
+            </TabsContent>
+
+            {/* Dev Tab */}
+            <TabsContent value="dev">
+              <TestModesCard
+                channelId={channel.id}
+                echoEnabled={channel.echoEnabled}
+                echoToNumber={channel.echoToNumber}
+                redirectToNumber={channel.redirectToNumber}
+                onUpdate={async (updates) => {
+                  await testModesMutation.mutateAsync(updates)
+                }}
+              />
             </TabsContent>
           </Tabs>
         </div>

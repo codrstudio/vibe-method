@@ -30,7 +30,6 @@ interface SimulatorConnectionPanelProps {
 }
 
 const WA_SIM_URL = process.env.NEXT_PUBLIC_WA_SIM_URL || 'http://localhost:8003';
-const WA_SIM_UI_URL = process.env.NEXT_PUBLIC_WA_SIM_UI_URL || 'http://localhost:8004';
 
 export function SimulatorConnectionPanel({
   channelId,
@@ -86,7 +85,7 @@ export function SimulatorConnectionPanel({
   };
 
   const openSimulatorUI = () => {
-    window.open(`${WA_SIM_UI_URL}?instance=${instanceName}`, '_blank');
+    window.open(`/app/wa/channels/${instanceName}`, '_blank');
   };
 
   return (

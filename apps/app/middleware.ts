@@ -94,8 +94,55 @@ export async function middleware(request: NextRequest) {
 
   // Get prefix from path
   const prefix = getPrefix(pathname)
+
+  // API routes (except public ones) - need auth with refresh support
+  if (prefix === 'api') {
+    // Detect context from referer (API calls come from pages)
+    const referer = request.headers.get('referer') || ''
+    const context: AuthContext = referer.includes('/portal') ? 'customer' : 'team'
+    const authConfig = getConfig(context)
+    const accessToken = request.cookies.get(authConfig.accessCookie)?.value
+    const isValid = accessToken ? await verifyToken(accessToken, context) : false
+
+    if (isValid) {
+      return NextResponse.next()
+    }
+
+    // Try refresh token
+    const refreshToken = request.cookies.get(authConfig.refreshCookie)?.value
+    if (refreshToken) {
+      try {
+        const refreshUrl = new URL('/api/auth/refresh', request.url)
+        const refreshResponse = await fetch(refreshUrl, {
+          method: 'POST',
+          headers: {
+            Cookie: `${authConfig.refreshCookie}=${refreshToken}`,
+            Referer: referer,
+          },
+        })
+
+        if (refreshResponse.ok) {
+          const response = NextResponse.next()
+          const setCookieHeader = refreshResponse.headers.get('set-cookie')
+          if (setCookieHeader) {
+            response.headers.set('set-cookie', setCookieHeader)
+          }
+          return response
+        }
+      } catch (error) {
+        console.error('Middleware API refresh error:', error)
+      }
+    }
+
+    // Not authenticated - return 401 for API routes
+    return NextResponse.json(
+      { success: false, error: 'Nao autenticado' },
+      { status: 401 }
+    )
+  }
+
+  // Unknown prefix (not app, portal, or api) - allow
   if (!prefix || !PREFIX_CONFIG[prefix]) {
-    // Unknown prefix - allow (might be static or 404)
     return NextResponse.next()
   }
 
