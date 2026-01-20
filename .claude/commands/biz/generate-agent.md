@@ -44,9 +44,26 @@ Se necessario, criar nodes em `nodes/` conforme spec do agente.
 - Executar `npm run build`
 - Validar qualidade conforme checklist abaixo
 
+## 6. Validar Funcionamento
+
+**Opcao A - Se existir npm script de teste:**
+```bash
+npm run test:$ARGUMENTS
+```
+
+**Opcao B - Se o servidor estiver rodando:**
+Testar via API (se o agente tiver endpoint associado).
+
+**Opcao C - Validacao minima:**
+- `npm run build` passa sem erros
+- Tipos exportados corretamente
+- Checklist de qualidade OK
+
+> **NAO criar scripts de teste manuais em .tmp/** - usar infraestrutura existente.
+
 ---
 
-## 6. Checklist de Qualidade (OBRIGATORIO)
+## 7. Checklist de Qualidade (OBRIGATORIO)
 
 Apos gerar o agente, valide TODOS os criterios abaixo.
 

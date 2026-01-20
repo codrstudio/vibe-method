@@ -58,10 +58,24 @@ Adicionar:
 export * from './schemas/$ARGUMENTS.js';
 ```
 
-## 5. Validar
+## 5. Validar Build
 
 - Executar `npm run build`
 - Verificar se types compilam sem erro
+
+## 6. Testar Integracao (se API existir)
+
+Se a entidade tiver uma API associada (`specs/apis/$ARGUMENTS.yaml`):
+
+**Teste via API (com servidor rodando):**
+- Usar Postman, Insomnia ou curl
+- Usuarios de teste: `{role}@mail.com` / `12345678` (ex: `admin@mail.com`)
+- Consultar `.env.development` para porta do servidor
+
+**Validacao minima (sem servidor):**
+- `npm run build` passa
+- Migration pode ser aplicada
+- Types exportados corretamente
 
 ---
 
