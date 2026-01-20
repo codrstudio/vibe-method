@@ -1,5 +1,5 @@
 import { StateGraph, Annotation, END } from '@langchain/langgraph';
-import { getLLM } from '../../lib/index.js';
+import { llmService } from '../../llm/index.js';
 import { executeAction } from '../../actions/index.js';
 import { incCounter, startTimer, observeHistogram } from '../../health/collector.js';
 import { buildClassifyPrompt, buildPlanPrompt } from './prompt.js';
@@ -24,7 +24,7 @@ async function classifyNode(state: typeof TriagerAnnotation.State) {
   const stopTimer = startTimer('agent.triager.node.classify.latency');
 
   try {
-    const llm = getLLM({ temperature: 0.3 });
+    const llm = await llmService.createLLM('classify');
     const prompt = buildClassifyPrompt(state as TriagerState);
 
     const response = await llm.invoke(prompt);
@@ -61,7 +61,7 @@ async function planNode(state: typeof TriagerAnnotation.State) {
   const stopTimer = startTimer('agent.triager.node.plan.latency');
 
   try {
-    const llm = getLLM({ temperature: 0.3 });
+    const llm = await llmService.createLLM('plan');
     const prompt = buildPlanPrompt(state as TriagerState);
 
     const response = await llm.invoke(prompt);

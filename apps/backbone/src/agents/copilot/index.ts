@@ -1,5 +1,5 @@
 import { StateGraph, Annotation, END } from '@langchain/langgraph';
-import { getLLM } from '../../lib/index.js';
+import { llmService } from '../../llm/index.js';
 import { search } from '../../knowledge/index.js';
 import { incCounter, startTimer, observeHistogram } from '../../health/collector.js';
 import { buildQueryPrompt } from './prompt.js';
@@ -57,7 +57,7 @@ async function generateNode(state: typeof CopilotAnnotation.State) {
   const stopTimer = startTimer('agent.copilot.node.generate.latency');
 
   try {
-    const llm = getLLM({ temperature: 0.7 });
+    const llm = await llmService.createLLM('generate');
     const prompt = buildQueryPrompt(state as CopilotState);
 
     const response = await llm.invoke(prompt);
