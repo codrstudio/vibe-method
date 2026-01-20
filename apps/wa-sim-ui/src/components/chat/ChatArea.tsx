@@ -1,0 +1,79 @@
+import { useState } from 'react'
+import { useContactStore } from '../../stores/contactStore'
+import { useInstanceStore } from '../../stores/instanceStore'
+import { ChatHeader } from './ChatHeader'
+import { MessageList } from './MessageList'
+import { MessageInput } from './MessageInput'
+import { SearchBar } from './SearchBar'
+import { MessageSquare } from 'lucide-react'
+
+export function ChatArea() {
+  const { selectedContactId, contacts } = useContactStore()
+  const { selectedInstance } = useInstanceStore()
+  const [showSearch, setShowSearch] = useState(false)
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
+
+  const selectedContact = contacts.find(c => c.id === selectedContactId)
+
+  // Estado vazio - nenhum contato selecionado
+  if (!selectedContactId || !selectedContact) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center bg-wa-bg-chat dark:bg-wa-bg-chat chat-bg">
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm text-center max-w-md">
+          <MessageSquare className="w-16 h-16 text-wa-green-primary mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-wa-text-primary dark:text-wa-text-primary mb-2">
+            WhatsApp Simulator
+          </h2>
+          <p className="text-wa-text-secondary">
+            Selecione um contato para iniciar uma conversa simulada.
+          </p>
+          {!selectedInstance && (
+            <p className="text-sm text-orange-600 mt-4">
+              Selecione uma instancia conectada primeiro.
+            </p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Sem instancia selecionada
+  if (!selectedInstance) {
+    return (
+      <div className="flex-1 flex flex-col">
+        <ChatHeader contact={selectedContact} onOpenSearch={() => setShowSearch(true)} />
+        <div className="flex-1 flex items-center justify-center bg-wa-bg-chat dark:bg-wa-bg-chat chat-bg">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm text-center">
+            <p className="text-wa-text-secondary">
+              Selecione uma instancia conectada para enviar mensagens.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex-1 flex flex-col">
+      <ChatHeader contact={selectedContact} onOpenSearch={() => setShowSearch(true)} />
+
+      {/* Phase 2: Search bar */}
+      {showSearch && (
+        <SearchBar
+          contactId={selectedContactId}
+          onClose={() => {
+            setShowSearch(false)
+            setHighlightedMessageId(null)
+          }}
+          onNavigateToMessage={(messageId) => setHighlightedMessageId(messageId)}
+        />
+      )}
+
+      <MessageList
+        contactId={selectedContactId}
+        highlightedMessageId={highlightedMessageId}
+      />
+      <MessageInput contact={selectedContact} />
+    </div>
+  )
+}
