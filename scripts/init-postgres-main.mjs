@@ -195,14 +195,14 @@ VALUES (
     'Admin',
     'admin',
     TRUE
-) ON CONFLICT (id) DO UPDATE SET
-    email = EXCLUDED.email,
+) ON CONFLICT (email) DO UPDATE SET
     password_hash = EXCLUDED.password_hash,
     name = EXCLUDED.name,
     role = EXCLUDED.role;
 
+-- Buscar ID do usuario admin (pode ser diferente se ja existia)
 INSERT INTO user_roles (user_id, role)
-VALUES ('11111111-1111-1111-1111-111111111111', 'admin')
+SELECT id, 'admin' FROM users WHERE email = 'admin@mail.com'
 ON CONFLICT (user_id, role) DO NOTHING;
 
 -- Operator user (acesso basico)
@@ -214,14 +214,14 @@ VALUES (
     'Operator',
     'operator',
     TRUE
-) ON CONFLICT (id) DO UPDATE SET
-    email = EXCLUDED.email,
+) ON CONFLICT (email) DO UPDATE SET
     password_hash = EXCLUDED.password_hash,
     name = EXCLUDED.name,
     role = EXCLUDED.role;
 
+-- Buscar ID do usuario operator (pode ser diferente se ja existia)
 INSERT INTO user_roles (user_id, role)
-VALUES ('22222222-2222-2222-2222-222222222222', 'operator')
+SELECT id, 'operator' FROM users WHERE email = 'operator@mail.com'
 ON CONFLICT (user_id, role) DO NOTHING;
 
 -- =============================================================================
