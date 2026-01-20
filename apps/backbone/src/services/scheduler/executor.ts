@@ -1,5 +1,7 @@
 import type { ExecutorFn, ExecutorResult } from './types.js';
 
+export type { ExecutorResult };
+
 // Registry of executor functions
 const executors = new Map<string, ExecutorFn>();
 

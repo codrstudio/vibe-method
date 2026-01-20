@@ -103,7 +103,7 @@ export const messageLogsRepository = {
       ]
     );
 
-    incCounter('whatsapp.logs.created', { direction: input.direction });
+    incCounter('whatsapp.logs.created', 1, { direction: input.direction });
 
     return log;
   },

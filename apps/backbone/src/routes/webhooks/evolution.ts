@@ -46,7 +46,7 @@ export const evolutionWebhookRoutes: FastifyPluginAsync = async (fastify) => {
     const result = webhookPayloadSchema.safeParse(request.body);
 
     if (!result.success) {
-      fastify.log.error('Invalid webhook payload:', result.error.format());
+      fastify.log.error(`Invalid webhook payload: ${JSON.stringify(result.error.format())}`);
       return reply.badRequest('Invalid webhook payload');
     }
 
