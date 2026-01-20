@@ -14,7 +14,7 @@
  *   POSTGRES_PORT (default: 5432)
  *   POSTGRES_MAIN_SUPERUSER / POSTGRES_MAIN_SUPERUSER_PASSWORD
  *   POSTGRES_MAIN_USER / POSTGRES_MAIN_PASSWORD
- *   POSTGRES_MAIN_DB (default: cia_main)
+ *   POSTGRES_MAIN_DB (default: main)
  *   ENVIRONMENT (default: development)
  */
 
@@ -27,14 +27,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const config = {
-  host: process.env.POSTGRES_HOST || 'postgres-main.internal',
+  host: process.env.POSTGRES_HOST,
   port: parseInt(process.env.POSTGRES_PORT || '5432'),
-  superuser: process.env.POSTGRES_MAIN_SUPERUSER || 'postgres',
-  superpassword: process.env.POSTGRES_MAIN_SUPERUSER_PASSWORD || 'postgres',
-  user: process.env.POSTGRES_MAIN_USER || 'cia_user',
-  password: process.env.POSTGRES_MAIN_PASSWORD || 'cia_pass',
-  database: process.env.POSTGRES_MAIN_DB || 'cia_main',
-  environment: process.env.ENVIRONMENT || 'development',
+  superuser: process.env.POSTGRES_MAIN_SUPERUSER,
+  superpassword: process.env.POSTGRES_MAIN_SUPERUSER_PASSWORD,
+  user: process.env.POSTGRES_MAIN_USER,
+  password: process.env.POSTGRES_MAIN_PASSWORD,
+  database: process.env.POSTGRES_MAIN_DB,
+  environment: process.env.ENVIRONMENT,
 };
 
 // Databases para criar (main + evolution)

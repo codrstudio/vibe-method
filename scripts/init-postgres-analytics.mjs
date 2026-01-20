@@ -13,7 +13,7 @@
  *   POSTGRES_PORT (default: 5432)
  *   POSTGRES_ANALYTICS_SUPERUSER / POSTGRES_ANALYTICS_SUPERUSER_PASSWORD
  *   POSTGRES_ANALYTICS_USER / POSTGRES_ANALYTICS_PASSWORD
- *   POSTGRES_ANALYTICS_DB (default: cia_analytics)
+ *   POSTGRES_ANALYTICS_DB
  *   ENVIRONMENT (default: development)
  */
 
@@ -28,12 +28,12 @@ const __dirname = path.dirname(__filename);
 const config = {
   host: process.env.POSTGRES_HOST || 'postgres-analytics.internal',
   port: parseInt(process.env.POSTGRES_PORT || '5432'),
-  superuser: process.env.POSTGRES_ANALYTICS_SUPERUSER || 'postgres',
-  superpassword: process.env.POSTGRES_ANALYTICS_SUPERUSER_PASSWORD || 'postgres',
-  user: process.env.POSTGRES_ANALYTICS_USER || 'analytics_user',
-  password: process.env.POSTGRES_ANALYTICS_PASSWORD || 'analytics_pass',
-  database: process.env.POSTGRES_ANALYTICS_DB || 'cia_analytics',
-  environment: process.env.ENVIRONMENT || 'development',
+  superuser: process.env.POSTGRES_ANALYTICS_SUPERUSER,
+  superpassword: process.env.POSTGRES_ANALYTICS_SUPERUSER_PASSWORD,
+  user: process.env.POSTGRES_ANALYTICS_USER,
+  password: process.env.POSTGRES_ANALYTICS_PASSWORD ,
+  database: process.env.POSTGRES_ANALYTICS_DB,
+  environment: process.env.ENVIRONMENT,
 };
 
 // Extensoes para criar

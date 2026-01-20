@@ -1,11 +1,11 @@
 import { Pool, PoolClient } from 'pg'
 
 const pool = new Pool({
-  host: process.env.POSTGRES_MAIN_HOST || 'localhost',
+  host: process.env.POSTGRES_MAIN_HOST,
   port: parseInt(process.env.POSTGRES_MAIN_PORT || '8050'),
-  user: process.env.POSTGRES_MAIN_USER || 'admin',
-  password: process.env.POSTGRES_MAIN_PASSWORD || 'Admin123',
-  database: process.env.POSTGRES_MAIN_DB || 'cia_main',
+  user: process.env.POSTGRES_MAIN_USER,
+  password: process.env.POSTGRES_MAIN_PASSWORD,
+  database: process.env.POSTGRES_MAIN_DB,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
