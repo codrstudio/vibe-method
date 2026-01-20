@@ -47,10 +47,16 @@ export function createLLM(options: CreateLLMOptions): LLMInstance {
  * Create LLM from resolved configuration
  */
 export function createLLMFromResolved(resolved: ResolvedLLM): LLMInstance {
+  // PostgreSQL returns DECIMAL as string, need to convert to number
+  const temperature =
+    resolved.config.temperature != null ? Number(resolved.config.temperature) : undefined;
+  const maxTokens =
+    resolved.config.maxTokens != null ? Number(resolved.config.maxTokens) : undefined;
+
   return createLLM({
     provider: resolved.provider,
     model: resolved.model,
-    temperature: resolved.config.temperature,
-    maxTokens: resolved.config.maxTokens,
+    temperature,
+    maxTokens,
   });
 }
