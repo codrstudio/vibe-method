@@ -4,6 +4,7 @@
  * WhatsApp Channel Card
  *
  * Card que exibe informacoes de um numero WhatsApp registrado.
+ * Updated: 2026-01-20 - Added provider badge
  */
 
 import Link from 'next/link';
@@ -19,6 +20,8 @@ import {
   MoreVertical,
   Trash2,
   RefreshCw,
+  FlaskConical,
+  Smartphone,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -38,6 +41,7 @@ interface ChannelCardProps {
   phoneNumber?: string | null;
   assignmentsCount?: number;
   createdAt: string;
+  provider?: 'evolution' | 'simulator';
   onRefreshQr?: () => void;
   onDelete?: () => void;
   isLoading?: boolean;
@@ -52,6 +56,7 @@ export function ChannelCard({
   phoneNumber,
   assignmentsCount = 0,
   createdAt,
+  provider = 'evolution',
   onRefreshQr,
   onDelete,
   isLoading = false,
@@ -63,6 +68,8 @@ export function ChannelCard({
     year: 'numeric',
   });
 
+  const isSimulator = provider === 'simulator';
+
   return (
     <Card className={cn('group relative', className)}>
       <CardHeader className="pb-3">
@@ -71,6 +78,17 @@ export function ChannelCard({
             <div className="flex items-center gap-2">
               <ConnectionStatusDot status={status} />
               <CardTitle className="text-base">{name}</CardTitle>
+              {isSimulator ? (
+                <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 gap-1">
+                  <FlaskConical className="h-3 w-3" />
+                  Simulador
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-xs bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300 gap-1">
+                  <Smartphone className="h-3 w-3" />
+                  Evolution
+                </Badge>
+              )}
             </div>
             {description && (
               <CardDescription className="text-sm line-clamp-2">
@@ -91,14 +109,14 @@ export function ChannelCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {status !== 'connected' && onRefreshQr && (
+              {!isSimulator && status !== 'connected' && onRefreshQr && (
                 <DropdownMenuItem onClick={onRefreshQr} disabled={isLoading}>
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Gerar novo QR
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem asChild>
-                <Link href={`/settings/whatsapp/channels/${id}`}>
+                <Link href={`/app/settings/whatsapp/channels/${id}`}>
                   <ChevronRight className="mr-2 h-4 w-4" />
                   Ver detalhes
                 </Link>
@@ -145,7 +163,7 @@ export function ChannelCard({
         </div>
 
         {/* Action Link */}
-        <Link href={`/settings/whatsapp/channels/${id}`} className="block">
+        <Link href={`/app/settings/whatsapp/channels/${id}`} className="block">
           <Button variant="outline" className="w-full justify-between" size="sm">
             {status === 'connected' ? 'Gerenciar' : 'Conectar'}
             <ChevronRight className="h-4 w-4" />
@@ -162,16 +180,26 @@ export function ChannelCardCompact({
   name,
   status,
   phoneNumber,
+  provider = 'evolution',
   className,
-}: Pick<ChannelCardProps, 'id' | 'name' | 'status' | 'phoneNumber' | 'className'>) {
+}: Pick<ChannelCardProps, 'id' | 'name' | 'status' | 'phoneNumber' | 'provider' | 'className'>) {
+  const isSimulator = provider === 'simulator';
+
   return (
-    <Link href={`/settings/whatsapp/channels/${id}`}>
+    <Link href={`/app/settings/whatsapp/channels/${id}`}>
       <Card className={cn('cursor-pointer transition-colors hover:bg-muted/50', className)}>
         <CardContent className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
             <ConnectionStatusDot status={status} />
             <div>
-              <p className="font-medium">{name}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium">{name}</p>
+                {isSimulator ? (
+                  <FlaskConical className="h-3 w-3 text-purple-500" />
+                ) : (
+                  <Smartphone className="h-3 w-3 text-green-500" />
+                )}
+              </div>
               {phoneNumber && (
                 <p className="text-sm text-muted-foreground">{phoneNumber}</p>
               )}

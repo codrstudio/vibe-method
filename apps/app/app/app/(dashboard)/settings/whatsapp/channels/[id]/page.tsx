@@ -4,6 +4,7 @@
  * WhatsApp Channel Detail Page
  *
  * Pagina de detalhes de um numero WhatsApp, incluindo QR code e atribuicoes.
+ * Updated: 2026-01-20 - Added conditional UI for simulator provider
  */
 
 import { useState } from "react"
@@ -27,6 +28,7 @@ import {
   QrCodeViewer,
   AssignDialog,
   TestMessageForm,
+  SimulatorConnectionPanel,
 } from "@/components/whatsapp"
 import { useWhatsAppChannel } from "@/hooks/use-whatsapp-channel"
 import {
@@ -38,6 +40,8 @@ import {
   History,
   RefreshCw,
   Loader2,
+  FlaskConical,
+  Smartphone,
 } from "lucide-react"
 import type { ChannelStatus } from "@/hooks/use-whatsapp-channel"
 
@@ -53,6 +57,7 @@ interface Channel {
   qrCode: string | null
   qrCodeExpiresAt: string | null
   retryCount: number
+  provider: "evolution" | "simulator"
   createdAt: string
   updatedAt: string
 }
@@ -226,10 +231,12 @@ export default function WhatsAppChannelDetailPage() {
         qrCode: realtimeState.qrCode ?? channelData.qrCode,
         qrCodeExpiresAt: realtimeState.qrCodeExpiresAt ?? channelData.qrCodeExpiresAt,
         phoneNumber: realtimeState.phoneNumber ?? channelData.phoneNumber,
+        provider: channelData.provider || "evolution", // Default to evolution for backwards compatibility
       }
     : null
 
   const isConnected = channel?.status === "connected"
+  const isSimulator = channel?.provider === "simulator"
 
   if (isLoading) {
     return (
@@ -275,9 +282,22 @@ export default function WhatsAppChannelDetailPage() {
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Voltar
               </Link>
-              <h1 className="text-xl md:text-2xl font-semibold tracking-tight">
-                {channel.name}
-              </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl md:text-2xl font-semibold tracking-tight">
+                  {channel.name}
+                </h1>
+                {isSimulator ? (
+                  <Badge variant="outline" className="bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 gap-1">
+                    <FlaskConical className="h-3 w-3" />
+                    Simulador
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300 gap-1">
+                    <Smartphone className="h-3 w-3" />
+                    Evolution
+                  </Badge>
+                )}
+              </div>
               {channel.description && (
                 <p className="text-sm text-muted-foreground">{channel.description}</p>
               )}
@@ -318,7 +338,17 @@ export default function WhatsAppChannelDetailPage() {
 
             {/* Connection Tab */}
             <TabsContent value="connect" className="space-y-4">
-              {isConnected ? (
+              {isSimulator ? (
+                <SimulatorConnectionPanel
+                  channelId={channel.id}
+                  instanceName={channel.instanceName}
+                  status={channel.status}
+                  phoneNumber={channel.phoneNumber}
+                  onStatusChange={() => {
+                    queryClient.invalidateQueries({ queryKey: ["whatsapp-channel", channelId] })
+                  }}
+                />
+              ) : isConnected ? (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-green-600">Conectado</CardTitle>

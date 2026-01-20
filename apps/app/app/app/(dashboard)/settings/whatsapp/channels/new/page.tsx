@@ -4,7 +4,7 @@
  * New WhatsApp Channel Page
  *
  * Pagina para registrar um novo numero WhatsApp.
- * Updated: 2026-01-19 - Fixed response format handling
+ * Updated: 2026-01-20 - Added provider selector (Evolution/Simulator)
  */
 
 import { useState } from "react"
@@ -16,8 +16,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { BreadcrumbBar } from "@/components/breadcrumb-bar"
-import { Loader2, Phone, ArrowLeft } from "lucide-react"
+import { Loader2, Phone, ArrowLeft, Smartphone, FlaskConical } from "lucide-react"
 import Link from "next/link"
 
 interface CreateChannelResponse {
@@ -34,6 +35,7 @@ interface CreateChannelResponse {
 async function createChannel(data: {
   name: string
   description?: string
+  provider: "evolution" | "simulator"
 }): Promise<CreateChannelResponse> {
   const res = await fetch("/api/whatsapp/channels", {
     method: "POST",
@@ -61,6 +63,7 @@ export default function NewWhatsAppChannelPage() {
   const router = useRouter()
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
+  const [provider, setProvider] = useState<"evolution" | "simulator">("evolution")
 
   const mutation = useMutation({
     mutationFn: createChannel,
@@ -76,6 +79,7 @@ export default function NewWhatsAppChannelPage() {
     mutation.mutate({
       name: name.trim(),
       description: description.trim() || undefined,
+      provider,
     })
   }
 
@@ -145,6 +149,44 @@ export default function NewWhatsAppChannelPage() {
                   />
                 </div>
 
+                {/* Provider */}
+                <div className="space-y-3">
+                  <Label>Tipo de Conexão</Label>
+                  <RadioGroup
+                    value={provider}
+                    onValueChange={(value) => setProvider(value as "evolution" | "simulator")}
+                    disabled={mutation.isPending}
+                    className="grid gap-3"
+                  >
+                    <div className="flex items-start space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                      <RadioGroupItem value="evolution" id="evolution" className="mt-1" />
+                      <div className="flex-1 space-y-1">
+                        <Label htmlFor="evolution" className="flex items-center gap-2 cursor-pointer font-medium">
+                          <Smartphone className="h-4 w-4" />
+                          Evolution API (número real)
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Conecte um número WhatsApp real para atendimento em produção.
+                          Requer escaneamento de QR code.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                      <RadioGroupItem value="simulator" id="simulator" className="mt-1" />
+                      <div className="flex-1 space-y-1">
+                        <Label htmlFor="simulator" className="flex items-center gap-2 cursor-pointer font-medium">
+                          <FlaskConical className="h-4 w-4" />
+                          Simulador (ambiente de teste)
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Use o simulador para testar fluxos sem um número real.
+                          Ideal para desenvolvimento e homologação.
+                        </p>
+                      </div>
+                    </div>
+                  </RadioGroup>
+                </div>
+
                 {/* Error */}
                 {mutation.isError && (
                   <div className="rounded-lg bg-red-50 p-4 text-red-700 dark:bg-red-950 dark:text-red-300">
@@ -182,21 +224,41 @@ export default function NewWhatsAppChannelPage() {
               <CardTitle className="text-base">Como funciona</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <p>
-                1. Após criar o canal, um QR code será exibido para você escanear
-                com seu WhatsApp.
-              </p>
-              <p>
-                2. Abra o WhatsApp no celular, vá em Configurações &gt; Aparelhos
-                conectados &gt; Conectar aparelho.
-              </p>
-              <p>
-                3. Escaneie o QR code para conectar o número a este sistema.
-              </p>
-              <p>
-                4. Após conectado, você poderá atribuir este número a operações
-                específicas.
-              </p>
+              {provider === "evolution" ? (
+                <>
+                  <p>
+                    1. Após criar o canal, um QR code será exibido para você escanear
+                    com seu WhatsApp.
+                  </p>
+                  <p>
+                    2. Abra o WhatsApp no celular, vá em Configurações &gt; Aparelhos
+                    conectados &gt; Conectar aparelho.
+                  </p>
+                  <p>
+                    3. Escaneie o QR code para conectar o número a este sistema.
+                  </p>
+                  <p>
+                    4. Após conectado, você poderá atribuir este número a operações
+                    específicas.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    1. Após criar o canal, você verá um painel de controle do simulador.
+                  </p>
+                  <p>
+                    2. Clique em &quot;Conectar Simulador&quot; para ativar a instância.
+                  </p>
+                  <p>
+                    3. Use o botão &quot;Abrir Simulador&quot; para acessar a interface de teste.
+                  </p>
+                  <p>
+                    4. Na interface do simulador, você pode enviar e receber mensagens
+                    como se fosse um usuário real do WhatsApp.
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
