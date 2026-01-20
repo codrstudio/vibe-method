@@ -1,6 +1,6 @@
-# Platform Backport
+# TO-PLATFORM
 
-Artefatos criados no fork (cia-dashboard-vibe) que devem voltar para a plataforma (vibe-method).
+Artefatos criados no fork (cia-dashboard-vibe) que devem ser incorporados na plataforma (vibe-method).
 
 ---
 
@@ -25,7 +25,7 @@ Artefatos criados no fork (cia-dashboard-vibe) que devem voltar para a plataform
 
 | Arquivo | Status | Destino |
 |---------|--------|---------|
-| `generate-agent.md` | criado | `scaffold/.claude/commands/generate-agent.md` |
+| `biz/generate-agent.md` | criado | `scaffold/.claude/commands/biz/generate-agent.md` |
 
 ---
 
@@ -35,13 +35,20 @@ Artefatos criados no fork (cia-dashboard-vibe) que devem voltar para a plataform
 |---------|--------|
 | `specs/AI-INSTRUCTIONS.local.md` | Especifico do projeto |
 | `specs/company/profile.md` | Contexto do cliente |
-| `specs/agents/writer.md` | Agente de negocio |
-| `specs/agents/reviewer.md` | Agente de negocio |
-| `specs/entities/report.yaml` | Entidade de negocio |
+| `specs/agents/biz-writer.md` | Agente de negocio |
+| `specs/agents/biz-reviewer.md` | Agente de negocio |
+| `specs/entities/biz-report.yaml` | Entidade de negocio |
+
+## Notas
+
+- Puxar para a plataforma tudo em: .claude\commands\biz
+- Regra Motor vs Negocio: `biz-*` = livre, `sem biz-` = requer aprovacao
+- Pattern `specs/platform-requests/` para feedback loop com plataforma
+- `llmService.createLLM(intent)` eh o pattern real (nao `resolveLLM`)
 
 ---
 
-## Checklist de Backport
+## Checklist
 
 Antes de copiar para plataforma:
 

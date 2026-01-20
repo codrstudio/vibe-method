@@ -105,6 +105,13 @@ npm run migrate:analytics  # Roda migrations no banco analytics
 
 ---
 
+## Playwright
+
+- **Testes de playwright devem ser feitos em .tmp\playwright**
+- **Antes dos testes escaneie os arquivos .env e .env.development para descobrir as rotas**
+
+---
+
 ## dotenv-cli
 
 Sempre usar flag `-o`: `dotenv -o -e .env ...`
@@ -153,7 +160,6 @@ Por exemplo:
 
 - **UTF-8 encoding always**
 - **Temporary files only in `.tmp/` — jamais crie testes rápidos e arquivos temporários na estrutura do projeto**
-- **Testes de playwright devem ser feitos em .tmp\playwright**
 - **Never use `kill`/`taskkill` to terminate Node.js processes**
 - **Never change ports** - report if occupied
 - **Never use destructive git commands on main** (`reset --hard`, `push --force`)
