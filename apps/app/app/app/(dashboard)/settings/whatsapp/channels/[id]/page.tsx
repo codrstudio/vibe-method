@@ -258,10 +258,11 @@ export default function WhatsAppChannelDetailPage() {
   })
 
   // Merge server data with realtime state
+  // Use channelData.status as source of truth, realtimeState only for live updates
   const channel = channelData
     ? {
         ...channelData,
-        status: realtimeState.status,
+        status: channelData.status,
         qrCode: realtimeState.qrCode ?? channelData.qrCode,
         qrCodeExpiresAt: realtimeState.qrCodeExpiresAt ?? channelData.qrCodeExpiresAt,
         phoneNumber: realtimeState.phoneNumber ?? channelData.phoneNumber,
@@ -373,7 +374,7 @@ export default function WhatsAppChannelDetailPage() {
               <TabsTrigger value="events">Histórico</TabsTrigger>
               <TabsTrigger value="dev" className="gap-1">
                 <FlaskConical className="h-3.5 w-3.5" />
-                Dev
+                Opções
               </TabsTrigger>
             </TabsList>
 

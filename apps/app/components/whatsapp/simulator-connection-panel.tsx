@@ -69,6 +69,8 @@ export function SimulatorConnectionPanel({
         const data = await res.json();
         throw new Error(data.error || 'Falha ao conectar');
       }
+      // Aguarda o wa-sim processar o webhook de conexao (tem delay de 1s)
+      await new Promise(resolve => setTimeout(resolve, 2000));
       onStatusChange?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido');

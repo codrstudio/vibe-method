@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { FlaskConical, ArrowLeft, ArrowRight, Save, X, Loader2 } from 'lucide-react';
+import { FlaskConical, ArrowLeft, ArrowRight, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TestModesCardProps {
@@ -190,11 +190,10 @@ export function TestModesCard({
             ) : (
               <Button
                 variant="outline"
-                size="icon"
                 onClick={handleSaveEchoTo}
                 disabled={savingEchoTo || !echoToNumber}
               >
-                {savingEchoTo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {savingEchoTo ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Salvar'}
               </Button>
             )}
           </div>
@@ -233,11 +232,10 @@ export function TestModesCard({
             ) : (
               <Button
                 variant="outline"
-                size="icon"
                 onClick={handleSaveRedirect}
                 disabled={savingRedirect || !redirectToNumber}
               >
-                {savingRedirect ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {savingRedirect ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Salvar'}
               </Button>
             )}
           </div>

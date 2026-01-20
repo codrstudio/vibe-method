@@ -2,6 +2,9 @@ import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 import { whatsappService } from '../services/whatsapp/service.js';
 import { channelsRepository } from '../services/whatsapp/repository.js';
+import { handleEvolutionWebhook } from '../services/whatsapp/index.js';
+import { config } from '../config.js';
+import type { EvolutionWebhookPayload } from '../services/whatsapp/types.js';
 
 // =============================================================================
 // Schemas
@@ -41,11 +44,65 @@ const TestModesSchema = z.object({
   redirectToNumber: z.string().nullable().optional(),
 });
 
+const WebhookPayloadSchema = z.object({
+  event: z.string(),
+  instance: z.string(),
+  data: z.record(z.unknown()),
+  date_time: z.string().optional(),
+  sender: z.string().optional(),
+  server_url: z.string().optional(),
+  apikey: z.string().optional(),
+});
+
 // =============================================================================
 // Routes
 // =============================================================================
 
 export const whatsappRoutes: FastifyPluginAsync = async (fastify) => {
+  // ===========================================================================
+  // WEBHOOK (receives events from Evolution API or wa-sim)
+  // ===========================================================================
+
+  /**
+   * POST /backbone/whatsapp/webhook
+   * Unified webhook endpoint for Evolution API and wa-sim
+   */
+  fastify.post<{
+    Body: unknown;
+    Headers: { 'x-api-key'?: string; apikey?: string };
+  }>('/webhook', async (request, reply) => {
+    // Validate webhook secret
+    const apiKey =
+      request.headers['x-api-key'] ||
+      request.headers['apikey'] ||
+      (request.body as Record<string, unknown>)?.apikey;
+
+    if (config.EVOLUTION_API_KEY && apiKey !== config.EVOLUTION_API_KEY) {
+      fastify.log.warn('Invalid webhook API key received');
+      return reply.unauthorized('Invalid API key');
+    }
+
+    // Validate payload
+    const result = WebhookPayloadSchema.safeParse(request.body);
+
+    if (!result.success) {
+      fastify.log.error('Invalid webhook payload:', result.error.format());
+      return reply.badRequest('Invalid webhook payload');
+    }
+
+    const payload = result.data as EvolutionWebhookPayload;
+
+    fastify.log.info(`[WhatsApp Webhook] Event: ${payload.event}, Instance: ${payload.instance}`);
+
+    // Process webhook asynchronously
+    handleEvolutionWebhook(payload).catch((error) => {
+      fastify.log.error('Error processing webhook:', error);
+    });
+
+    // Return immediately to acknowledge receipt
+    return reply.send({ received: true });
+  });
+
   // ===========================================================================
   // CHANNELS
   // ===========================================================================
