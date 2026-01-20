@@ -145,7 +145,7 @@ Se nao tiver, crie migration 102_biz_reports_tracking.sql para adicionar.
 
 ---
 
-# [ ] - 3.3: Testar processamento
+# [x] - 3.3: Testar processamento
 
 **Executar:**
 
@@ -163,7 +163,7 @@ ORDER BY processed_at DESC LIMIT 10;
 
 ---
 
-# [ ] - 3.4: Testar retry
+# [x] - 3.4: Testar retry
 
 **Validar:**
 - Relatorio rejeitado tem `attempt` incrementado
@@ -172,14 +172,65 @@ ORDER BY processed_at DESC LIMIT 10;
 
 ---
 
+# [ ] - 3.5: Corrigir auditoria e lazy compile nos agentes
+
+**Prompt para IA (colar no fork):**
+
+```
+Leia specs/AI-INSTRUCTIONS.md antes de comecar.
+
+O relatorio de qualidade identificou problemas nos agentes biz-writer e biz-reviewer:
+1. WorkflowExecution (CRITICO) - Sem auditoria das execucoes
+2. Lazy compile - Otimizacao nao implementada
+
+IMPORTANTE: O modulo WorkflowExecution JA EXISTE na plataforma.
+NAO CRIE apps/backbone/src/lib/workflow-execution.ts - ele ja existe!
+
+Apenas EDITE os agentes existentes:
+
+1. LAZY COMPILE - Em biz-writer/index.ts e biz-reviewer/index.ts:
+
+De:
+const compiledGraph = graph.compile();
+
+Para:
+let compiledGraph: ReturnType<typeof graph.compile> | null = null;
+function getCompiledGraph() {
+  if (!compiledGraph) compiledGraph = graph.compile();
+  return compiledGraph;
+}
+
+2. WORKFLOW EXECUTION - Importar e usar:
+
+import { WorkflowExecution } from '../../lib/workflow-execution.js';
+
+Na funcao invoke:
+const execution = new WorkflowExecution('biz-writer'); // ou 'biz-reviewer'
+await execution.start(input);
+try {
+  const result = await getCompiledGraph().invoke(state);
+  await execution.complete(result);
+  return result;
+} catch (error) {
+  await execution.fail('invoke', error as Error);
+  throw error;
+}
+
+Arquivos a editar:
+- apps/backbone/src/agents/biz-writer/index.ts
+- apps/backbone/src/agents/biz-reviewer/index.ts
+```
+
+---
+
 # Checklist Final
 
-- [ ] Script biz-process-reports.ts criado
-- [ ] npm script configurado
-- [ ] Campos de tracking existem
-- [ ] Processamento funciona (pending → approved)
-- [ ] Retry funciona (rejected → retry → approved ou failed)
-- [ ] WorkflowExecution registra execucoes
+- [x] Script biz-process-reports.ts criado
+- [x] npm script configurado
+- [x] Campos de tracking existem
+- [x] Processamento funciona (pending → approved)
+- [x] Retry funciona (rejected → retry → approved ou failed)
+- [x] WorkflowExecution registra execucoes
 
 ---
 
