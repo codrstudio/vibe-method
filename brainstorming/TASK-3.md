@@ -230,7 +230,8 @@ Arquivos a editar:
 - [x] Campos de tracking existem
 - [x] Processamento funciona (pending → approved)
 - [x] Retry funciona (rejected → retry → approved ou failed)
-- [x] WorkflowExecution registra execucoes
+- [ ] Lazy compile implementado nos agentes
+- [ ] WorkflowExecution integrado nos agentes
 
 ---
 
