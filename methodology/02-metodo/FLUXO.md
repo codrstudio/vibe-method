@@ -334,24 +334,36 @@ Segunda vez: "Preciso de um date-picker"
 
 ### Quando Usar
 
-Para projetos grandes, dividir em planos por escopo:
+Para projetos grandes, dividir em planos por escopo.
+
+### Estrutura Recomendada
+
+Cada plano em sua pasta - permite recursos, drafts, anotacoes:
+
+```
+plans/
+├── biz-writer/
+│   ├── PLAN.md           # Plano principal
+│   ├── draft.md          # Rascunhos
+│   └── notes.md          # Anotacoes
+│
+├── biz-reviewer/
+│   └── PLAN.md
+│
+└── auth-flow/
+    ├── PLAN.md
+    └── diagrams/         # Recursos do plano
+```
+
+### Estrutura Simplificada
+
+Para projetos menores, arquivos diretos:
 
 ```
 plans/
 ├── PLAN-MVP.md           # Plano do MVP
 ├── PLAN-V2.md            # Plano da versao 2
-├── PLAN-HOTFIX.md        # Correcoes urgentes
-└── PLAN-SPRINTS.md       # Plano por sprints
-```
-
-### Estrutura Alternativa
-
-```
-PLAN.md                   # Plano principal (link para outros)
-plans/
-├── phase-1-auth.md       # Fase 1: Autenticacao
-├── phase-2-core.md       # Fase 2: Core Business
-└── phase-3-ia.md         # Fase 3: Integracao IA
+└── PLAN-HOTFIX.md        # Correcoes urgentes
 ```
 
 ---

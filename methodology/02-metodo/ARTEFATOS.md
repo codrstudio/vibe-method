@@ -26,7 +26,7 @@ Tipos de artefatos do Vibe Method e seus formatos.
 | **Features** | `specs/features/` | US + REQ + DES por dominio |
 | **Refs** | `specs/refs/` | Padroes a consultar ANTES |
 | **Snippets** | `specs/snippets/` | Decisoes registradas DEPOIS |
-| **Plan** | `PLAN.md` | Checklist de execucao |
+| **Plan** | `plans/{nome}/PLAN.md` | Checklist de execucao |
 | **Instructions** | `CLAUDE.md` | Contexto para IA |
 
 ### Estrutura de Pastas
@@ -549,8 +549,19 @@ Segunda vez: "Preciso de um date-picker"
 Checklist de execucao que referencia specs.
 
 ```
-specs/features/  ->  PLAN.md         ->  codigo
-(o que fazer)        (checklist)         (feito)
+specs/features/  ->  plans/{nome}/PLAN.md  ->  codigo
+(o que fazer)        (checklist)                (feito)
+```
+
+Cada plano em sua pasta - permite recursos, drafts, anotacoes:
+
+```
+plans/
+├── biz-writer/
+│   ├── PLAN.md           # Plano principal
+│   └── notes.md          # Anotacoes
+└── auth-flow/
+    └── PLAN.md
 ```
 
 ### Formato

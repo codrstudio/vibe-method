@@ -66,7 +66,7 @@ do cliente         Requirements      referencias       guiada
 ```
 projeto/
 ├── CLAUDE.md              # Instrucoes para IA
-├── PLAN.md                # Plano de execucao atual
+├── plans/                 # Planos de execucao
 ├── .env*                  # Configuracoes de ambiente
 │
 ├── brainstorming/         # Material bruto (entrada)

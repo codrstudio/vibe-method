@@ -41,11 +41,24 @@ Este arquivo e o "cerebro" do contexto. Quanto mais completo, melhor a IA perfor
 ## Troubleshooting
 ```
 
-### PLAN.md (opcional)
+### plans/ (opcional)
 
-**Proposito**: Plano de execucao da tarefa atual.
+**Proposito**: Planos de execucao.
 
-Usado quando ha uma implementacao complexa em andamento. Contem:
+Cada plano em sua pasta - permite recursos, drafts, anotacoes:
+
+```
+plans/
+├── biz-writer/
+│   ├── PLAN.md           # Plano principal
+│   ├── draft.md          # Rascunhos
+│   └── notes.md          # Anotacoes
+│
+└── auth-flow/
+    └── PLAN.md
+```
+
+**Conteudo do PLAN.md:**
 - Tarefas com checkbox `- [ ]` / `- [x]`
 - Referencias a specs (US-AUTH-001, REQ-AUTH-001)
 - Ordem de execucao
@@ -467,7 +480,7 @@ projeto/
 │
 ├── [RAIZ]
 │   ├── CLAUDE.md            # Contexto para IA
-│   ├── PLAN.md              # Plano atual
+│   ├── plans/               # Planos de execucao
 │   ├── .env*                # Configuracoes
 │   └── docker-compose*.yml  # Deploy
 │
