@@ -73,7 +73,7 @@ Input (texto) → Writer → Reviewer → Output (console)
 
 ---
 
-## Iteracao 3: Pipeline de Processamento ✅
+## Iteracao 3: Pipeline de Processamento
 
 **Objetivo:** Processar relatorios pendentes com retry
 
@@ -85,6 +85,8 @@ Input (texto) → Writer → Reviewer → Output (console)
 - [x] Logica de retry (ate 2x se rejected)
 - [x] Atualizar status: pending → processing → approved/rejected/failed
 - [x] Salvar humanized_message e pdf_data
+- [ ] Lazy compile nos agentes
+- [ ] WorkflowExecution (auditoria) nos agentes
 
 **Entrega:** `npm run biz:process-reports` funciona
 
