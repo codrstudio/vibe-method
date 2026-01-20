@@ -13,6 +13,7 @@
     "build": "npm run build --workspaces --if-present",
     "docker:up": "docker compose -f docker-compose.dev.yml up -d",
     "docker:down": "docker compose -f docker-compose.dev.yml down",
+    "docker:rebuild": "docker compose -f docker-compose.dev.yml down && docker compose -f docker-compose.dev.yml up -d --build",
     "migrate:main": "dotenv -o -e .env -e .env.development -e .env.secrets -- node scripts/migrate-db.mjs main",
     "migrate:analytics": "dotenv -o -e .env -e .env.development -e .env.secrets -- node scripts/migrate-db.mjs analytics",
     "tooling": "npm run dev -w vibe-tooling"
