@@ -5,8 +5,8 @@
  *
  * Card que exibe e permite configurar os modos de teste do canal WhatsApp:
  * - Echo: Mensagem recebida retorna ao remetente
- * - Echo-To: Mensagem recebida vai para numero especifico
- * - Redirect: Mensagem enviada vai para numero especifico
+ * - Echo-To: Mensagem recebida vai para número específico
+ * - Redirect: Mensagem enviada vai para número específico
  */
 
 import { useState } from 'react';
@@ -116,9 +116,9 @@ export function TestModesCard({
           </div>
           {activeMode && (
             <Badge variant={activeMode === 'redirect' ? 'destructive' : 'secondary'}>
-              {activeMode === 'echo' && 'Echo Ativo'}
-              {activeMode === 'echo-to' && 'Echo-To Ativo'}
-              {activeMode === 'redirect' && 'Redirect Ativo'}
+              {activeMode === 'echo' && 'Espelho Ativo'}
+              {activeMode === 'echo-to' && 'Espelhar Para Ativo'}
+              {activeMode === 'redirect' && 'Redirecionamento Ativo'}
             </Badge>
           )}
         </div>
@@ -133,7 +133,7 @@ export function TestModesCard({
             <div className="space-y-0.5">
               <Label htmlFor="echo-mode" className="flex items-center gap-2">
                 <ArrowLeft className="h-4 w-4" />
-                Modo Echo
+                Modo Espelho
               </Label>
               <p className="text-sm text-muted-foreground">
                 Mensagem recebida retorna ao remetente
@@ -151,7 +151,7 @@ export function TestModesCard({
           </div>
           {initialEchoToNumber && (
             <p className="text-xs text-amber-600 dark:text-amber-400">
-              Desativado porque Echo-To esta configurado
+              Desativado porque Espelhar Para está configurado
             </p>
           )}
         </div>
@@ -164,10 +164,10 @@ export function TestModesCard({
             <Label htmlFor="echo-to-number" className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
               <ArrowRight className="h-4 w-4 -ml-2" />
-              Modo Echo-To
+              Modo Espelhar Para
             </Label>
             <p className="text-sm text-muted-foreground">
-              Mensagem recebida vai para numero especifico
+              Mensagem recebida vai para número específico
             </p>
           </div>
           <div className="flex gap-2">
@@ -206,10 +206,10 @@ export function TestModesCard({
           <div className="space-y-0.5">
             <Label htmlFor="redirect-number" className="flex items-center gap-2">
               <ArrowRight className="h-4 w-4" />
-              Modo Redirect
+              Modo Redirecionar
             </Label>
             <p className="text-sm text-muted-foreground">
-              Mensagem enviada vai para numero especifico
+              Mensagem enviada vai para número específico
             </p>
           </div>
           <div className="flex gap-2">
