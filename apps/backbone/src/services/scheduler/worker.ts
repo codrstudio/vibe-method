@@ -90,7 +90,7 @@ export function startWorker(): Worker<SchedulerJobData> {
       }
     },
     {
-      connection: redisBullMQ,
+      connection: redisBullMQ as never,
       concurrency: 5,
       limiter: {
         max: 10,

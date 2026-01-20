@@ -9,7 +9,7 @@ let schedulerQueue: Queue<SchedulerJobData> | null = null;
 export function getQueue(): Queue<SchedulerJobData> {
   if (!schedulerQueue) {
     schedulerQueue = new Queue<SchedulerJobData>(SCHEDULER_QUEUE_NAME, {
-      connection: redisBullMQ,
+      connection: redisBullMQ as never,
       defaultJobOptions: {
         removeOnComplete: {
           age: 3600, // Keep completed jobs for 1 hour
@@ -23,7 +23,7 @@ export function getQueue(): Queue<SchedulerJobData> {
     });
   }
 
-  return schedulerQueue;
+  return schedulerQueue!;
 }
 
 export async function addRepeatableJob(
@@ -102,17 +102,7 @@ export async function addImmediateJob(
   return job.id ?? '';
 }
 
-export async function getRepeatableJobs(): Promise<
-  Array<{
-    key: string;
-    name: string;
-    id: string | null;
-    endDate: number | null;
-    tz: string | null;
-    pattern: string | null;
-    next: number;
-  }>
-> {
+export async function getRepeatableJobs() {
   const queue = getQueue();
   return queue.getRepeatableJobs();
 }

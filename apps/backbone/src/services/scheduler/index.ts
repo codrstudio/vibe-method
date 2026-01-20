@@ -33,6 +33,9 @@ export { startWorker, stopWorker, getWorker } from './worker.js';
 import { startWorker } from './worker.js';
 import { syncAllJobs } from './service.js';
 
+// Import all business executors to register them
+import './executors/index.js';
+
 let initialized = false;
 
 /**
