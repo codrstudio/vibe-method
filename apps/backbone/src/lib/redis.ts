@@ -6,6 +6,12 @@ export const redis = new Redis(config.REDIS_URL);
 
 export const redisSub = new Redis(config.REDIS_URL);
 
+// Dedicated connection for BullMQ (requires maxRetriesPerRequest: null)
+export const redisBullMQ = new Redis(config.REDIS_URL, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+});
+
 // Cache helpers with instrumentation
 export const cache = {
   async get<T>(key: string): Promise<T | null> {
