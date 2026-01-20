@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { BreadcrumbBar } from "@/components/breadcrumb-bar"
+import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { TemplateEditor } from "@/components/messages/template-editor"
 import { VariablePicker } from "@/components/messages/variable-picker"
 import { EmailPreview } from "@/components/messages/email-preview"
@@ -256,6 +257,33 @@ export default function TemplateEditorPage({
               )}
               Salvar
             </Button>
+          </>
+        }
+        mobileActions={
+          <>
+            <DropdownMenuItem onClick={handlePreview}>
+              <Eye className="mr-2 h-4 w-4" />
+              Preview
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={handleSave}
+              disabled={!hasChanges || updateMutation.isPending}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              Salvar
+            </DropdownMenuItem>
+            {template.source === "custom" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => resetMutation.mutate()}
+                  disabled={resetMutation.isPending}
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Restaurar padrão
+                </DropdownMenuItem>
+              </>
+            )}
           </>
         }
       />
