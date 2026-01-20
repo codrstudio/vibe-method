@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { registry } from '../../registry.js';
-import { llmService } from '../../../llm/index.js';
+import { llmService } from '../../../llm/service.js';
 import type { ActionDefinition } from '../../types.js';
 
 const inputSchema = z.object({});
