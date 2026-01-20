@@ -43,7 +43,7 @@ export function InstanceSelector() {
           {currentInstance ? (
             <>
               <p className="text-base font-medium text-wa-text-primary truncate">
-                {currentInstance.instanceName}
+                {currentInstance.displayName || currentInstance.instanceName}
               </p>
               <p className="text-sm text-wa-text-secondary truncate">
                 {currentInstance.phoneNumber || 'Sem numero'}

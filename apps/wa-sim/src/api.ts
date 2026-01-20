@@ -7,8 +7,8 @@ import { simulatorState } from './state.js'
 import { webhookEmitter } from './webhook-emitter.js'
 
 export const simulatorApi = {
-  async createInstance(instanceName: string, _webhookUrl: string, channelId?: string) {
-    const instance = simulatorState.createInstance(instanceName, channelId)
+  async createInstance(instanceName: string, _webhookUrl: string, channelId?: string, displayName?: string) {
+    const instance = simulatorState.createInstance(instanceName, channelId, displayName)
 
     // Emite QR code após pequeno delay (simula comportamento real)
     setTimeout(() => {

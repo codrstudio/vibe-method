@@ -42,6 +42,7 @@ export interface Group {
 export interface Instance {
   instanceName: string
   instanceId: string
+  displayName: string | null
   status: 'qr_pending' | 'connecting' | 'connected' | 'disconnected'
   phoneNumber: string | null
 }

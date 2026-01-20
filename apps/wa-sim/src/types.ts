@@ -7,6 +7,7 @@ export interface SimulatedInstance {
   instanceName: string
   instanceId: string
   channelId: string | null
+  displayName: string | null
   status: 'qr_pending' | 'connecting' | 'connected' | 'disconnected'
   phoneNumber: string | null
   qrCode: string | null

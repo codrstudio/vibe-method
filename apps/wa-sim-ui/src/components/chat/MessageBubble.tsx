@@ -64,12 +64,12 @@ export function MessageBubble({ message, isOwn, isHighlighted }: MessageBubblePr
               isOwn
                 ? 'right-0 -mr-1.5 bg-wa-bubble-out'
                 : 'left-0 -ml-1.5 bg-wa-bubble-in',
-              isOwn ? 'rounded-bl-full' : 'rounded-br-full'
+              isOwn ? 'rounded-br-full' : 'rounded-bl-full'
             )}
             style={{
               clipPath: isOwn
-                ? 'polygon(100% 0, 0 0, 100% 100%)'
-                : 'polygon(0 0, 100% 0, 0 100%)'
+                ? 'polygon(0 0, 100% 0, 0 100%)'
+                : 'polygon(100% 0, 0 0, 100% 100%)'
             }}
           />
 

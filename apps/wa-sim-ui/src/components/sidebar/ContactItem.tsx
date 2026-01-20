@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { format, isToday, isYesterday } from 'date-fns'
 import { clsx } from 'clsx'
+import { Copy, Check } from 'lucide-react'
 import type { Contact, Message } from '../../types'
 
 interface ContactItemProps {
@@ -45,9 +47,25 @@ function getAvatarColor(name: string): string {
 }
 
 export function ContactItem({ contact, isSelected, unreadCount, lastMessage, onClick }: ContactItemProps) {
+  const [isHovered, setIsHovered] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  async function handleCopyPhone(e: React.MouseEvent) {
+    e.stopPropagation()
+    try {
+      await navigator.clipboard.writeText(contact.phone)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy phone:', err)
+    }
+  }
+
   return (
     <div
       onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className={clsx(
         'flex items-center gap-3 px-3 py-3 cursor-pointer hover:bg-wa-bg-input border-b border-wa-border',
         isSelected && 'bg-wa-bg-input'
@@ -79,9 +97,24 @@ export function ContactItem({ contact, isSelected, unreadCount, lastMessage, onC
           )}
         </div>
         <div className="flex justify-between items-center mt-0.5">
-          <span className="text-sm text-wa-text-secondary truncate">
-            {lastMessage?.text || contact.phone}
-          </span>
+          <div className="flex items-center gap-1 min-w-0 flex-1">
+            <span className="text-sm text-wa-text-secondary truncate">
+              {lastMessage?.text || contact.phone}
+            </span>
+            {isHovered && !lastMessage && (
+              <button
+                onClick={handleCopyPhone}
+                className="p-0.5 rounded hover:bg-wa-bg-hover text-wa-text-secondary hover:text-wa-text-primary flex-shrink-0"
+                title="Copiar número"
+              >
+                {copied ? (
+                  <Check className="w-3.5 h-3.5 text-wa-green-primary" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
+              </button>
+            )}
+          </div>
           {/* Badge de nao lidas */}
           {unreadCount > 0 && (
             <span className="bg-wa-green-primary text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center ml-2 flex-shrink-0">

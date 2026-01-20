@@ -15,11 +15,12 @@ class SimulatorState extends EventEmitter {
   // Instâncias
   // =========================================================================
 
-  createInstance(name: string, channelId?: string): SimulatedInstance {
+  createInstance(name: string, channelId?: string, displayName?: string): SimulatedInstance {
     const instance: SimulatedInstance = {
       instanceName: name,
       instanceId: `sim_${uuid()}`,
       channelId: channelId ?? null,
+      displayName: displayName ?? null,
       status: 'qr_pending',
       phoneNumber: null,
       qrCode: this.generateQrCode(name),

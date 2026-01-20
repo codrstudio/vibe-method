@@ -23,7 +23,7 @@ export function ChannelSelectionModal({ open, onClose }: ChannelSelectionModalPr
     if (!search.trim()) return connectedInstances
     const query = search.toLowerCase()
     return connectedInstances.filter(
-      i => i.instanceName.toLowerCase().includes(query) ||
+      i => (i.displayName || i.instanceName).toLowerCase().includes(query) ||
            i.phoneNumber?.toLowerCase().includes(query)
     )
   }, [connectedInstances, search])
@@ -102,7 +102,7 @@ export function ChannelSelectionModal({ open, onClose }: ChannelSelectionModalPr
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-wa-text-primary truncate">
-                      {instance.instanceName}
+                      {instance.displayName || instance.instanceName}
                     </p>
                     <p className="text-xs text-wa-text-secondary truncate">
                       {instance.phoneNumber || 'Sem numero'}
@@ -234,7 +234,7 @@ function ChannelItem({ instance, isSelected, onClick }: ChannelItemProps) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-base font-medium text-wa-text-primary truncate">
-          {instance.instanceName}
+          {instance.displayName || instance.instanceName}
         </p>
         <p className="text-sm text-wa-text-secondary truncate">
           {instance.phoneNumber || 'Sem numero'}

@@ -32,13 +32,14 @@ export const simulatorRoutes: FastifyPluginAsync = async (fastify) => {
 
   // Criar instância (Evolution compatible)
   fastify.post('/instance/create', async (request) => {
-    const { instanceName, webhook, channelId } = request.body as {
+    const { instanceName, webhook, channelId, channelName } = request.body as {
       instanceName: string
       webhook?: string
       channelId?: string
+      channelName?: string
     }
 
-    return simulatorApi.createInstance(instanceName, webhook || '', channelId)
+    return simulatorApi.createInstance(instanceName, webhook || '', channelId, channelName)
   })
 
   // Status de conexão (Evolution compatible)
@@ -127,6 +128,7 @@ export const simulatorRoutes: FastifyPluginAsync = async (fastify) => {
         instanceName: i.instanceName,
         instanceId: i.instanceId,
         channelId: i.channelId,
+        displayName: i.displayName,
         status: i.status,
         phoneNumber: i.phoneNumber,
         stats: i.stats,
