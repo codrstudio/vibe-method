@@ -73,14 +73,36 @@ interface ModuleCardProps {
   module: ModuleHealth
 }
 
-function formatMetricValue(value: unknown): string {
-  if (typeof value === "number") {
-    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
-    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`
-    if (Number.isInteger(value)) return value.toString()
-    return value.toFixed(2)
+function extractMetricValue(metric: unknown): number | string {
+  // Handle metric objects from the backend
+  if (metric && typeof metric === "object") {
+    const m = metric as Record<string, unknown>
+    // Histogram metrics - prefer p95 or avg
+    if (m.type === "histogram") {
+      return (m.p95 as number) ?? (m.avg as number) ?? 0
+    }
+    // Counter/Gauge metrics - extract value
+    if ("value" in m && typeof m.value === "number") {
+      return m.value
+    }
+    // Count field for histograms
+    if ("count" in m && typeof m.count === "number") {
+      return m.count
+    }
   }
-  return String(value)
+  return metric as number | string
+}
+
+function formatMetricValue(value: unknown): string {
+  const extracted = extractMetricValue(value)
+
+  if (typeof extracted === "number") {
+    if (extracted >= 1000000) return `${(extracted / 1000000).toFixed(1)}M`
+    if (extracted >= 1000) return `${(extracted / 1000).toFixed(1)}K`
+    if (Number.isInteger(extracted)) return extracted.toString()
+    return extracted.toFixed(2)
+  }
+  return String(extracted)
 }
 
 function formatTimestamp(timestamp: string): string {
@@ -143,7 +165,7 @@ export function ModuleCard({ module }: ModuleCardProps) {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p className="font-mono text-xs">{key}: {String(value)}</p>
+                    <p className="font-mono text-xs">{key}: {formatMetricValue(value)}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

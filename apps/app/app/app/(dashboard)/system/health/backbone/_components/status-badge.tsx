@@ -9,17 +9,17 @@ const statusConfig: Record<Status, { icon: typeof CheckCircle; className: string
   healthy: {
     icon: CheckCircle,
     className: "bg-success/10 text-success border-success/20",
-    label: "Healthy",
+    label: "Saudável",
   },
   degraded: {
     icon: AlertCircle,
     className: "bg-warning/10 text-warning border-warning/20",
-    label: "Degraded",
+    label: "Degradado",
   },
   unhealthy: {
     icon: XCircle,
     className: "bg-critical/10 text-critical border-critical/20",
-    label: "Unhealthy",
+    label: "Indisponível",
   },
 }
 

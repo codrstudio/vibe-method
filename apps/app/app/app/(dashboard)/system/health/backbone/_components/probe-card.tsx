@@ -14,14 +14,18 @@ import type { ProbeResult } from "../_hooks/use-pulse"
 
 const probeConfig: Record<string, {
   icon: typeof Database
+  title: string
   description: string
   latencyThreshold: number
+  order: number
   detailsFormatter?: (details: Record<string, unknown>) => { label: string; value: string }[]
 }> = {
   database: {
     icon: Database,
-    description: "PostgreSQL",
+    title: "PostgreSQL",
+    description: "Base de dados",
     latencyThreshold: 100,
+    order: 1,
     detailsFormatter: (details) => {
       const pool = details.pool as Record<string, number> | undefined
       if (!pool) return []
@@ -34,8 +38,10 @@ const probeConfig: Record<string, {
   },
   redis: {
     icon: HardDrive,
-    description: "Redis Cache",
+    title: "Redis",
+    description: "Serviço de caching",
     latencyThreshold: 50,
+    order: 2,
     detailsFormatter: (details) => {
       const memory = details.memory as Record<string, unknown> | undefined
       if (!memory) return []
@@ -44,10 +50,38 @@ const probeConfig: Record<string, {
       ]
     },
   },
+  whatsapp: {
+    icon: Server,
+    title: "WhatsApp",
+    description: "Serviço de mensagens",
+    latencyThreshold: 2000,
+    order: 3,
+  },
+  "llm-sanity": {
+    icon: Brain,
+    title: "Saúde da LLM",
+    description: "Componente de Acesso a LLMs",
+    latencyThreshold: 5000,
+    order: 4,
+    detailsFormatter: (details) => {
+      const result: { label: string; value: string }[] = []
+      const bindings = details.bindings as { configured?: number } | undefined
+      if (bindings?.configured !== undefined) {
+        result.push({ label: "Vínculos", value: String(bindings.configured) })
+      }
+      const inference = details.inference as { model?: string; provider?: string } | undefined
+      if (inference?.provider) {
+        result.push({ label: "Provedor", value: String(inference.provider) })
+      }
+      return result
+    },
+  },
   llm: {
     icon: Brain,
-    description: "OpenRouter",
+    title: "OpenRouter",
+    description: "Porta de LLMs remotas",
     latencyThreshold: 5000,
+    order: 5,
     detailsFormatter: (details) => {
       const result: { label: string; value: string }[] = []
       if (details.credits) {
@@ -62,8 +96,10 @@ const probeConfig: Record<string, {
   },
   ollama: {
     icon: Cpu,
-    description: "Ollama Local",
+    title: "Ollama",
+    description: "Porta de LLMs locais",
     latencyThreshold: 1000,
+    order: 6,
     detailsFormatter: (details) => {
       const result: { label: string; value: string }[] = []
       if (details.version) {
@@ -80,8 +116,10 @@ const probeConfig: Record<string, {
   },
   knowledge: {
     icon: Server,
-    description: "Knowledge Base",
+    title: "Arquivo",
+    description: "Base de conhecimento",
     latencyThreshold: 500,
+    order: 7,
     detailsFormatter: (details) => {
       const result: { label: string; value: string }[] = []
       if (details.documents !== undefined) {
@@ -97,13 +135,19 @@ const probeConfig: Record<string, {
 
 const defaultConfig = {
   icon: Server,
+  title: "",
   description: "Componente",
   latencyThreshold: 200,
+  order: 99,
   detailsFormatter: () => [],
 }
 
 interface ProbeCardProps {
   probe: ProbeResult
+}
+
+export function getProbeOrder(probeName: string): number {
+  return probeConfig[probeName]?.order ?? defaultConfig.order
 }
 
 function getLatencyColor(latency: number, threshold: number): string {
@@ -141,7 +185,7 @@ export function ProbeCard({ probe }: ProbeCardProps) {
               }`} />
             </div>
             <div>
-              <CardTitle className="text-sm font-semibold capitalize">{probe.name}</CardTitle>
+              <CardTitle className="text-sm font-semibold">{config.title || probe.name}</CardTitle>
               <p className="text-xs text-muted-foreground">{config.description}</p>
             </div>
           </div>
@@ -163,7 +207,7 @@ export function ProbeCard({ probe }: ProbeCardProps) {
             className="h-1.5"
           />
           <p className="text-[10px] text-muted-foreground">
-            Threshold: {config.latencyThreshold}ms
+            Limite: {config.latencyThreshold}ms
           </p>
         </div>
 

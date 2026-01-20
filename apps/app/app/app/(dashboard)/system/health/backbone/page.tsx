@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/tooltip"
 import { usePulse } from "./_hooks/use-pulse"
 import { PulseOverview } from "./_components/pulse-overview"
-import { ProbeCard } from "./_components/probe-card"
+import { ProbeCard, getProbeOrder } from "./_components/probe-card"
 import { LLMPanel } from "./_components/llm-panel"
 import { MetricsPanel } from "./_components/metrics-panel"
 import { AlertsPanel } from "./_components/alerts-panel"
@@ -26,6 +26,7 @@ export default function InfrastructurePage() {
 
   const hasProbes = probes && probes.length > 0
   const activeAlerts = alerts?.events?.filter((e) => e.status === "triggered").length ?? 0
+  const sanityProbe = probes?.find((p) => p.name === "llm-sanity") ?? null
 
   return (
     <div className="flex flex-1 flex-col">
@@ -154,7 +155,7 @@ export default function InfrastructurePage() {
               </div>
             ) : hasProbes ? (
               <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                {probes.map((probe) => (
+                {[...probes].sort((a, b) => getProbeOrder(a.name) - getProbeOrder(b.name)).map((probe) => (
                   <ProbeCard key={probe.name} probe={probe} />
                 ))}
               </div>
@@ -171,7 +172,7 @@ export default function InfrastructurePage() {
 
           {/* Tab: LLM */}
           <TabsContent value="llm" className="space-y-4">
-            <LLMPanel llm={llm} loading={loading} />
+            <LLMPanel llm={llm} sanityProbe={sanityProbe} loading={loading} />
           </TabsContent>
 
           {/* Tab: Metrics */}
