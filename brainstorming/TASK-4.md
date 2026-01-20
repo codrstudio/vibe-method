@@ -76,7 +76,7 @@ Enviar relatorios aprovados para as familias via WhatsApp.
 
 ---
 
-# [ ] - 4.1: Criar funcao para buscar contatos no PrimeCare
+# [x] - 4.1: Criar funcao para buscar contatos no PrimeCare
 
 **Prompt para IA (colar no fork):**
 
@@ -106,28 +106,39 @@ Tambem criar migration 103_biz_reports_whatsapp.sql para adicionar campos em biz
 
 ---
 
-# [ ] - 4.2: Integrar WhatsApp Business API
+# [x] - 4.2: Configurar operacao WhatsApp para envio de relatorios
 
 **Prompt para IA (colar no fork):**
 
 ```
 Leia specs/AI-INSTRUCTIONS.md antes de comecar.
 
-Crie apps/backbone/src/lib/biz-whatsapp.ts com:
+O motor JA TEM camada de WhatsApp em apps/backbone/src/services/whatsapp/.
+NAO CRIE biz-whatsapp.ts - use o whatsappService existente.
 
-1. Funcao sendWhatsAppMessage(to: string, message: string, pdfUrl?: string)
-2. Usar WhatsApp Business API (Cloud API)
-3. Variaveis de ambiente:
-   - WHATSAPP_PHONE_NUMBER_ID
-   - WHATSAPP_ACCESS_TOKEN
-4. Retornar { success: boolean, messageId: string, error?: string }
+O sistema usa:
+- Operations = tipos de uso (ex: "notificacoes", "suporte")
+- Channels = numeros WhatsApp conectados
+- Assignments = liga canais a operacoes
 
-Documentar as variaveis necessarias em .env.example ou README.
+Para enviar relatorios:
+
+1. Criar migration 104_biz_whatsapp_operation.sql para registrar operacao:
+   INSERT INTO whatsapp_operations (slug, name, description, nature)
+   VALUES ('biz-reports', 'Relatorios de Plantao', 'Envio de relatorios humanizados para familias', 'system');
+
+2. No codigo, usar:
+   import { whatsappService } from '../../services/whatsapp/index.js';
+
+   await whatsappService.sendMessage('biz-reports', telefone, mensagem);
+
+Nota: Um canal WhatsApp precisa estar conectado e atribuido a operacao 'biz-reports'.
+Isso eh feito via dashboard (UI) ou seed.
 ```
 
 ---
 
-# [ ] - 4.3: Criar worker de envio
+# [x] - 4.3: Criar worker de envio
 
 **Prompt para IA (colar no fork):**
 
@@ -155,14 +166,14 @@ O script deve:
 
 Usar:
 - biz-primecare-contacts.ts para buscar contatos
-- biz-whatsapp.ts para enviar
+- whatsappService (do motor) para enviar
 - biz-pdf.ts para gerar PDF
 - db (postgres) para queries
 ```
 
 ---
 
-# [ ] - 4.4: Gerar PDF do relatorio
+# [x] - 4.4: Gerar PDF do relatorio
 
 **Prompt para IA (colar no fork):**
 
@@ -187,6 +198,8 @@ O PDF sera enviado como documento no WhatsApp.
 
 # [ ] - 4.5: Testar envio
 
+**Status:** Aguardando canal WhatsApp real conectado
+
 **Executar:**
 
 ```bash
@@ -202,12 +215,13 @@ npm run biz:send-reports
 
 # Checklist Final
 
-- [ ] Funcao getContactsForAssistido funciona
-- [ ] Campos de WhatsApp em biz.reports existem
-- [ ] Integracao WhatsApp funciona
-- [ ] PDF gerado corretamente
-- [ ] Worker de envio funciona
-- [ ] Status atualiza para 'sent'
+- [x] Funcao getContactsForAssistido funciona
+- [x] Campos de WhatsApp em biz.reports existem
+- [x] Operacao 'biz-reports' criada no WhatsApp
+- [ ] Canal WhatsApp conectado e atribuido *(pendente: config manual)*
+- [x] PDF gerado corretamente
+- [x] Worker de envio funciona
+- [ ] Status atualiza para 'sent' *(pendente: teste real)*
 
 ---
 
@@ -216,8 +230,8 @@ npm run biz:send-reports
 | Tipo | Arquivo | Quem |
 |------|---------|------|
 | Migration | `database/main/migrations/103_biz_reports_whatsapp.sql` | IA |
+| Migration | `database/main/migrations/104_biz_whatsapp_operation.sql` | IA |
 | Codigo | `apps/backbone/src/lib/biz-primecare-contacts.ts` | IA |
-| Codigo | `apps/backbone/src/lib/biz-whatsapp.ts` | IA |
 | Codigo | `apps/backbone/src/lib/biz-pdf.ts` | IA |
 | Codigo | `scripts/biz-send-reports.ts` | IA |
 | Config | `package.json` (npm script) | IA |
@@ -228,7 +242,8 @@ npm run biz:send-reports
 
 | Dependencia | Status | Notas |
 |-------------|--------|-------|
-| WhatsApp Business API | Pendente | Precisa conta Meta Business verificada |
+| Evolution API | Ja existe | Camada WhatsApp do motor |
+| Canal conectado | Pendente | Precisa conectar numero e atribuir a operacao |
 
 ---
 

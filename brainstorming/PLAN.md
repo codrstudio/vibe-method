@@ -73,7 +73,7 @@ Input (texto) → Writer → Reviewer → Output (console)
 
 ---
 
-## Iteracao 3: Pipeline de Processamento
+## Iteracao 3: Pipeline de Processamento ✅
 
 **Objetivo:** Processar relatorios pendentes com retry
 
@@ -85,27 +85,31 @@ Input (texto) → Writer → Reviewer → Output (console)
 - [x] Logica de retry (ate 2x se rejected)
 - [x] Atualizar status: pending → processing → approved/rejected/failed
 - [x] Salvar humanized_message e pdf_data
-- [ ] Lazy compile nos agentes
-- [ ] WorkflowExecution (auditoria) nos agentes
+- [x] Lazy compile nos agentes
+- [x] WorkflowExecution (auditoria) nos agentes
 
 **Entrega:** `npm run biz:process-reports` funciona
 
 ---
 
-## Iteracao 4: Entrega (WhatsApp/Email)
+## Iteracao 4: Entrega (WhatsApp) ⏳
 
 **Objetivo:** Enviar relatorio aprovado para familia
 
 ```
-[approved] → [WhatsApp API] ou [Email]
+[approved] → [WhatsApp API] → [status = sent]
 ```
 
-- [ ] Integracao WhatsApp Business API
-- [ ] Integracao Email (Resend/SendGrid)
-- [ ] Escolha de canal por familia
-- [ ] Confirmacao de leitura
+- [x] Buscar contatos no PrimeCare (contratante/emergenciais)
+- [x] Operacao 'biz-reports' registrada no WhatsApp
+- [x] Worker de envio (`npm run biz:send-reports`)
+- [x] Geracao de PDF profissional (pdfkit)
+- [ ] Conectar canal WhatsApp e atribuir a operacao *(manual)*
+- [ ] Testar envio real *(aguardando canal)*
 
-**Entrega:** Familia recebe mensagem + PDF
+**Entrega:** `npm run biz:send-reports` envia e atualiza status
+
+**Nota:** Email sera implementado no futuro
 
 ---
 
@@ -147,9 +151,10 @@ Input (texto) → Writer → Reviewer → Output (console)
 
 | Dependencia | Descricao | Status |
 |-------------|-----------|--------|
-| MySQL PrimeCare | Banco de dados com relatorios originais | Pendente acesso |
-| WhatsApp Business API | Envio de mensagens | Pendente conta |
-| Email (Resend/SendGrid) | Envio de emails | Pendente config |
+| MySQL PrimeCare | Banco de dados com relatorios originais | ✅ Configurado |
+| Evolution API | Envio WhatsApp via motor existente | ✅ Integrado |
+| Canal WhatsApp | Numero conectado a operacao biz-reports | Pendente config |
+| Email (Resend/SendGrid) | Envio de emails | Futuro |
 | OpenRouter/GPT-4 | LLM para agentes | ✅ Configurado |
 
 ---

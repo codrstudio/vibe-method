@@ -172,7 +172,7 @@ ORDER BY processed_at DESC LIMIT 10;
 
 ---
 
-# [ ] - 3.5: Corrigir auditoria e lazy compile nos agentes
+# [x] - 3.5: Corrigir auditoria e lazy compile nos agentes
 
 **Prompt para IA (colar no fork):**
 
@@ -230,8 +230,8 @@ Arquivos a editar:
 - [x] Campos de tracking existem
 - [x] Processamento funciona (pending → approved)
 - [x] Retry funciona (rejected → retry → approved ou failed)
-- [ ] Lazy compile implementado nos agentes
-- [ ] WorkflowExecution integrado nos agentes
+- [x] Lazy compile implementado nos agentes
+- [x] WorkflowExecution integrado nos agentes
 
 ---
 
