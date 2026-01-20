@@ -3,7 +3,7 @@ import { query } from "@/lib/db"
 import { verifyJWT } from "@/lib/auth/jwt"
 import { detectContext, getConfig } from "@/lib/auth/config"
 
-interface Task {
+interface TaskRow {
   id: string
   type: string
   class: string
@@ -24,6 +24,54 @@ interface Task {
   read_at: string | null
   created_at: string
   updated_at: string
+}
+
+interface Task {
+  id: string
+  type: string
+  class: string
+  title: string
+  message: string
+  userId: string
+  status: string
+  metadata: Record<string, unknown> | null
+  actionUrl: string | null
+  metaTags: string[]
+  tags: string[]
+  workflow: Record<string, unknown>
+  color: string | null
+  icon: string | null
+  assigneeId: string | null
+  dueAt: string | null
+  closedAt: string | null
+  readAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+function toCamelCase(row: TaskRow): Task {
+  return {
+    id: row.id,
+    type: row.type,
+    class: row.class,
+    title: row.title,
+    message: row.message,
+    userId: row.user_id,
+    status: row.status,
+    metadata: row.metadata,
+    actionUrl: row.action_url,
+    metaTags: row.meta_tags,
+    tags: row.tags,
+    workflow: row.workflow,
+    color: row.color,
+    icon: row.icon,
+    assigneeId: row.assignee_id,
+    dueAt: row.due_at,
+    closedAt: row.closed_at,
+    readAt: row.read_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
 }
 
 async function getUserId(request: NextRequest): Promise<string | null> {
@@ -90,7 +138,8 @@ export async function GET(request: NextRequest) {
     params.push(parseInt(limit, 10), parseInt(offset, 10))
     sql += ` LIMIT $${params.length - 1} OFFSET $${params.length}`
 
-    const tasks = await query<Task>(sql, params)
+    const rows = await query<TaskRow>(sql, params)
+    const tasks = rows.map(toCamelCase)
 
     return NextResponse.json({ data: tasks })
   } catch (error) {

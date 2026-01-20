@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { NotificationHub } from "@/components/notifications"
 import { useNotificationStore } from "@/stores/notification-store"
+import { BreadcrumbBar } from "@/components/breadcrumb-bar"
 import {
   Select,
   SelectContent,
@@ -20,42 +21,43 @@ export default function TasksPage() {
   }, [fetchTaskClasses])
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Tasks</h1>
-          <p className="text-muted-foreground">
-            Gerencie suas tasks e acompanhe o progresso
-          </p>
+    <div className="flex flex-1 flex-col">
+      <BreadcrumbBar
+        items={[{ label: "Início", href: "/app" }]}
+        currentPage="Tarefas"
+      />
+
+      <div className="flex flex-1 flex-col gap-4 p-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Tarefas</h1>
+          {taskClasses.length > 1 && (
+            <Select
+              value={filter.class || "all"}
+              onValueChange={(value) =>
+                setFilter({ ...filter, class: value === "all" ? undefined : value })
+              }
+            >
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filtrar por classe" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as classes</SelectItem>
+                {taskClasses.map((tc) => (
+                  <SelectItem key={tc.name} value={tc.name}>
+                    {tc.displayName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
-        {taskClasses.length > 1 && (
-          <Select
-            value={filter.class || "all"}
-            onValueChange={(value) =>
-              setFilter({ ...filter, class: value === "all" ? undefined : value })
-            }
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filtrar por classe" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as classes</SelectItem>
-              {taskClasses.map((tc) => (
-                <SelectItem key={tc.name} value={tc.name}>
-                  {tc.displayName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        <NotificationHub
+          kanbanEnabled={false}
+          defaultView="list"
+          filter={{ hideNotifications: true }}
+        />
       </div>
-
-      <NotificationHub
-        kanbanEnabled={true}
-        defaultView="list"
-        filter={{ hideNotifications: true }}
-      />
     </div>
   )
 }
