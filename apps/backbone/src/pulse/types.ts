@@ -235,6 +235,21 @@ export interface OllamaDetails {
   };
 }
 
+export interface LLMSanityDetails {
+  inference?: {
+    success: boolean;
+    response?: string;
+    model: string;
+    provider: string;
+    latencyMs: number;
+    error?: string;
+  };
+  bindings: {
+    configured: number;
+    intents: string[];
+  };
+}
+
 // ============================================================
 // API RESPONSE SCHEMAS
 // ============================================================

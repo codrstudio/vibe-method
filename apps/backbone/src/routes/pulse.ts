@@ -7,6 +7,7 @@ import {
   getLlmHealth,
   getOpenRouterHealth,
   getOllamaHealth,
+  getAllModulesHealth,
   getMetricsSnapshot,
   getHistoricalMetrics,
   alertRepository,
@@ -85,6 +86,18 @@ export const pulseRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get('/pulse/llm/ollama', async (_request, reply) => {
     const health = await getOllamaHealth();
     return reply.send(health);
+  });
+
+  // ============================================================
+  // MODULES
+  // ============================================================
+
+  fastify.get('/pulse/modules', async (_request, reply) => {
+    const modules = await getAllModulesHealth();
+    return reply.send({
+      timestamp: new Date().toISOString(),
+      modules,
+    });
   });
 
   // ============================================================
