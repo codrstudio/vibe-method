@@ -12,7 +12,7 @@ POST /api/biz-reports → processa → retorna resultado
 
 ---
 
-# [ ] - 2.1: Schema biz-report no banco
+# [x] - 2.1: Schema biz-report no banco
 
 **O que voce deve fazer:**
 
@@ -76,7 +76,7 @@ Siga o padrao biz-* conforme specs/AI-INSTRUCTIONS.md
 
 ---
 
-# [ ] - 2.2: Spec da rota API
+# [x] - 2.2: Spec da rota API
 
 **O que voce deve fazer:**
 

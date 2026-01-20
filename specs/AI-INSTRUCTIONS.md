@@ -102,6 +102,42 @@ SCREAMING:     BIZ_REPORT, BIZ_STATUS
 
 ---
 
+## Schema de Banco: `biz`
+
+Tabelas de negocio vao no schema `biz` para nao conflitar com tabelas do motor.
+
+```
+Motor (plataforma)     → schema public
+Negocio (fork)         → schema biz
+```
+
+**Exemplos:**
+```sql
+-- Motor (public)
+public.users
+public.workflow_executions
+public.llm_bindings
+
+-- Negocio (biz)
+biz.reports
+biz.assistidos
+biz.cuidadores
+```
+
+**Na migration:**
+```sql
+-- CORRETO
+CREATE TABLE biz.reports (...)
+
+-- ERRADO
+CREATE TABLE biz_reports (...)
+CREATE TABLE public.biz_reports (...)
+```
+
+**Prerequisito:** O schema `biz` eh criado pela migration `099_biz_schema.sql` do motor.
+
+---
+
 ## Principio Fundamental
 
 ```

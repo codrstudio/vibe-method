@@ -10,18 +10,37 @@ Leia ANTES de gerar codigo:
 
 ## 2. Gerar Migration
 
-**Arquivo:** `database/main/migrations/1XX_biz_$ARGUMENTS.sql`
+**Arquivo:** `database/main/migrations/1XX_$ARGUMENTS.sql`
 
 **Regras:**
 - Numero sequencial (verificar ultimo 1XX existente)
-- Prefixo `biz_` na tabela
+- Tabela no schema `biz`: `CREATE TABLE biz.{nome}`
+- NAO usar prefixo `biz_` no nome da tabela (o schema ja isola)
 - `gen_random_uuid()` para UUID
 - `TIMESTAMPTZ` para timestamps
 - Indices conforme spec
 
+**Exemplo:**
+```sql
+-- CORRETO
+CREATE TABLE biz.reports (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ...
+);
+
+CREATE INDEX idx_reports_status ON biz.reports(status);
+
+-- ERRADO (nao usar prefixo, usar schema)
+CREATE TABLE biz_reports (...)
+CREATE TABLE public.biz_reports (...)
+```
+
 ## 3. Gerar Schema Zod
 
-**Arquivo:** `packages/types/src/schemas/biz-$ARGUMENTS.ts`
+**Arquivo:** `packages/types/src/schemas/$ARGUMENTS.ts`
+
+> **NOTA**: O nome do arquivo usa `$ARGUMENTS` diretamente (ex: `biz-report.ts`).
+> NAO adicione prefixo extra - o nome da entidade ja indica que e de negocio.
 
 **Regras:**
 - Prefixo `Biz` nos tipos: `BizReportSchema`, `BizReport`
@@ -36,7 +55,7 @@ Leia ANTES de gerar codigo:
 
 Adicionar:
 ```typescript
-export * from './schemas/biz-$ARGUMENTS.js';
+export * from './schemas/$ARGUMENTS.js';
 ```
 
 ## 5. Validar
@@ -52,8 +71,8 @@ Apos gerar, valide:
 
 | Criterio | Status |
 |----------|--------|
-| Migration segue padrao 1XX_biz_* | ✅/❌ |
-| Tabela tem prefixo biz_ | ✅/❌ |
+| Migration segue padrao 1XX_*.sql | ✅/❌ |
+| Tabela no schema `biz.*` | ✅/❌ |
 | Schema Zod com prefixo Biz* | ✅/❌ |
 | Todos os campos do spec mapeados | ✅/❌ |
 | Indices criados conforme spec | ✅/❌ |
