@@ -138,6 +138,68 @@ CREATE TABLE public.biz_reports (...)
 
 ---
 
+## Monorepo: Instalacao de Pacotes
+
+Este projeto usa monorepo com workspaces. **NUNCA** instale pacotes na raiz.
+
+**ERRADO:**
+```bash
+npm install mysql2 --save
+```
+
+**CORRETO:**
+```bash
+npm install mysql2 --save --workspace=@workspace/backbone
+npm install zod --save --workspace=@workspace/types
+```
+
+**Workspaces disponiveis:**
+- `@workspace/backbone` - Backend/API
+- `@workspace/app` - Frontend Next.js
+- `@workspace/types` - Tipos compartilhados
+
+**Verificar onde instalar:**
+- Pacote usado so no backend → `@workspace/backbone`
+- Pacote usado so no frontend → `@workspace/app`
+- Tipos/schemas compartilhados → `@workspace/types`
+
+---
+
+## Executar Scripts com Variaveis de Ambiente
+
+**IMPORTANTE:** Scripts precisam de variaveis de ambiente carregadas.
+
+**ERRADO (nao funciona):**
+```bash
+npx tsx scripts/meu-script.ts
+node scripts/meu-script.js
+```
+
+**CORRETO (via npm script):**
+```bash
+npm run nome-do-script
+```
+
+**Para criar npm script em package.json:**
+```json
+{
+  "scripts": {
+    "biz:meu-script": "dotenv -o -e .env -e .env.development -e .env.secrets -- npx tsx scripts/biz-meu-script.ts"
+  }
+}
+```
+
+**Flags obrigatorias:**
+- `dotenv -o` → O `-o` eh OBRIGATORIO (override de vars existentes)
+- Ordem dos .env: `.env` → `.env.development` → `.env.secrets`
+
+**NAO tente:**
+- Rodar scripts diretamente sem dotenv
+- Usar `npx dotenv-cli` (usar apenas `dotenv`)
+- Carregar .env manualmente no codigo
+
+---
+
 ## Principio Fundamental
 
 ```

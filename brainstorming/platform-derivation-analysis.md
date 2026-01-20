@@ -76,12 +76,6 @@ MOTOR (código)     +    ARTEFATO (declarativo)    →    SISTEMA
 
 ### Como funcionaria com vibe-method:
 
-**1. Scaffold como template** (não como dependência)
-```bash
-# Novo projeto deriva do scaffold
-cp -r vibe-method/scaffold novo-projeto/
-```
-
 **2. Motor permanece estável**
 ```
 src/lib/db/postgres.ts      # Não muda

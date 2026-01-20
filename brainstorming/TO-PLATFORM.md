@@ -73,3 +73,21 @@ Artefatos criados no fork (cia-dashboard-vibe) que devem ser incorporados na pla
 - Regra Motor vs Negocio: `biz-*` = livre, `sem biz-` = requer aprovacao
 - Pattern `specs/platform-requests/` para feedback loop com plataforma
 - `llmService.createLLM(intent)` eh o pattern real (nao `resolveLLM`)
+- **SEMPRE** iniciar prompts com: `Leia specs/AI-INSTRUCTIONS.md antes de comecar.`
+
+## Convencao de Prefixo BIZ
+
+Codigo de negocio (fork) SEMPRE usa prefixo `biz-`:
+
+| Tipo | Prefixo | Exemplo |
+|------|---------|---------|
+| Arquivos TS | `biz-` | `biz-primecare-db.ts` |
+| Scripts | `biz-` | `biz-sync-primecare.ts` |
+| Tipos/Classes | `Biz` | `BizReport`, `BizWriterInput` |
+| Tabelas | `biz.` | `biz.reports` (schema postgres) |
+| Agentes | `biz-` | `biz-writer`, `biz-reviewer` |
+| Specs | `biz-` | `specs/entities/biz-report.yaml` |
+
+**Env vars:** Sugestao usar `BIZ_` mas integracoes externas podem usar nome proprio (ex: `PRIMECARE_MYSQL_HOST`).
+
+Isso isola codigo de negocio do motor e facilita sync upstream.

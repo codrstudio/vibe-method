@@ -1,64 +1,34 @@
-# Iteracao 2: API Funcional
+# Iteracao 2: Fonte de Dados
 
 ## Objetivo
 
-Chamada HTTP processa relatorio e retorna mensagem humanizada.
+Conectar no MySQL do PrimeCare e popular biz.reports com relatorios pendentes.
 
 ```
-POST /api/biz-reports → processa → retorna resultado
+[MySQL PrimeCare] → [Sync] → [biz.reports status=pending]
 ```
 
-**Entrega:** `curl POST /api/biz-reports` funciona
+**Entrega:** Script que le do PrimeCare e popula biz.reports
 
 ---
 
-# [x] - 2.1: Schema biz-report no banco
+# [x] - 2.1: Configurar conexao MySQL
 
 **O que voce deve fazer:**
 
-Criar spec da entidade biz-report com campos de input, output e status.
+Configurar variaveis de ambiente para conexao com MySQL externo.
 
-**Arquivo:** `specs/entities/biz-report.yaml`
+**Arquivo:** `.env.development` (adicionar)
 
 **Conteudo esperado:**
 
-```yaml
-name: biz-report
-description: Relatorio de plantao humanizado
-
-fields:
-  # Input
-  - id: uuid
-  - original_text: string, required
-  - original_data: json
-  - turno: enum(diurno, noturno, 24h), required
-  - context_type: enum(normal, observacao, especial, incidente), required
-  - special_note: string?
-
-  # Assistido (denormalizado)
-  - assistido_nome: string, required
-  - assistido_apelido: string?
-  - assistido_condicoes: string[]
-  - assistido_preferencias: string[]
-
-  # Output
-  - humanized_message: string?
-  - pdf_data: json?
-
-  # Status
-  - status: enum(pending, processing, approved, rejected, failed), default: pending
-  - attempt: integer, default: 0
-  - reviewer_feedback: string[]
-
-  # Audit
-  - created_at: timestamp, default: now
-  - updated_at: timestamp, default: now
-  - processed_at: timestamp?
-  - approved_at: timestamp?
-
-indexes:
-  - status
-  - created_at DESC
+```env
+# PrimeCare MySQL (banco externo - somente leitura)
+PRIMECARE_MYSQL_HOST=
+PRIMECARE_MYSQL_PORT=3306
+PRIMECARE_MYSQL_USER=
+PRIMECARE_MYSQL_PASSWORD=
+PRIMECARE_MYSQL_DATABASE=
 ```
 
 ---
@@ -66,147 +36,164 @@ indexes:
 **Prompt para IA:**
 
 ```
-Leia specs/entities/biz-report.yaml e gere:
-1. Migration em database/main/migrations/100_biz_reports.sql
-2. Schema Zod em packages/types/src/schemas/biz-report.ts
-3. Atualize packages/types/src/index.ts com o export
-
-Siga o padrao biz-* conforme specs/AI-INSTRUCTIONS.md
+Use as variaveis de ambiente em .env.secrets BIZ_*
+Crie um modulo de conexao em apps/backbone/src/lib/biz-primecare-db.ts
+- Use mysql2/promise
+- Pool de conexoes
+- Funcao para testar conexao
+- Exportar pool para uso em queries
+- Prefixo Biz nos tipos exportados
 ```
 
 ---
 
-# [x] - 2.2: Spec da rota API
+# [x] - 2.2: Mapear estrutura PrimeCare
+
+**Ja documentado em:** `database/primecare/`
+
+Estrutura existente:
+- `tables/` - SQL de todas as tabelas
+- `entities/` - Documentacao das entidades
+- `concepts/` - Conceitos do dominio
+
+**Tabelas relevantes para relatorios:**
+- `evolucao_guardiao_assistidos.sql` - Evolucoes do cuidador
+- `evolucao_supervisor_assistidos.sql` - Evolucoes do supervisor
+- `assistidos.sql` - Dados do assistido
+- `rotinas.sql` - Rotinas registradas
+
+---
+
+# [x] - 2.3: Criar sync script
 
 **O que voce deve fazer:**
 
-Definir contrato da API de biz-reports com endpoints e payloads.
+Criar script que sincroniza relatorios do PrimeCare para biz.reports.
 
-**Arquivo:** `specs/apis/biz-reports.yaml`
+## Fluxo de Sincronizacao
 
-**Conteudo esperado:**
-
-```yaml
-name: biz-reports
-base_path: /api/biz-reports
-description: API para processamento de relatorios humanizados
-
-endpoints:
-  - method: POST
-    path: /
-    description: Criar e processar relatorio
-    auth: required
-    input:
-      original_text: string, required
-      original_data: object?
-      turno: enum(diurno, noturno, 24h), required
-      context_type: enum(normal, observacao, especial, incidente), required
-      special_note: string?
-      assistido:
-        nome: string, required
-        apelido: string?
-        condicoes: string[]
-        preferencias: string[]
-    output:
-      id: uuid
-      status: string
-      humanized_message: string?
-      quality_score: number?
-
-  - method: GET
-    path: /:id
-    description: Consultar status e resultado
-    auth: required
-    output:
-      id: uuid
-      status: string
-      humanized_message: string?
-      pdf_data: object?
-      attempt: number
-      created_at: timestamp
-      processed_at: timestamp?
 ```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        PrimeCare (MySQL)                            │
+│                        [somente leitura]                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   evolucao_guardiao_assistidos        assistidos                    │
+│   ┌─────────────────────────┐        ┌─────────────────┐            │
+│   │ id                      │        │ id              │            │
+│   │ assistido_id ───────────┼───────►│ nome            │            │
+│   │ texto (relatorio)       │        │ apelido         │            │
+│   │ turno                   │        │ condicoes       │            │
+│   │ created_at              │        │ preferencias    │            │
+│   └─────────────────────────┘        └─────────────────┘            │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              │ 1. Query: SELECT novos do turno
+                              │ 2. JOIN: dados do assistido
+                              │ 3. Mapear campos
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                     biz-sync-primecare.ts                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Mapeamento:                                                       │
+│   ┌────────────────────────┐    ┌────────────────────────┐          │
+│   │ PrimeCare              │ →  │ biz.reports            │          │
+│   ├────────────────────────┤    ├────────────────────────┤          │
+│   │ evolucao.id            │    │ primecare_id           │          │
+│   │ evolucao.texto         │    │ original_text          │          │
+│   │ evolucao.turno         │    │ turno                  │          │
+│   │ assistido.nome         │    │ assistido_nome         │          │
+│   │ assistido.apelido      │    │ assistido_apelido      │          │
+│   │ evolucao.created_at    │    │ created_at             │          │
+│   │ -                       │    │ status = 'pending'     │          │
+│   └────────────────────────┘    └────────────────────────┘          │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              │ 4. Validar com BizReportInputSchema
+                              │ 5. INSERT se primecare_id nao existe
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Nosso Banco (Postgres)                         │
+│                        [leitura/escrita]                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   biz.reports                                                       │
+│   ┌─────────────────────────────────────────┐                       │
+│   │ id (uuid)                               │                       │
+│   │ primecare_id (controle duplicacao) ◄────┼── novo campo          │
+│   │ original_text                           │                       │
+│   │ turno                                   │                       │
+│   │ assistido_nome                          │                       │
+│   │ status = 'pending'  ────────────────────┼── pronto p/ Writer    │
+│   │ ...                                     │                       │
+│   └─────────────────────────────────────────┘                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+## Controle de Duplicacao
+
+Adicionar campo `primecare_id` em `biz.reports`:
+- Armazena o ID original do PrimeCare
+- UNIQUE constraint evita duplicatas
+- Query: `WHERE primecare_id NOT IN (SELECT primecare_id FROM biz.reports)`
 
 ---
 
 **Prompt para IA:**
 
 ```
-Leia specs/apis/biz-reports.yaml e specs/entities/biz-report.yaml e gere:
-1. Rota Fastify em apps/backbone/src/routes/biz-reports.ts
-2. Use WorkflowExecution para auditoria
-3. Integre com invokeBizWriter e invokeBizReviewer
-4. Registre a rota em apps/backbone/src/index.ts
+Leia database/primecare/tables/ para entender a estrutura e crie:
 
-Fluxo do POST:
-1. Validar input com Zod
-2. Inserir no banco com status 'pending'
-3. Chamar invokeBizWriter
-4. Chamar invokeBizReviewer
-5. Atualizar status (approved/rejected)
-6. Retornar resultado
+1. Migration para adicionar campo primecare_id em biz.reports:
+   - database/main/migrations/101_biz_reports_primecare_id.sql
+   - Campo: primecare_id BIGINT UNIQUE (ID origem do PrimeCare)
+
+2. Script em scripts/biz-sync-primecare.ts:
+   - Conecta no MySQL via biz-primecare-db.ts
+   - Query evolucoes do turno atual com JOIN assistidos
+   - Filtra apenas IDs que nao existem em biz.reports
+   - Mapeia e valida com BizReportInputSchema
+   - Insere em biz.reports com status 'pending'
+   - Log de quantos registros sincronizados
+
+Usar:
+- biz-primecare-db.ts para conexao MySQL (somente leitura)
+- db (postgres) para inserir em biz.reports
+- BizReportInputSchema para validar dados
 ```
 
 ---
 
-# [ ] - 2.3: Testar via curl
+# [x] - 2.4: Testar sync
 
 **O que voce deve fazer:**
 
-Executar teste manual para validar o fluxo completo.
+Executar sync e validar que dados foram populados.
 
 **Comando:**
 
 ```bash
-curl -X POST http://localhost:3001/api/biz-reports \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer {token}" \
-  -d '{
-    "original_text": "Paciente alimentou-se bem no almoco. Humor estavel. Dormiu bem.",
-    "turno": "diurno",
-    "context_type": "normal",
-    "assistido": {
-      "nome": "Jose da Silva",
-      "apelido": "Seu Jose",
-      "condicoes": ["Alzheimer leve"],
-      "preferencias": ["Gosta de musica"]
-    }
-  }'
+dotenv -o -e .env -e .env.development -e .env.secrets -- npx tsx scripts/biz-sync-primecare.ts
 ```
 
-**Resposta esperada:**
+**Validar:**
 
-```json
-{
-  "id": "uuid",
-  "status": "approved",
-  "humanized_message": "Boa noite! Hoje o Seu Jose teve um dia tranquilo...",
-  "quality_score": 85
-}
-```
-
----
-
-**Prompt para IA:**
-
-```
-Execute o curl acima e valide:
-1. Retorna 200 com mensagem humanizada
-2. Status eh approved ou rejected
-3. Registro existe no banco (SELECT * FROM biz_reports WHERE id = 'uuid')
-4. WorkflowExecution registrou a execucao
+```sql
+SELECT * FROM biz.reports WHERE status = 'pending' ORDER BY created_at DESC LIMIT 10;
 ```
 
 ---
 
 # Checklist Final
 
-- [ ] Spec `specs/entities/biz-report.yaml` criado
-- [ ] Spec `specs/apis/biz-reports.yaml` criado
-- [ ] Migration gerada e executada
-- [ ] Types gerados e exportados
-- [ ] Rota funcionando
-- [ ] curl retorna mensagem humanizada
+- [x] Conexao MySQL configurada e testada
+- [x] Mapeamento PrimeCare documentado
+- [x] Script de sync criado
+- [x] Dados populados em biz.reports
 
 ---
 
@@ -214,8 +201,13 @@ Execute o curl acima e valide:
 
 | Tipo | Arquivo | Quem |
 |------|---------|------|
-| Spec | `specs/entities/biz-report.yaml` | Humano |
-| Spec | `specs/apis/biz-reports.yaml` | Humano |
-| Codigo | `database/main/migrations/100_biz_reports.sql` | IA |
-| Codigo | `packages/types/src/schemas/biz-report.ts` | IA |
-| Codigo | `apps/backbone/src/routes/biz-reports.ts` | IA |
+| Config | `.env.secrets` (vars MySQL) | Humano |
+| Docs | `database/primecare/` | Ja existe |
+| Codigo | `apps/backbone/src/lib/biz-primecare-db.ts` | IA |
+| Codigo | `scripts/biz-sync-primecare.ts` | IA |
+
+---
+
+# Bloqueadores
+
+- **Acesso ao MySQL PrimeCare** - Precisa de credenciais e IP liberado

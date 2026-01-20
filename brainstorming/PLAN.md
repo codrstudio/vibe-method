@@ -8,6 +8,31 @@ Plano de implementacao estilo bazaar: funciona a cada passo.
 
 ---
 
+## Fluxo Completo
+
+```
+[Scheduler]     Roda nos horarios: 12h, 18h, 20h
+      |
+      v
+[PrimeCare]     Le relatorios do MySQL (banco externo)
+      |
+      v
+[Writer]        Gera mensagem humanizada + PDF tecnico
+      |
+      v
+[Reviewer]      Valida qualidade
+      |
+      +--[approved]--> [Envia WhatsApp/Email]
+      |
+      +--[rejected]--> [Retry 2x automatico]
+                            |
+                            +--[ainda rejected]--> [Fila humana 30min]
+                                                        |
+                                                        +--[timeout]--> [Fallback: PDF + msg padrao]
+```
+
+---
+
 ## Iteracao 1: Prova de Conceito ✅
 
 **Objetivo:** Relatorio entra, mensagem humanizada sai
@@ -16,7 +41,7 @@ Plano de implementacao estilo bazaar: funciona a cada passo.
 Input (texto) → Writer → Reviewer → Output (console)
 ```
 
-- [x] Camada LLM minima (uma funcao que chama Ollama/OpenRouter)
+- [x] Camada LLM minima (llmService com OpenRouter)
 - [x] biz-writer que recebe texto e retorna mensagem
 - [x] biz-reviewer que recebe mensagem e retorna approved/rejected
 - [x] Script de teste que roda o fluxo
@@ -26,75 +51,113 @@ Input (texto) → Writer → Reviewer → Output (console)
 **Extras entregues:**
 - [x] WorkflowExecution para auditoria
 - [x] Checklist de qualidade para agentes
+- [x] Schema biz.reports no banco (migration 100)
+- [x] Types Zod para BizReport
 
 ---
 
-## Iteracao 2: API Funcional
+## Iteracao 2: Fonte de Dados ✅
 
-**Objetivo:** Chamada HTTP processa relatorio
+**Objetivo:** Ler relatorios do PrimeCare (MySQL externo)
 
 ```
-POST /api/biz-reports → processa → retorna resultado
+[MySQL PrimeCare] → [Sync] → [biz.reports pendentes]
 ```
 
-- [ ] Schema biz-report no banco
-- [ ] Rota API que recebe relatorio
-- [ ] Persiste e processa
-- [ ] Retorna mensagem humanizada
+- [x] Conexao com MySQL externo (PrimeCare)
+- [x] Query para buscar relatorios do turno
+- [x] Mapear dados PrimeCare → BizReportInput
+- [x] Inserir em biz.reports com status 'pending'
 
-**Entrega:** Postman/curl funciona
+**Entrega:** `npm run biz:sync-primecare` funciona
 
 ---
 
-## Iteracao 3: Fluxo Completo
+## Iteracao 3: Pipeline de Processamento
 
-**Objetivo:** Retry + revisao humana
+**Objetivo:** Processar relatorios pendentes com retry
 
 ```
-Writer → Reviewer → [rejected?] → retry ou fila humana
+[biz.reports pending] → [Writer] → [Reviewer] → [approved/rejected]
 ```
 
-- [ ] Logica de retry (ate 2x)
-- [ ] Fila de revisao quando falha
-- [ ] Status tracking (pending → processing → approved/rejected)
+- [ ] Worker que processa relatorios pending
+- [ ] Logica de retry (ate 2x se rejected)
+- [ ] Atualizar status: pending → processing → approved/rejected/failed
+- [ ] Salvar humanized_message e pdf_data
 
-**Entrega:** Fluxo de 9 etapas funciona
+**Entrega:** Worker processa e atualiza status
 
 ---
 
-## Iteracao 4: Interface
+## Iteracao 4: Entrega (WhatsApp/Email)
 
-**Objetivo:** Humano consegue usar
+**Objetivo:** Enviar relatorio aprovado para familia
 
-- [ ] Tela de fila de revisao
-- [ ] Editor de correcao
-- [ ] Geracao de PDF
+```
+[approved] → [WhatsApp API] ou [Email]
+```
 
-**Entrega:** Revisor consegue trabalhar
+- [ ] Integracao WhatsApp Business API
+- [ ] Integracao Email (Resend/SendGrid)
+- [ ] Escolha de canal por familia
+- [ ] Confirmacao de leitura
+
+**Entrega:** Familia recebe mensagem + PDF
 
 ---
 
-## Iteracao 5: Producao
+## Iteracao 5: Revisao Humana
 
-**Objetivo:** Roda sozinho
+**Objetivo:** Fila para casos que IA nao resolve
 
-- [ ] Scheduling (horarios de envio)
-- [ ] Notificacoes (WhatsApp/Email)
-- [ ] Metricas e alertas
+```
+[rejected 2x] → [Notifica responsavel] → [Dashboard revisao] → [Aprova/Edita]
+```
 
-**Entrega:** Sistema autonomo
+- [ ] Fila de revisao (relatorios com 2 rejeicoes)
+- [ ] Notificacao WhatsApp para responsavel
+- [ ] Tela de revisao com editor
+- [ ] Timeout 30min → fallback automatico
+
+**Entrega:** Responsavel consegue revisar e aprovar
+
+---
+
+## Iteracao 6: Producao
+
+**Objetivo:** Sistema autonomo rodando
+
+```
+[Cron 12h/18h/20h] → [Pipeline completo] → [Metricas]
+```
+
+- [ ] Scheduler nos horarios corretos
+- [ ] Deteccao de padroes (alertas)
+- [ ] Metricas: taxa aprovacao, tempo processamento
+- [ ] Monitoramento e alertas de erro
+
+**Entrega:** Sistema roda sozinho 24/7
+
+---
+
+## Dependencias Externas
+
+| Dependencia | Descricao | Status |
+|-------------|-----------|--------|
+| MySQL PrimeCare | Banco de dados com relatorios originais | Pendente acesso |
+| WhatsApp Business API | Envio de mensagens | Pendente conta |
+| Email (Resend/SendGrid) | Envio de emails | Pendente config |
+| OpenRouter/GPT-4 | LLM para agentes | ✅ Configurado |
 
 ---
 
 ## Referencias
 
-- `brainstorming/caso-de-uso/report-humanization.md` - Feature spec
-- `brainstorming/platform-derivation-analysis.md` - Analise da plataforma
-- `brainstorming/platform-derivation-analysis-02.md` - Modulos e layout
+- `brainstorming/caso-de-uso/features/report-humanization.md` - Feature spec
+- `.tmp/proposta.html` - Proposta comercial com fluxo detalhado
 
 **Fork specs:**
-- `cia-dashboard-vibe/specs/features/report-humanization.md`
-- `cia-dashboard-vibe/specs/entities/report.yaml`
-- `cia-dashboard-vibe/specs/agents/writer.md`
-- `cia-dashboard-vibe/specs/agents/reviewer.md`
-- `cia-dashboard-vibe/specs/AI-INSTRUCTIONS.md`
+- `cia-dashboard-vibe/specs/entities/biz-report.yaml`
+- `cia-dashboard-vibe/specs/agents/biz-writer.md`
+- `cia-dashboard-vibe/specs/agents/biz-reviewer.md`
