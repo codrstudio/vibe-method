@@ -11,16 +11,7 @@ const PORT = parseInt(process.env.WA_SIM_PORT || '8003', 10)
 const HOST = process.env.WA_SIM_HOST || '0.0.0.0'
 
 const fastify = Fastify({
-  logger: {
-    level: process.env.LOG_LEVEL || 'info',
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        translateTime: 'HH:MM:ss Z',
-        ignore: 'pid,hostname',
-      },
-    },
-  },
+  logger: process.env.NODE_ENV !== 'production',
 })
 
 async function start() {
