@@ -13,73 +13,22 @@
     {
       "name": "llama3.1:8b",
       "params": "8B",
-      "description": "Balanced - good for most tasks",
+      "description": "Balanced - fallback for most tasks",
       "capabilities": ["classify", "generate", "extract", "decide"],
       "priority": 20
     },
     {
-      "name": "llama3.1:8b-instruct-q4_K_M",
-      "params": "8B",
-      "quant": "q4_K_M",
-      "description": "Optimized instruction following",
-      "capabilities": ["classify", "generate", "extract", "decide"],
-      "priority": 25
-    },
-    {
       "name": "qwen2.5:7b",
       "params": "7B",
-      "description": "Great for code and structured output",
-      "capabilities": ["generate", "extract", "plan"],
+      "description": "Great for structured JSON output",
+      "capabilities": ["extract", "plan"],
       "priority": 15
-    },
-    {
-      "name": "qwen2.5:14b-instruct-q4_K_M",
-      "params": "14B",
-      "quant": "q4_K_M",
-      "description": "Advanced reasoning and planning",
-      "capabilities": ["plan", "decide", "generate"],
-      "priority": 30
-    },
-    {
-      "name": "mistral:7b",
-      "params": "7B",
-      "description": "Fast and capable general model",
-      "capabilities": ["classify", "generate", "extract"],
-      "priority": 15
-    },
-    {
-      "name": "phi3:3.8b",
-      "params": "3.8B",
-      "description": "Microsoft Phi-3 - efficient small model",
-      "capabilities": ["classify", "extract"],
-      "priority": 12
-    },
-    {
-      "name": "gemma2:9b",
-      "params": "9B",
-      "description": "Google Gemma 2 - good reasoning",
-      "capabilities": ["classify", "generate", "extract", "decide"],
-      "priority": 22
-    },
-    {
-      "name": "codellama:7b",
-      "params": "7B",
-      "description": "Specialized for code tasks",
-      "capabilities": ["generate", "extract"],
-      "tags": ["code"]
-    },
-    {
-      "name": "deepseek-coder:6.7b",
-      "params": "6.7B",
-      "description": "Code generation and understanding",
-      "capabilities": ["generate", "extract"],
-      "tags": ["code"]
     }
   ],
   "recommended": {
     "classify": "llama3.2:3b",
     "generate": "llama3.1:8b",
-    "extract": "llama3.2:3b",
+    "extract": "qwen2.5:7b",
     "plan": "qwen2.5:7b",
     "decide": "llama3.1:8b"
   }
