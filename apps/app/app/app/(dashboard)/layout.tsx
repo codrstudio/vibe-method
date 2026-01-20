@@ -1,5 +1,7 @@
 // Force recompile: 2026-01-19T22:10
 import { cookies } from "next/headers"
+
+export const dynamic = 'force-dynamic'
 import { AppSidebar } from "@/components/app-sidebar"
 import { MobileHeader } from "@/components/mobile-header"
 import {

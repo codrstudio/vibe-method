@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 
+export const dynamic = 'force-dynamic';
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",

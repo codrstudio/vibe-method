@@ -33,7 +33,7 @@ interface ServerContext {
 /**
  * Mock Redis client for development without Redis
  */
-class MockRedisClient {
+export class MockRedisClient {
   async connect() { return this; }
   async quit() { return; }
   async ping() { return 'PONG'; }
@@ -58,18 +58,21 @@ export async function createSocketServer(): Promise<ServerContext> {
 
   try {
     // Setup Redis clients for adapter
-    pubClient = createClient({
+    const redisPub = createClient({
       url: config.redis.url,
       password: config.redis.password,
     });
 
-    subClient = pubClient.duplicate();
+    const redisSub = redisPub.duplicate();
 
     // Connect Redis clients
-    await Promise.all([pubClient.connect(), subClient.connect()]);
+    await Promise.all([redisPub.connect(), redisSub.connect()]);
 
     // Configure Redis adapter for horizontal scaling
-    io.adapter(createAdapter(pubClient as RedisClientType, subClient as RedisClientType));
+    io.adapter(createAdapter(redisPub, redisSub));
+
+    pubClient = redisPub;
+    subClient = redisSub;
 
     console.log('[Socket] Redis adapter configured');
   } catch (error) {

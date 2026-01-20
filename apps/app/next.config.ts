@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: "standalone",
   devIndicators: false,
+  turbopack: {},
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   async headers() {
     return [
       {

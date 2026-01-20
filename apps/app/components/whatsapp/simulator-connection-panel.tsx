@@ -87,14 +87,17 @@ export function SimulatorConnectionPanel({
         method: 'POST',
       });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Falha ao desconectar');
+        // Log warning but continue - wa-sim may have been restarted
+        console.warn('[SimulatorPanel] Disconnect failed, forcing status update');
       }
-      onStatusChange?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      // Ignore network errors - wa-sim may be down
+      console.warn('[SimulatorPanel] Disconnect error:', err);
     } finally {
       setIsDisconnecting(false);
+      // ALWAYS call onStatusChange to refresh from backbone (source of truth)
+      // The backbone will update the DB status even if wa-sim is unavailable
+      onStatusChange?.();
     }
   };
 

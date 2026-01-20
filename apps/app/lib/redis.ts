@@ -2,7 +2,26 @@ import Redis from 'ioredis'
 
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379'
 
-export const redis = new Redis(redisUrl)
+let redisInstance: Redis | null = null
+
+function getRedis(): Redis {
+  if (!redisInstance) {
+    redisInstance = new Redis(redisUrl)
+  }
+  return redisInstance
+}
+
+export const redis = {
+  get instance() {
+    return getRedis()
+  },
+  get: (key: string) => getRedis().get(key),
+  set: (key: string, value: string) => getRedis().set(key, value),
+  setex: (key: string, ttl: number, value: string) => getRedis().setex(key, ttl, value),
+  del: (key: string) => getRedis().del(key),
+  exists: (key: string) => getRedis().exists(key),
+  ttl: (key: string) => getRedis().ttl(key),
+}
 
 export const cache = {
   async get<T>(key: string): Promise<T | null> {
