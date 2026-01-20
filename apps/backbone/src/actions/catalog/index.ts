@@ -4,6 +4,8 @@ import './kb/index.js';
 import './user/index.js';
 import './whatsapp/index.js';
 import './llm/index.js';
+import './task/index.js';
+import './scheduler/index.js';
 
 // Re-export for convenience
 export * from './thread/index.js';
@@ -11,3 +13,5 @@ export * from './kb/index.js';
 export * from './user/index.js';
 export * from './whatsapp/index.js';
 export * from './llm/index.js';
+export * from './task/index.js';
+export * from './scheduler/index.js';

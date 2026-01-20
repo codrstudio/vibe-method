@@ -14,6 +14,10 @@ import { authRoutes } from './routes/auth.js';
 import { webhooksRoutes } from './routes/webhooks/index.js';
 import { whatsappRoutes } from './routes/whatsapp.js';
 
+// Services initialization
+import { taskClassRegistry } from './services/task-classes/index.js';
+import { initScheduler } from './services/scheduler/index.js';
+
 const app = Fastify({
   logger: {
     level: config.NODE_ENV === 'development' ? 'info' : 'warn',
@@ -21,6 +25,12 @@ const app = Fastify({
 });
 
 async function main() {
+  // Initialize task classes registry
+  await taskClassRegistry.initialize();
+
+  // Initialize scheduler service
+  await initScheduler();
+
   // Plugins
   await app.register(cors, { origin: config.CORS_ORIGIN });
   await app.register(sensible);
