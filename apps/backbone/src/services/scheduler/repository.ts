@@ -16,6 +16,7 @@ const JOB_COLUMNS = `
   job_target as "jobTarget",
   job_params as "jobParams",
   cron_expression as "cronExpression",
+  repeat_every_ms as "repeatEveryMs",
   timezone,
   enabled,
   timeout_ms as "timeoutMs",
@@ -58,10 +59,10 @@ export const repository = {
     const [job] = await db.query<ScheduledJob>(
       `INSERT INTO scheduled_jobs (
         name, slug, description, category, job_target, job_params,
-        cron_expression, timezone, enabled, timeout_ms, retry_attempts,
+        cron_expression, repeat_every_ms, timezone, enabled, timeout_ms, retry_attempts,
         retry_delay_ms, created_by
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING ${JOB_COLUMNS}`,
       [
         data.name,
@@ -70,7 +71,8 @@ export const repository = {
         data.category,
         data.jobTarget,
         JSON.stringify(data.jobParams),
-        data.cronExpression,
+        data.cronExpression ?? null,
+        data.repeatEveryMs ?? null,
         data.timezone,
         data.enabled,
         data.timeoutMs,
@@ -155,6 +157,10 @@ export const repository = {
     if (data.cronExpression !== undefined) {
       updates.push(`cron_expression = $${paramIndex++}`);
       values.push(data.cronExpression);
+    }
+    if (data.repeatEveryMs !== undefined) {
+      updates.push(`repeat_every_ms = $${paramIndex++}`);
+      values.push(data.repeatEveryMs);
     }
     if (data.timezone !== undefined) {
       updates.push(`timezone = $${paramIndex++}`);

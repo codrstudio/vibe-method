@@ -28,31 +28,65 @@ export function getQueue(): Queue<SchedulerJobData> {
 
 export async function addRepeatableJob(
   slug: string,
-  cronExpression: string,
-  timezone: string,
+  options: { cronExpression?: string | null; repeatEveryMs?: number | null; timezone?: string },
   data: SchedulerJobData
 ): Promise<void> {
   const queue = getQueue();
 
-  await queue.add(slug, data, {
-    repeat: {
-      pattern: cronExpression,
-      tz: timezone,
-    },
-    jobId: `repeat:${slug}`,
-  });
+  if (options.repeatEveryMs) {
+    // Interval-based scheduling (supports sub-minute)
+    await queue.add(slug, data, {
+      repeat: {
+        every: options.repeatEveryMs,
+      },
+      jobId: `repeat:${slug}`,
+    });
+  } else if (options.cronExpression) {
+    // Cron-based scheduling
+    await queue.add(slug, data, {
+      repeat: {
+        pattern: options.cronExpression,
+        tz: options.timezone,
+      },
+      jobId: `repeat:${slug}`,
+    });
+  }
 }
 
 export async function removeRepeatableJob(
   slug: string,
-  cronExpression: string,
-  timezone: string
+  options: { cronExpression?: string | null; repeatEveryMs?: number | null; timezone?: string }
 ): Promise<boolean> {
   const queue = getQueue();
 
-  return queue.removeRepeatableByKey(
-    `${slug}:${cronExpression}:${timezone}`
-  );
+  // Try to remove by different key formats
+  const keys = [];
+  if (options.repeatEveryMs) {
+    keys.push(`${slug}::${options.repeatEveryMs}`);
+  }
+  if (options.cronExpression && options.timezone) {
+    keys.push(`${slug}:${options.cronExpression}:${options.timezone}`);
+  }
+
+  for (const key of keys) {
+    try {
+      const removed = await queue.removeRepeatableByKey(key);
+      if (removed) return true;
+    } catch {
+      // Key format might not match, try next
+    }
+  }
+
+  // Fallback: remove all repeatable jobs with this name
+  const repeatableJobs = await queue.getRepeatableJobs();
+  for (const job of repeatableJobs) {
+    if (job.name === slug) {
+      await queue.removeRepeatableByKey(job.key);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export async function addImmediateJob(

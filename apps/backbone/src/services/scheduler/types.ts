@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 export const cronExpressionSchema = z.string().min(9).max(50);
 
+// Base schema (ZodObject) - can be extended
 export const scheduledJobInputSchema = z.object({
   name: z.string().min(1).max(255),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
@@ -11,7 +12,8 @@ export const scheduledJobInputSchema = z.object({
   category: z.string().max(50).default('system'),
   jobTarget: z.string().min(1).max(255),
   jobParams: z.record(z.unknown()).default({}),
-  cronExpression: cronExpressionSchema,
+  cronExpression: cronExpressionSchema.optional(),
+  repeatEveryMs: z.number().int().min(1000).max(86400000).optional(), // 1s to 24h
   timezone: z.string().max(50).default('America/Sao_Paulo'),
   enabled: z.boolean().default(true),
   timeoutMs: z.number().int().min(1000).max(3600000).default(300000),
@@ -19,13 +21,20 @@ export const scheduledJobInputSchema = z.object({
   retryDelayMs: z.number().int().min(1000).max(300000).default(5000),
 });
 
+// Refined schema (ZodEffects) - use for validation
+export const scheduledJobInputRefinedSchema = scheduledJobInputSchema.refine(
+  data => data.cronExpression || data.repeatEveryMs,
+  { message: 'Either cronExpression or repeatEveryMs must be provided' }
+);
+
 export const scheduledJobUpdateSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   description: z.string().optional(),
   category: z.string().max(50).optional(),
   jobTarget: z.string().min(1).max(255).optional(),
   jobParams: z.record(z.unknown()).optional(),
-  cronExpression: cronExpressionSchema.optional(),
+  cronExpression: cronExpressionSchema.optional().nullable(),
+  repeatEveryMs: z.number().int().min(1000).max(86400000).optional().nullable(),
   timezone: z.string().max(50).optional(),
   enabled: z.boolean().optional(),
   timeoutMs: z.number().int().min(1000).max(3600000).optional(),
@@ -52,7 +61,8 @@ export interface ScheduledJob {
   category: string;
   jobTarget: string;
   jobParams: Record<string, unknown>;
-  cronExpression: string;
+  cronExpression: string | null;
+  repeatEveryMs: number | null;
   timezone: string;
   enabled: boolean;
   timeoutMs: number;

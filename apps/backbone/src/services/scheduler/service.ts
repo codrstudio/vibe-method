@@ -27,11 +27,11 @@ export async function createJob(
   data: ScheduledJobInput,
   createdBy?: string
 ): Promise<ScheduledJob> {
-  // Calculate next run time
-  const nextRun = calculateNextRun(data.cronExpression, data.timezone);
-
   // Create in database
   const job = await repository.createJob(data, createdBy);
+
+  // Calculate next run time
+  const nextRun = calculateNextRun(job);
 
   // Update next run time
   await repository.updateJobNextRun(job.id, nextRun);
@@ -81,14 +81,14 @@ export async function updateJob(
 
   // Remove from queue if schedule is changing
   const scheduleChanged =
-    data.cronExpression !== undefined || data.timezone !== undefined;
+    data.cronExpression !== undefined || data.repeatEveryMs !== undefined || data.timezone !== undefined;
 
   if (scheduleChanged && existingJob.enabled) {
-    await removeRepeatableJob(
-      existingJob.slug,
-      existingJob.cronExpression,
-      existingJob.timezone
-    );
+    await removeRepeatableJob(existingJob.slug, {
+      cronExpression: existingJob.cronExpression,
+      repeatEveryMs: existingJob.repeatEveryMs,
+      timezone: existingJob.timezone,
+    });
   }
 
   // Update in database
@@ -99,10 +99,7 @@ export async function updateJob(
 
   // Recalculate next run if schedule changed
   if (scheduleChanged) {
-    const nextRun = calculateNextRun(
-      updatedJob.cronExpression,
-      updatedJob.timezone
-    );
+    const nextRun = calculateNextRun(updatedJob);
     await repository.updateJobNextRun(id, nextRun);
   }
 
@@ -127,7 +124,11 @@ export async function deleteJob(id: string): Promise<boolean> {
 
   // Remove from queue
   if (job.enabled) {
-    await removeRepeatableJob(job.slug, job.cronExpression, job.timezone);
+    await removeRepeatableJob(job.slug, {
+      cronExpression: job.cronExpression,
+      repeatEveryMs: job.repeatEveryMs,
+      timezone: job.timezone,
+    });
   }
 
   // Delete from database (cascades to job_runs)
@@ -151,7 +152,11 @@ export async function pauseJob(id: string): Promise<ScheduledJob | null> {
 
   // Remove from queue
   if (job.enabled) {
-    await removeRepeatableJob(job.slug, job.cronExpression, job.timezone);
+    await removeRepeatableJob(job.slug, {
+      cronExpression: job.cronExpression,
+      repeatEveryMs: job.repeatEveryMs,
+      timezone: job.timezone,
+    });
   }
 
   // Update database
@@ -180,7 +185,7 @@ export async function resumeJob(id: string): Promise<ScheduledJob | null> {
   }
 
   // Calculate next run
-  const nextRun = calculateNextRun(updated.cronExpression, updated.timezone);
+  const nextRun = calculateNextRun(updated);
   await repository.updateJobNextRun(id, nextRun);
 
   // Add to queue
@@ -258,9 +263,11 @@ export async function cleanupRuns(jobId: string, keepCount = 100): Promise<numbe
  */
 async function syncJobToQueue(job: ScheduledJob): Promise<void> {
   // First remove any existing repeatable job
-  await removeRepeatableJob(job.slug, job.cronExpression, job.timezone).catch(
-    () => {}
-  );
+  await removeRepeatableJob(job.slug, {
+    cronExpression: job.cronExpression,
+    repeatEveryMs: job.repeatEveryMs,
+    timezone: job.timezone,
+  }).catch(() => {});
 
   // Create a placeholder run for the next scheduled execution
   // Note: This is created when the job actually runs, not here
@@ -273,7 +280,11 @@ async function syncJobToQueue(job: ScheduledJob): Promise<void> {
     triggerType: 'scheduled',
   };
 
-  await addRepeatableJob(job.slug, job.cronExpression, job.timezone, jobData);
+  await addRepeatableJob(job.slug, {
+    cronExpression: job.cronExpression,
+    repeatEveryMs: job.repeatEveryMs,
+    timezone: job.timezone,
+  }, jobData);
 }
 
 /**
@@ -286,7 +297,7 @@ export async function syncAllJobs(): Promise<void> {
   for (const job of jobs) {
     try {
       // Calculate and update next run
-      const nextRun = calculateNextRun(job.cronExpression, job.timezone);
+      const nextRun = calculateNextRun(job);
       await repository.updateJobNextRun(job.id, nextRun);
 
       // Sync to queue
@@ -300,19 +311,28 @@ export async function syncAllJobs(): Promise<void> {
 }
 
 /**
- * Calculate the next run time for a cron expression
+ * Calculate the next run time for a job
  */
-function calculateNextRun(cronExpression: string, timezone: string): Date | null {
-  try {
-    const interval = cronParser.parseExpression(cronExpression, {
-      tz: timezone,
-      currentDate: new Date(),
-    });
-    return interval.next().toDate();
-  } catch {
-    console.error(`[Scheduler] Invalid cron expression: ${cronExpression}`);
-    return null;
+function calculateNextRun(job: ScheduledJob): Date | null {
+  if (job.repeatEveryMs) {
+    // For interval-based jobs, next run is now + interval
+    return new Date(Date.now() + job.repeatEveryMs);
   }
+
+  if (job.cronExpression) {
+    try {
+      const interval = cronParser.parseExpression(job.cronExpression, {
+        tz: job.timezone,
+        currentDate: new Date(),
+      });
+      return interval.next().toDate();
+    } catch {
+      console.error(`[Scheduler] Invalid cron expression: ${job.cronExpression}`);
+      return null;
+    }
+  }
+
+  return null;
 }
 
 /**

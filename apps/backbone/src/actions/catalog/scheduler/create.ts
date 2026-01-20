@@ -6,6 +6,8 @@ import type { ActionDefinition } from '../../types.js';
 
 const inputSchema = scheduledJobInputSchema.extend({
   createdBy: z.string().uuid().optional(),
+}).refine(data => data.cronExpression || data.repeatEveryMs, {
+  message: 'Either cronExpression or repeatEveryMs must be provided',
 });
 
 const outputSchema = z.object({

@@ -15,8 +15,15 @@ export function startWorker(): Worker<SchedulerJobData> {
   schedulerWorker = new Worker<SchedulerJobData>(
     SCHEDULER_QUEUE_NAME,
     async (job: Job<SchedulerJobData>) => {
-      const { jobId, slug, target, params, runId, triggerType, triggeredBy } = job.data;
+      const { jobId, slug, target, params, triggerType, triggeredBy } = job.data;
+      let { runId } = job.data;
       const startTime = Date.now();
+
+      // Create run record if not exists (for repeatable jobs)
+      if (!runId) {
+        const run = await repository.createRun(jobId, triggerType, triggeredBy);
+        runId = run.id;
+      }
 
       console.log(`[Scheduler] Starting job: ${slug} (run: ${runId})`);
 
