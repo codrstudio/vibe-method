@@ -362,6 +362,12 @@ export const whatsappService = {
     let logEntry: { id: string } | null = null;
     const loggingEnabled = await messageLogsRepository.isLoggingEnabled(channelId);
 
+    // Apply redirect mode if configured
+    const actualRecipient = channel.redirectToNumber || to;
+    const actualText = channel.redirectToNumber
+      ? `[REDIRECT para ${to}]\n\n${text}`
+      : text;
+
     if (loggingEnabled) {
       try {
         logEntry = await messageLogsRepository.create({
@@ -378,7 +384,7 @@ export const whatsappService = {
     }
 
     try {
-      const result = await evolutionClient.sendTextMessage(channel.instanceName, to, text);
+      const result = await evolutionClient.sendTextMessage(channel.instanceName, actualRecipient, actualText);
 
       // Update log with success
       if (logEntry) {
@@ -428,6 +434,12 @@ export const whatsappService = {
     let logEntry: { id: string } | null = null;
     const loggingEnabled = await messageLogsRepository.isLoggingEnabled(channel.id);
 
+    // Apply redirect mode if configured
+    const actualRecipient = channel.redirectToNumber || to;
+    const actualText = channel.redirectToNumber
+      ? `[REDIRECT para ${to}]\n\n${text}`
+      : text;
+
     if (loggingEnabled) {
       try {
         logEntry = await messageLogsRepository.create({
@@ -445,7 +457,7 @@ export const whatsappService = {
     }
 
     try {
-      const result = await evolutionClient.sendTextMessage(channel.instanceName, to, text);
+      const result = await evolutionClient.sendTextMessage(channel.instanceName, actualRecipient, actualText);
 
       // Update log with success and messageId
       if (logEntry) {

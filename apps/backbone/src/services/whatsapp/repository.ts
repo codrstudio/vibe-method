@@ -37,6 +37,9 @@ export const channelsRepository = {
          last_disconnect_at as "lastDisconnectAt",
          last_health_check as "lastHealthCheck",
          logging_enabled as "loggingEnabled",
+         echo_enabled as "echoEnabled",
+         echo_to_number as "echoToNumber",
+         redirect_to_number as "redirectToNumber",
          created_at as "createdAt",
          updated_at as "updatedAt",
          created_by as "createdBy"`,
@@ -64,6 +67,9 @@ export const channelsRepository = {
          last_disconnect_at as "lastDisconnectAt",
          last_health_check as "lastHealthCheck",
          logging_enabled as "loggingEnabled",
+         echo_enabled as "echoEnabled",
+         echo_to_number as "echoToNumber",
+         redirect_to_number as "redirectToNumber",
          created_at as "createdAt",
          updated_at as "updatedAt",
          created_by as "createdBy"
@@ -91,6 +97,9 @@ export const channelsRepository = {
          last_disconnect_at as "lastDisconnectAt",
          last_health_check as "lastHealthCheck",
          logging_enabled as "loggingEnabled",
+         echo_enabled as "echoEnabled",
+         echo_to_number as "echoToNumber",
+         redirect_to_number as "redirectToNumber",
          created_at as "createdAt",
          updated_at as "updatedAt",
          created_by as "createdBy"
@@ -118,6 +127,9 @@ export const channelsRepository = {
          last_disconnect_at as "lastDisconnectAt",
          last_health_check as "lastHealthCheck",
          logging_enabled as "loggingEnabled",
+         echo_enabled as "echoEnabled",
+         echo_to_number as "echoToNumber",
+         redirect_to_number as "redirectToNumber",
          created_at as "createdAt",
          updated_at as "updatedAt",
          created_by as "createdBy"
@@ -144,6 +156,9 @@ export const channelsRepository = {
          last_disconnect_at as "lastDisconnectAt",
          last_health_check as "lastHealthCheck",
          logging_enabled as "loggingEnabled",
+         echo_enabled as "echoEnabled",
+         echo_to_number as "echoToNumber",
+         redirect_to_number as "redirectToNumber",
          created_at as "createdAt",
          updated_at as "updatedAt",
          created_by as "createdBy"
@@ -230,6 +245,9 @@ export const channelsRepository = {
          last_disconnect_at as "lastDisconnectAt",
          last_health_check as "lastHealthCheck",
          logging_enabled as "loggingEnabled",
+         echo_enabled as "echoEnabled",
+         echo_to_number as "echoToNumber",
+         redirect_to_number as "redirectToNumber",
          created_at as "createdAt",
          updated_at as "updatedAt",
          created_by as "createdBy"`,
@@ -251,6 +269,67 @@ export const channelsRepository = {
       `UPDATE channels SET last_health_check = NOW(), updated_at = NOW() WHERE id = $1`,
       [id]
     );
+  },
+
+  async updateTestModes(
+    id: string,
+    updates: { echoEnabled?: boolean; echoToNumber?: string | null; redirectToNumber?: string | null }
+  ): Promise<Channel | null> {
+    const setClauses: string[] = [];
+    const values: unknown[] = [];
+    let paramIndex = 1;
+
+    if (updates.echoEnabled !== undefined) {
+      setClauses.push(`echo_enabled = $${paramIndex++}`);
+      values.push(updates.echoEnabled);
+    }
+
+    if (updates.echoToNumber !== undefined) {
+      setClauses.push(`echo_to_number = $${paramIndex++}`);
+      values.push(updates.echoToNumber);
+    }
+
+    if (updates.redirectToNumber !== undefined) {
+      setClauses.push(`redirect_to_number = $${paramIndex++}`);
+      values.push(updates.redirectToNumber);
+    }
+
+    if (setClauses.length === 0) {
+      return this.findById(id);
+    }
+
+    values.push(id);
+
+    const [channel] = await db.query<Channel>(
+      `UPDATE channels
+       SET ${setClauses.join(', ')}, updated_at = NOW()
+       WHERE id = $${paramIndex}
+       RETURNING
+         id, name, description,
+         instance_name as "instanceName",
+         instance_id as "instanceId",
+         phone_number as "phoneNumber",
+         status,
+         status_reason as "statusReason",
+         provider,
+         qr_code as "qrCode",
+         qr_code_expires_at as "qrCodeExpiresAt",
+         connection_data as "connectionData",
+         retry_count as "retryCount",
+         last_disconnect_reason as "lastDisconnectReason",
+         last_disconnect_at as "lastDisconnectAt",
+         last_health_check as "lastHealthCheck",
+         logging_enabled as "loggingEnabled",
+         echo_enabled as "echoEnabled",
+         echo_to_number as "echoToNumber",
+         redirect_to_number as "redirectToNumber",
+         created_at as "createdAt",
+         updated_at as "updatedAt",
+         created_by as "createdBy"`,
+      values
+    );
+
+    return channel ?? null;
   },
 
   async delete(id: string): Promise<boolean> {

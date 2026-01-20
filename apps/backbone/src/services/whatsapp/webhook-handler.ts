@@ -574,6 +574,35 @@ async function handleMessageReceived(
     }
   }
 
+  // 1.5. Test modes (echo-to has priority over echo)
+  if (channel.echoToNumber) {
+    try {
+      await evolutionClient.sendTextMessage(
+        channel.instanceName,
+        channel.echoToNumber,
+        `[ECHO-TO de ${key.remoteJid}]\n\n${textContent || '[sem texto]'}`
+      );
+      console.log(`[WhatsApp] Echo-to sent to ${channel.echoToNumber}`);
+    } catch (error) {
+      console.error('[WhatsApp] Failed to send echo-to:', error);
+    }
+    return;
+  }
+
+  if (channel.echoEnabled) {
+    try {
+      await evolutionClient.sendTextMessage(
+        channel.instanceName,
+        key.remoteJid,
+        `[ECHO]\n\n${textContent || '[sem texto]'}`
+      );
+      console.log(`[WhatsApp] Echo sent to ${key.remoteJid}`);
+    } catch (error) {
+      console.error('[WhatsApp] Failed to send echo:', error);
+    }
+    return;
+  }
+
   // 2. Find assignment for this channel (1:1 relationship)
   const assignments = await assignmentsRepository.findByChannel(channel.id);
   if (!assignments.length) {

@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 import { whatsappService } from '../services/whatsapp/service.js';
+import { channelsRepository } from '../services/whatsapp/repository.js';
 
 // =============================================================================
 // Schemas
@@ -32,6 +33,12 @@ const TestMessageSchema = z.object({
   channelId: z.string().uuid(),
   to: z.string().min(1),
   text: z.string().min(1),
+});
+
+const TestModesSchema = z.object({
+  echoEnabled: z.boolean().optional(),
+  echoToNumber: z.string().nullable().optional(),
+  redirectToNumber: z.string().nullable().optional(),
 });
 
 // =============================================================================
@@ -190,6 +197,30 @@ export const whatsappRoutes: FastifyPluginAsync = async (fastify) => {
       }
     }
   );
+
+  /**
+   * PATCH /backbone/whatsapp/channels/:id/test-modes
+   * Update channel test modes (echo, echo-to, redirect)
+   */
+  fastify.patch<{ Params: { id: string } }>('/channels/:id/test-modes', async (request, reply) => {
+    const { id } = request.params;
+    const result = TestModesSchema.safeParse(request.body);
+
+    if (!result.success) {
+      return reply.status(400).send({ error: 'Invalid input', details: result.error.format() });
+    }
+
+    try {
+      const channel = await channelsRepository.updateTestModes(id, result.data);
+      if (!channel) {
+        return reply.status(404).send({ error: 'Channel not found' });
+      }
+      return reply.send({ data: { channel } });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update test modes';
+      return reply.status(500).send({ error: message });
+    }
+  });
 
   // ===========================================================================
   // OPERATIONS
