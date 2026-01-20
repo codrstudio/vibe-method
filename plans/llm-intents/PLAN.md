@@ -151,6 +151,38 @@
 
 ---
 
+## Fase 3.5: Ollama Init (Docker) ✅
+
+> Sistema de inicialização automática de modelos Ollama via Docker.
+
+### 3.5.1 Init Script
+- [x] Criar `scripts/init-ollama.mjs`
+  - Aguarda Ollama ficar healthy
+  - Lê lista de modelos de `config/ollama-models.json`
+  - Filtra modelos por `OLLAMA_MAX_PARAMS` e `OLLAMA_ALLOWED_QUANTS`
+  - Pull de modelos com progress e concorrência configurável
+  - Verifica modelos instalados ao final
+
+### 3.5.2 Docker Configuration
+- [x] Criar `docker/ollama-init/Dockerfile`
+  - Imagem node:20-alpine
+  - Copia script e config
+- [x] Criar `config/ollama-models.json`
+  - Lista curada de modelos com params, quant, capabilities
+  - Recomendações por intent
+
+### 3.5.3 Docker Compose
+- [x] Adicionar serviço `ollama-init` em `docker-compose.yml`
+  - depends_on: ollama: condition: service_healthy
+  - Env vars: OLLAMA_HOST, OLLAMA_PORT, OLLAMA_MAX_PARAMS, OLLAMA_ALLOWED_QUANTS
+- [x] Adicionar serviço `ollama-init` em `docker-compose.staging.yml`
+
+### 3.5.4 Environment Override
+- [x] Atualizar `catalog-loader.ts` para usar OLLAMA_URL do env
+- [x] Atualizar `providers/ollama.ts` para usar OLLAMA_URL do env
+
+---
+
 ## Fase 4: Frontend - API Client
 
 ### 4.1 Types
@@ -274,33 +306,42 @@ Fase 8 (Docs)
 ```
 database/main/
 ├── migrations/
-│   └── 012_llm_intents.sql
+│   └── 012_llm_intents.sql ✅
 └── seeds/
-    └── 004_llm_intents.sql
+    └── 004_llm_intents.sql ✅
 
 apps/backbone/src/llm/
-├── index.ts
-├── types.ts
-├── models-catalog.json
-├── catalog-loader.ts
-├── repository.ts
-├── resolver.ts
-├── service.ts
+├── index.ts ✅
+├── types.ts ✅
+├── models-catalog.json ✅
+├── catalog-loader.ts ✅
+├── repository.ts ✅
+├── resolver.ts ✅
+├── service.ts ✅
 └── providers/
-    ├── index.ts
-    ├── factory.ts
-    ├── openrouter.ts
-    └── ollama.ts
+    ├── index.ts ✅
+    ├── factory.ts ✅
+    ├── openrouter.ts ✅
+    └── ollama.ts ✅
 
 apps/backbone/src/actions/catalog/llm/
-├── index.ts
-├── listIntents.ts
-├── getIntent.ts
-├── getCatalog.ts
-├── getModelsForIntent.ts
-├── createBinding.ts
-├── updateBinding.ts
-└── deleteBinding.ts
+├── index.ts ✅
+├── listIntents.ts ✅
+├── getIntent.ts ✅
+├── getCatalog.ts ✅
+├── getModelsForIntent.ts ✅
+├── createBinding.ts ✅
+├── updateBinding.ts ✅
+└── deleteBinding.ts ✅
+
+scripts/
+└── init-ollama.mjs ✅
+
+docker/ollama-init/
+└── Dockerfile ✅
+
+config/
+└── ollama-models.json ✅
 
 apps/backbone/src/routes/
 └── llm.ts
