@@ -27,5 +27,8 @@
     "playwright": "^1.57.0",
     "png-to-ico": "^2.1.8",
     "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "next": "^16.1.4"
   }
 }
