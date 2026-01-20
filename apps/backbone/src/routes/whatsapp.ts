@@ -9,6 +9,7 @@ import { whatsappService } from '../services/whatsapp/service.js';
 const CreateChannelSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
+  provider: z.enum(['evolution', 'simulator']).optional(),
 });
 
 const CreateAssignmentSchema = z.object({

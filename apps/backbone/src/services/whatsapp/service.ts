@@ -37,20 +37,22 @@ export const whatsappService = {
   async createChannel(input: CreateChannelInput): Promise<Channel> {
     // Generate unique instance name
     const instanceName = `wa_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const provider = input.provider || 'evolution';
 
     // Create channel in database first (always succeeds if DB is up)
     // Status will be 'qr_pending' by default from the repository
     const channel = await channelsRepository.create({
       ...input,
       instanceName,
+      provider,
     });
 
     incCounter('whatsapp.channels_created');
 
-    // Now try to create Evolution instance
+    // Now try to create Evolution/Simulator instance
     try {
       const webhookUrl = `${config.APP_BASE_URL}/api/webhooks/evolution`;
-      const { instanceId } = await evolutionClient.createInstance(instanceName, webhookUrl);
+      const { instanceId } = await evolutionClient.createInstance(instanceName, webhookUrl, provider);
 
       // Update with instance ID
       await channelsRepository.updateInstanceId(channel.id, instanceId);
