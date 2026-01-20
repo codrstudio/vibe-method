@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       SELECT id, type, title, message, user_id, status, metadata, action_url,
              read_at, created_at, updated_at
       FROM notifications
-      WHERE user_id = $1
+      WHERE user_id = $1 AND class IS NULL
     `
     const params: (string | number)[] = [userId]
 

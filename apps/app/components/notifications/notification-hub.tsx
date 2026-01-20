@@ -72,26 +72,11 @@ export function NotificationHub({
   }
 
   if (filter?.hideNotifications) {
-    return (
-      <div className="space-y-4">
-        {kanbanEnabled && (
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Tasks</h2>
-            <ViewToggle />
-          </div>
-        )}
-        {viewMode === "kanban" && kanbanEnabled ? <TaskKanban /> : <TaskList />}
-      </div>
-    )
+    return <TaskList />
   }
 
   if (filter?.hideTasks) {
-    return (
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Notificacoes</h2>
-        <NotificationList />
-      </div>
-    )
+    return <NotificationList />
   }
 
   // Full hub with tabs

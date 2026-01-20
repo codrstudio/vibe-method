@@ -3,18 +3,12 @@
 import { useEffect } from "react"
 import { useNotificationStore } from "@/stores/notification-store"
 import { NotificationItem } from "./notification-item"
-import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { CheckCheck, Inbox } from "lucide-react"
+import { Inbox } from "lucide-react"
 
 export function NotificationList() {
-  const {
-    notifications,
-    isLoadingNotifications,
-    fetchNotifications,
-    markAllNotificationsAsRead,
-    unreadNotificationCount,
-  } = useNotificationStore()
+  const { notifications, isLoadingNotifications, fetchNotifications } =
+    useNotificationStore()
 
   useEffect(() => {
     fetchNotifications()
@@ -22,7 +16,7 @@ export function NotificationList() {
 
   if (isLoadingNotifications) {
     return (
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-24 w-full" />
         ))}
@@ -43,21 +37,7 @@ export function NotificationList() {
   }
 
   return (
-    <div className="space-y-3">
-      {unreadNotificationCount > 0 && (
-        <div className="flex justify-end">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={markAllNotificationsAsRead}
-            className="text-xs"
-          >
-            <CheckCheck className="mr-1.5 h-4 w-4" />
-            Marcar todas como lidas
-          </Button>
-        </div>
-      )}
-
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {notifications.map((notification) => (
         <NotificationItem key={notification.id} notification={notification} />
       ))}

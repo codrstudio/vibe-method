@@ -35,7 +35,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
   return (
     <Card
       className={cn(
-        "p-3 transition-colors",
+        "p-3 h-full flex flex-col transition-colors",
         isUnread && "border-l-4 border-l-primary bg-muted/30"
       )}
     >

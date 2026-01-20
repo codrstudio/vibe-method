@@ -17,7 +17,7 @@ export function TaskList() {
 
   if (isLoadingTasks) {
     return (
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-32 w-full" />
         ))}
@@ -38,7 +38,7 @@ export function TaskList() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {tasks.map((task) => {
         const taskClass = taskClasses.find((tc) => tc.name === task.class)
         return <TaskItem key={task.id} task={task} taskClass={taskClass} />

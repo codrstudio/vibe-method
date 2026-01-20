@@ -10,14 +10,13 @@ import {
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { useNotifications } from "@/hooks/use-notifications"
+import { useTasks } from "@/hooks/use-tasks"
 
 export function SidebarNotifications() {
   const { state } = useSidebar()
   const isCollapsed = state === "collapsed"
   const { count: notificationCount } = useNotifications()
-
-  // Tasks: sem sistema implementado ainda
-  const taskCount = 0
+  const { count: taskCount } = useTasks()
 
   const hasNotifications = notificationCount > 0
   const hasTasks = taskCount > 0

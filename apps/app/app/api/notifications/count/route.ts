@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
 
     const result = await queryOne<{ count: string }>(
-      `SELECT COUNT(*) as count FROM notifications WHERE user_id = $1 AND status = 'pending'`,
+      `SELECT COUNT(*) as count FROM notifications WHERE user_id = $1 AND status = 'pending' AND class IS NULL`,
       [userId]
     )
 

@@ -6,16 +6,15 @@ import Link from "next/link"
 import { Bell, ClipboardList, Menu } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { MobileDrawer } from "@/components/mobile-drawer"
 import { useNotifications } from "@/hooks/use-notifications"
+import { useTasks } from "@/hooks/use-tasks"
+import { cn } from "@/lib/utils"
 
 export function MobileHeader() {
   const [drawerOpen, setDrawerOpen] = React.useState(false)
   const { count: notificationCount } = useNotifications()
-
-  // Tasks: sem sistema implementado ainda
-  const taskCount = 0
+  const { count: taskCount } = useTasks()
 
   const hasNotifications = notificationCount > 0
   const hasTasks = taskCount > 0
@@ -38,29 +37,51 @@ export function MobileHeader() {
         {/* Actions */}
         <div className="flex items-center gap-1">
           {/* Tarefas - ações pendentes para o usuário */}
-          <Link href="/app/tasks">
-            <Button variant="ghost" size="icon" className="relative">
-              <ClipboardList className="h-5 w-5" />
-              {hasTasks && (
-                <Badge className="absolute -top-1 -right-1 h-5 min-w-5 px-1 text-xs">
-                  {taskCount}
-                </Badge>
+          <Link
+            href="/app/tasks"
+            className={cn(
+              "relative flex items-center justify-center h-9 w-9 rounded-full transition-colors",
+              hasTasks
+                ? "bg-info/15 hover:bg-info/25"
+                : "hover:bg-accent"
+            )}
+          >
+            <ClipboardList
+              className={cn(
+                "h-5 w-5",
+                hasTasks ? "text-info" : "text-foreground"
               )}
-              <span className="sr-only">Tarefas pendentes</span>
-            </Button>
+            />
+            {hasTasks && (
+              <span className="absolute -top-1 -right-1 flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-info text-info-foreground text-xs font-medium">
+                {taskCount}
+              </span>
+            )}
+            <span className="sr-only">Tarefas pendentes</span>
           </Link>
 
           {/* Notificações - informativas */}
-          <Link href="/app/notifications">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              {hasNotifications && (
-                <Badge className="absolute -top-1 -right-1 h-5 min-w-5 px-1 text-xs">
-                  {notificationCount}
-                </Badge>
+          <Link
+            href="/app/notifications"
+            className={cn(
+              "relative flex items-center justify-center h-9 w-9 rounded-full transition-colors",
+              hasNotifications
+                ? "bg-warning/15 hover:bg-warning/25"
+                : "hover:bg-accent"
+            )}
+          >
+            <Bell
+              className={cn(
+                "h-5 w-5",
+                hasNotifications ? "text-warning" : "text-foreground"
               )}
-              <span className="sr-only">Notificações</span>
-            </Button>
+            />
+            {hasNotifications && (
+              <span className="absolute -top-1 -right-1 flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-warning text-warning-foreground text-xs font-medium">
+                {notificationCount}
+              </span>
+            )}
+            <span className="sr-only">Notificações</span>
           </Link>
 
           {/* Menu hamburger */}
