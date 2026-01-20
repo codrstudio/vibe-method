@@ -1,10 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Drawer } from 'vaul'
-import { MoreVertical, LogOut, Radio } from 'lucide-react'
+import { MoreVertical, LogOut, Radio, Search } from 'lucide-react'
 import { useInstanceStore } from '../../stores/instanceStore'
 import { useMediaQuery } from '../../hooks/use-media-query'
 import { Popover, PopoverContent } from '../ui/popover'
-import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '../ui/command'
 import type { Instance } from '../../types'
 
 interface ChannelSelectionModalProps {
@@ -15,12 +14,28 @@ interface ChannelSelectionModalProps {
 export function ChannelSelectionModal({ open, onClose }: ChannelSelectionModalProps) {
   const { instances, selectedInstance, setSelectedInstance } = useInstanceStore()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [search, setSearch] = useState('')
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
   const connectedInstances = instances.filter(i => i.status === 'connected')
 
+  const filteredInstances = useMemo(() => {
+    if (!search.trim()) return connectedInstances
+    const query = search.toLowerCase()
+    return connectedInstances.filter(
+      i => i.instanceName.toLowerCase().includes(query) ||
+           i.phoneNumber?.toLowerCase().includes(query)
+    )
+  }, [connectedInstances, search])
+
   function handleSelectChannel(instanceName: string) {
     setSelectedInstance(instanceName)
+    setSearch('')
+    onClose()
+  }
+
+  function handleClose() {
+    setSearch('')
     onClose()
   }
 
@@ -28,10 +43,10 @@ export function ChannelSelectionModal({ open, onClose }: ChannelSelectionModalPr
     window.close()
   }
 
-  // Desktop: Popover + Command
+  // Desktop: Popover com busca
   if (isDesktop) {
     return (
-      <Popover open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <Popover open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
         <PopoverContent
           align="start"
           side="bottom"
@@ -44,71 +59,85 @@ export function ChannelSelectionModal({ open, onClose }: ChannelSelectionModalPr
             transform: 'none'
           }}
         >
-          <Command className="bg-transparent">
-            <CommandInput placeholder="Buscar canal..." />
-            <CommandList className="max-h-[350px]">
-              {connectedInstances.length === 0 ? (
-                <CommandEmpty>
-                  <div className="flex flex-col items-center py-6 text-wa-text-secondary">
-                    <Radio className="w-10 h-10 mb-2 opacity-50" />
-                    <p>Nenhum canal conectado</p>
-                    <p className="text-xs mt-1 opacity-75">
-                      Conecte um canal no painel principal
+          {/* Search Input */}
+          <div className="flex items-center border-b border-wa-border px-3">
+            <Search className="w-4 h-4 text-wa-text-secondary opacity-50 shrink-0" />
+            <input
+              type="text"
+              placeholder="Buscar canal..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 h-10 bg-transparent px-2 text-sm text-wa-text-primary outline-none placeholder:text-wa-text-secondary"
+              autoFocus
+            />
+          </div>
+
+          {/* Channel List */}
+          <div className="max-h-[300px] overflow-y-auto p-1">
+            {filteredInstances.length === 0 ? (
+              <div className="flex flex-col items-center py-8 text-wa-text-secondary">
+                <Radio className="w-10 h-10 mb-2 opacity-50" />
+                <p className="text-sm">
+                  {connectedInstances.length === 0
+                    ? 'Nenhum canal conectado'
+                    : 'Nenhum resultado'}
+                </p>
+                {connectedInstances.length === 0 && (
+                  <p className="text-xs mt-1 opacity-75">
+                    Conecte um canal no painel principal
+                  </p>
+                )}
+              </div>
+            ) : (
+              filteredInstances.map((instance) => (
+                <button
+                  key={instance.instanceName}
+                  onClick={() => handleSelectChannel(instance.instanceName)}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors hover:bg-wa-bg-hover ${
+                    instance.instanceName === selectedInstance ? 'bg-wa-bg-active' : ''
+                  }`}
+                >
+                  <div className="w-10 h-10 rounded-full bg-wa-green-primary/20 flex items-center justify-center shrink-0">
+                    <Radio className="w-5 h-5 text-wa-green-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-wa-text-primary truncate">
+                      {instance.instanceName}
+                    </p>
+                    <p className="text-xs text-wa-text-secondary truncate">
+                      {instance.phoneNumber || 'Sem numero'}
                     </p>
                   </div>
-                </CommandEmpty>
-              ) : (
-                <CommandGroup>
-                  {connectedInstances.map((instance) => (
-                    <CommandItem
-                      key={instance.instanceName}
-                      value={instance.instanceName}
-                      onSelect={() => handleSelectChannel(instance.instanceName)}
-                      className="px-3 py-3 cursor-pointer"
-                    >
-                      <div className="flex items-center gap-3 w-full">
-                        <div className="w-10 h-10 rounded-full bg-wa-green-primary/20 flex items-center justify-center shrink-0">
-                          <Radio className="w-5 h-5 text-wa-green-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-wa-text-primary truncate">
-                            {instance.instanceName}
-                          </p>
-                          <p className="text-xs text-wa-text-secondary truncate">
-                            {instance.phoneNumber || 'Sem numero'}
-                          </p>
-                        </div>
-                        {instance.instanceName === selectedInstance && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-wa-green-primary shrink-0" />
-                        )}
-                      </div>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              )}
-            </CommandList>
-            <div className="border-t border-wa-border p-2">
-              <button
-                onClick={handleExit}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-wa-text-secondary hover:bg-wa-bg-hover rounded-md transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Sair</span>
-              </button>
-            </div>
-          </Command>
+                  {instance.instanceName === selectedInstance && (
+                    <div className="w-2.5 h-2.5 rounded-full bg-wa-green-primary shrink-0" />
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-wa-border p-2">
+            <button
+              onClick={handleExit}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-wa-text-secondary hover:bg-wa-bg-hover rounded-md transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sair</span>
+            </button>
+          </div>
         </PopoverContent>
       </Popover>
     )
   }
 
-  // Mobile: Drawer (existing implementation)
+  // Mobile: Drawer (implementacao existente)
   return (
-    <Drawer.Root open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+    <Drawer.Root open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <Drawer.Portal>
         <div
           className="fixed inset-0 z-[100] bg-black/90"
-          onClick={onClose}
+          onClick={handleClose}
           aria-hidden="true"
         />
         <Drawer.Content
