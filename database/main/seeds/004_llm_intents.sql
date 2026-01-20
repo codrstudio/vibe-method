@@ -56,6 +56,24 @@ ON CONFLICT (slug) DO UPDATE SET
   description = EXCLUDED.description,
   profile = EXCLUDED.profile;
 
+-- Default bindings (funciona out of the box)
+-- classify: ollama/llama3.2:3b - Alta frequência, rápido, custo zero
+-- extract: ollama/qwen2.5:7b - Bom em JSON estruturado, custo zero
+-- generate: openrouter/anthropic/claude-3-haiku - Qualidade, barato
+-- plan: openrouter/anthropic/claude-3.5-sonnet - Raciocínio complexo
+-- decide: openrouter/openai/gpt-4o-mini - Confiável, barato
+INSERT INTO llm_bindings (intent_id, provider, model, temperature, is_active, priority)
+SELECT id, 'ollama', 'llama3.2:3b', 0.3, true, 0 FROM llm_intents WHERE slug = 'classify'
+UNION ALL
+SELECT id, 'ollama', 'qwen2.5:7b', 0.2, true, 0 FROM llm_intents WHERE slug = 'extract'
+UNION ALL
+SELECT id, 'openrouter', 'anthropic/claude-3-haiku', 0.7, true, 0 FROM llm_intents WHERE slug = 'generate'
+UNION ALL
+SELECT id, 'openrouter', 'anthropic/claude-3.5-sonnet', 0.3, true, 0 FROM llm_intents WHERE slug = 'plan'
+UNION ALL
+SELECT id, 'openrouter', 'openai/gpt-4o-mini', 0.3, true, 0 FROM llm_intents WHERE slug = 'decide'
+ON CONFLICT DO NOTHING;
+
 DO $$
 BEGIN
   RAISE NOTICE 'Seed 004_llm_intents.sql completed successfully';
