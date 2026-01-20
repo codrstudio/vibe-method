@@ -38,7 +38,7 @@ export function ErrorCard({
         <CardContent className="text-center">
           <p className="text-muted-foreground">{message}</p>
           {showDetails && error && (
-            <pre className="mt-4 p-3 bg-muted rounded text-xs text-left overflow-auto max-h-32">
+            <pre className="mt-4 p-3 bg-muted rounded text-xs text-left max-h-32 whitespace-pre-wrap break-all">
               {error.message}
             </pre>
           )}

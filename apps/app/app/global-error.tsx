@@ -1,5 +1,6 @@
 "use client";
 
+import "@/app/globals.css";
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 
 export default function GlobalError({
@@ -13,34 +14,32 @@ export default function GlobalError({
 
   return (
     <html>
-      <body>
-        <div className="flex min-h-screen items-center justify-center p-4 bg-gray-50">
-          <div className="w-full max-w-md border border-gray-200 rounded-lg p-6 text-center bg-white shadow-sm">
-            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h1 className="text-xl font-bold mb-2 text-gray-900">
-              Erro Critico
-            </h1>
-            <p className="text-gray-600 mb-4">
+      <body className="bg-background text-foreground">
+        <div className="flex min-h-screen items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card text-card-foreground shadow p-6 text-center">
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h1 className="text-xl font-semibold mb-2">Erro Critico</h1>
+            <p className="text-muted-foreground mb-4">
               Ocorreu um erro grave na aplicacao.
             </p>
             {isDev && error && (
-              <pre className="mb-4 p-3 bg-gray-100 rounded text-xs text-left overflow-auto max-h-32 text-gray-800">
+              <pre className="mb-4 p-3 bg-muted rounded-md text-xs text-left max-h-32 text-muted-foreground whitespace-pre-wrap break-all">
                 {error.message}
               </pre>
             )}
             <div className="flex gap-2 justify-center">
               <button
                 onClick={reset}
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-9 px-4 py-2 bg-primary text-primary-foreground shadow hover:bg-primary/90 transition-colors"
               >
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <RefreshCw className="h-4 w-4" />
                 Tentar novamente
               </button>
               <a
                 href="/"
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors text-gray-700"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-9 px-4 py-2 border border-input bg-background shadow-sm hover:bg-muted hover:text-foreground transition-colors"
               >
-                <Home className="mr-2 h-4 w-4" />
+                <Home className="h-4 w-4" />
                 Home
               </a>
             </div>

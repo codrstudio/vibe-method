@@ -15,6 +15,7 @@ export interface NavItem {
   isActive?: boolean
   section?: string
   items?: NavSubItem[]
+  external?: string
 }
 
 export type SidebarArea = "main" | "settings" | "system-health"

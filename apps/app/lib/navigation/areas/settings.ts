@@ -1,4 +1,4 @@
-import { Mail, MessageCircle, Network, Workflow } from "lucide-react"
+import { Mail, MessageCircle, Network, Smartphone, Workflow } from "lucide-react"
 import type { NavItem } from "../types"
 import { homeItem } from "./shared"
 
@@ -34,10 +34,20 @@ const whatsAppOperationsItem: NavItem = {
   section: "WhatsApp",
 }
 
+const whatsAppSimulatorItem: NavItem = {
+  title: "Simulador",
+  url: "/app/wa",
+  icon: Smartphone,
+  description: "Testar conversas e fluxos",
+  section: "WhatsApp",
+  external: "wa-sim",
+}
+
 export const settingsAreaItems: NavItem[] = [
   homeItem,
   messageTemplatesItem,
   whatsAppDashboardItem,
   whatsAppChannelsItem,
   whatsAppOperationsItem,
+  whatsAppSimulatorItem,
 ]

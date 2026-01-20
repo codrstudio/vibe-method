@@ -48,10 +48,22 @@ export function SimulatorConnectionPanel({
     setIsConnecting(true);
     setError(null);
     try {
+      // Primeiro, tenta criar a instancia (se ja existe, o wa-sim ignora)
+      await fetch(`${WA_SIM_URL}/instance/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instanceName,
+          phoneNumber: phoneNumber || '5511999999999',
+          channelId,
+        }),
+      });
+
+      // Depois conecta
       const res = await fetch(`${WA_SIM_URL}/instances/${instanceName}/connect`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber: '5511999999999' }),
+        body: JSON.stringify({ phoneNumber: phoneNumber || '5511999999999' }),
       });
       if (!res.ok) {
         const data = await res.json();

@@ -4,11 +4,11 @@
  * WhatsApp Channel Card
  *
  * Card que exibe informacoes de um numero WhatsApp registrado.
- * Updated: 2026-01-20 - Added provider badge
+ * Updated: 2026-01-20 - Redesigned with cleaner hierarchy
  */
 
 import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ConnectionStatus, ConnectionStatusDot } from './connection-status';
@@ -72,86 +72,82 @@ export function ChannelCard({
 
   return (
     <Card className={cn('group relative', className)}>
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <ConnectionStatusDot status={status} />
-              <CardTitle className="text-base">{name}</CardTitle>
-              {isSimulator ? (
-                <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 gap-1">
-                  <FlaskConical className="h-3 w-3" />
-                  Simulador
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-xs bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300 gap-1">
-                  <Smartphone className="h-3 w-3" />
-                  Evolution
-                </Badge>
-              )}
-            </div>
-            {description && (
-              <CardDescription className="text-sm line-clamp-2">
-                {description}
-              </CardDescription>
-            )}
+      {/* Header: Nome + Provider Badge + Menu */}
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <ConnectionStatusDot status={status} className="shrink-0" />
+            <CardTitle className="text-base truncate">{name}</CardTitle>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 opacity-0 group-hover:opacity-100"
-              >
-                <MoreVertical className="h-4 w-4" />
-                <span className="sr-only">Acoes</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {!isSimulator && status !== 'connected' && onRefreshQr && (
-                <DropdownMenuItem onClick={onRefreshQr} disabled={isLoading}>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Gerar novo QR
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem asChild>
-                <Link href={`/app/settings/whatsapp/channels/${id}`}>
-                  <ChevronRight className="mr-2 h-4 w-4" />
-                  Ver detalhes
-                </Link>
-              </DropdownMenuItem>
-              {onDelete && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={onDelete}
-                    disabled={isLoading}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Excluir
+          <div className="flex items-center gap-1 shrink-0">
+            {isSimulator ? (
+              <Badge variant="secondary" className="text-xs gap-1 bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
+                <FlaskConical className="h-3 w-3" />
+                <span className="hidden sm:inline">Simulador</span>
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="text-xs gap-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                <Smartphone className="h-3 w-3" />
+                <span className="hidden sm:inline">Evolution</span>
+              </Badge>
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                  <span className="sr-only">Acoes</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {!isSimulator && status !== 'connected' && onRefreshQr && (
+                  <DropdownMenuItem onClick={onRefreshQr} disabled={isLoading}>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Gerar novo QR
                   </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                )}
+                <DropdownMenuItem asChild>
+                  <Link href={`/app/settings/whatsapp/channels/${id}`}>
+                    <ChevronRight className="mr-2 h-4 w-4" />
+                    Ver detalhes
+                  </Link>
+                </DropdownMenuItem>
+                {onDelete && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={onDelete}
+                      disabled={isLoading}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Excluir
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {/* Status & Phone */}
-        <div className="flex items-center justify-between">
-          <ConnectionStatus status={status} />
-          {phoneNumber && (
-            <span className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Phone className="h-3 w-3" />
-              {phoneNumber}
-            </span>
-          )}
-        </div>
 
-        {/* Metadata */}
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+      {/* Content: Phone + Metadata */}
+      <CardContent className="pb-3 space-y-2">
+        {/* Phone number (highlighted) */}
+        {phoneNumber && (
+          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <Phone className="h-4 w-4 text-muted-foreground" />
+            {phoneNumber}
+          </div>
+        )}
+
+        {/* Metadata row */}
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
             {formattedDate}
@@ -161,15 +157,18 @@ export function ChannelCard({
             {assignmentsCount} {assignmentsCount === 1 ? 'atribuicao' : 'atribuicoes'}
           </span>
         </div>
-
-        {/* Action Link */}
-        <Link href={`/app/settings/whatsapp/channels/${id}`} className="block">
-          <Button variant="outline" className="w-full justify-between" size="sm">
-            {status === 'connected' ? 'Gerenciar' : 'Conectar'}
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </Link>
       </CardContent>
+
+      {/* Footer: Status Badge + Action Button */}
+      <CardFooter className="pt-0 flex items-center justify-between gap-2">
+        <ConnectionStatus status={status} className="text-xs" />
+        <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground" asChild>
+          <Link href={`/app/settings/whatsapp/channels/${id}`}>
+            {status === 'connected' ? 'Gerenciar' : 'Conectar'}
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Link>
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

@@ -6,6 +6,7 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
+import { Toaster } from "sonner"
 
 export default async function AppLayout({
   children,
@@ -23,6 +24,7 @@ export default async function AppLayout({
         <MobileHeader />
         {children}
       </SidebarInset>
+      <Toaster richColors position="top-right" />
     </SidebarProvider>
   )
 }
