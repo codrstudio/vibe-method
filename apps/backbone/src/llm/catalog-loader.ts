@@ -29,6 +29,13 @@ class CatalogLoader extends EventEmitter {
     try {
       const content = await readFile(this.catalogPath, 'utf-8');
       this.catalog = JSON.parse(content) as ModelsCatalog;
+
+      // Override Ollama baseUrl with environment variable if present
+      if (this.catalog.providers.ollama && process.env.OLLAMA_URL) {
+        this.catalog.providers.ollama.baseUrl = process.env.OLLAMA_URL;
+        console.log(`[CatalogLoader] Using OLLAMA_URL: ${process.env.OLLAMA_URL}`);
+      }
+
       console.log(`[CatalogLoader] Loaded catalog v${this.catalog.version} from ${this.catalogPath}`);
       return this.catalog;
     } catch (error) {

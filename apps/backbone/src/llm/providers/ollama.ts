@@ -16,7 +16,7 @@ export interface OllamaConfig {
 export function createOllamaLLM(options: OllamaConfig) {
   const {
     model,
-    baseUrl = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434',
+    baseUrl = process.env.OLLAMA_URL ?? 'http://localhost:11434',
     temperature = 0.7,
     maxTokens,
   } = options;
