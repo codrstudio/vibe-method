@@ -52,7 +52,7 @@ export const whatsappService = {
     // Now try to create Evolution/Simulator instance
     try {
       const webhookUrl = `${config.APP_BASE_URL}/api/webhooks/evolution`;
-      const { instanceId } = await evolutionClient.createInstance(instanceName, webhookUrl, provider);
+      const { instanceId } = await evolutionClient.createInstance(instanceName, webhookUrl, provider, input.name);
 
       // Update with instance ID
       await channelsRepository.updateInstanceId(channel.id, instanceId);

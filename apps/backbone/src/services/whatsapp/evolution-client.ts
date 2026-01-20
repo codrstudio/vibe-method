@@ -149,7 +149,8 @@ export const evolutionClient = {
   async createInstance(
     instanceName: string,
     webhookUrl?: string,
-    provider: ChannelProvider = 'evolution'
+    provider: ChannelProvider = 'evolution',
+    channelName?: string
   ): Promise<{ instanceId: string; instanceName: string }> {
     // Route to simulator if provider is 'simulator'
     if (provider === 'simulator') {
@@ -161,6 +162,7 @@ export const evolutionClient = {
         body: JSON.stringify({
           instanceName,
           webhook: webhookUrl,
+          channelName,
         }),
       });
 
