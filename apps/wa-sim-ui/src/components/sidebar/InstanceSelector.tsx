@@ -25,7 +25,7 @@ export function InstanceSelector() {
     <select
       value={selectedInstance || ''}
       onChange={(e) => setSelectedInstance(e.target.value || null)}
-      className="w-full px-3 py-2 text-sm bg-white border border-wa-border rounded-lg focus:outline-none focus:ring-2 focus:ring-wa-green-primary"
+      className="w-full px-3 py-2 text-sm bg-wa-bg-input text-wa-text-primary border border-wa-border rounded-lg focus:outline-none focus:ring-2 focus:ring-wa-green-primary"
     >
       <option value="">Selecione uma instancia</option>
       {connectedInstances.map((instance) => (

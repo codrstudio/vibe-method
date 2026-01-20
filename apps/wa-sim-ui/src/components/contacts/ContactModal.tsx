@@ -45,8 +45,8 @@ export function ContactModal({ contact, onClose }: ContactModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+    <div className="fixed inset-0 bg-wa-overlay flex items-center justify-center z-50">
+      <div className="bg-wa-bg-modal rounded-lg shadow-xl w-full max-w-md mx-4">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-wa-border">
           <h2 className="text-lg font-semibold text-wa-text-primary">
@@ -54,7 +54,7 @@ export function ContactModal({ contact, onClose }: ContactModalProps) {
           </h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-gray-200 text-wa-text-secondary"
+            className="p-1 rounded-full hover:bg-wa-bg-hover text-wa-text-secondary"
           >
             <X className="w-5 h-5" />
           </button>
@@ -71,7 +71,7 @@ export function ContactModal({ contact, onClose }: ContactModalProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Joao Cliente"
-              className="w-full px-3 py-2 border border-wa-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-wa-green-primary"
+              className="w-full px-3 py-2 border border-wa-border rounded-lg text-sm bg-wa-bg-input text-wa-text-primary focus:outline-none focus:ring-2 focus:ring-wa-green-primary"
               autoFocus
             />
           </div>
@@ -85,7 +85,7 @@ export function ContactModal({ contact, onClose }: ContactModalProps) {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Ex: 11999001001"
-              className="w-full px-3 py-2 border border-wa-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-wa-green-primary"
+              className="w-full px-3 py-2 border border-wa-border rounded-lg text-sm bg-wa-bg-input text-wa-text-primary focus:outline-none focus:ring-2 focus:ring-wa-green-primary"
             />
             <p className="text-xs text-wa-text-secondary mt-1">
               Sera formatado automaticamente com +55
@@ -93,14 +93,14 @@ export function ContactModal({ contact, onClose }: ContactModalProps) {
           </div>
 
           {error && (
-            <p className="text-sm text-red-600">{error}</p>
+            <p className="text-sm text-wa-text-danger">{error}</p>
           )}
 
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm text-wa-text-secondary hover:bg-gray-100 rounded-lg"
+              className="px-4 py-2 text-sm text-wa-text-secondary hover:bg-wa-bg-hover rounded-lg"
             >
               Cancelar
             </button>

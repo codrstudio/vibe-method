@@ -148,12 +148,12 @@ export function MessageInput({ contact }: MessageInputProps) {
       {/* Phase 2: Reply Preview */}
       <ReplyPreview />
 
-      <div className="flex items-center gap-2 px-4 py-3 bg-wa-bg-input dark:bg-wa-bg-input border-t border-wa-border dark:border-wa-border">
+      <div className="flex items-center gap-2 px-4 py-3 bg-wa-bg-input border-t border-wa-border">
         {/* Emoji button */}
         <div className="relative">
           <button
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-wa-text-secondary"
+            className="p-2 rounded-full hover:bg-wa-bg-hover text-wa-text-secondary"
             title="Emojis"
           >
             <Smile className="w-6 h-6" />
@@ -171,7 +171,7 @@ export function MessageInput({ contact }: MessageInputProps) {
         {/* Anexo */}
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-wa-text-secondary"
+          className="p-2 rounded-full hover:bg-wa-bg-hover text-wa-text-secondary"
           title="Anexar arquivo"
         >
           <Paperclip className="w-6 h-6" />
@@ -193,7 +193,7 @@ export function MessageInput({ contact }: MessageInputProps) {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={sending}
-          className="flex-1 px-4 py-2 bg-white dark:bg-wa-bg-header rounded-lg text-sm outline-none focus:ring-1 focus:ring-wa-green-primary disabled:opacity-50 text-wa-text-primary dark:text-wa-text-primary"
+          className="flex-1 px-4 py-2 bg-wa-bg-sidebar rounded-lg text-sm outline-none focus:ring-1 focus:ring-wa-green-primary disabled:opacity-50 text-wa-text-primary"
         />
 
         {/* Send button or Audio recorder */}

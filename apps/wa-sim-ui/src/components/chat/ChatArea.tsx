@@ -18,17 +18,17 @@ export function ChatArea() {
   // Estado vazio - nenhum contato selecionado
   if (!selectedContactId || !selectedContact) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-wa-bg-chat dark:bg-wa-bg-chat chat-bg">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm text-center max-w-md">
+      <div className="flex-1 flex flex-col items-center justify-center bg-wa-bg-chat chat-bg">
+        <div className="bg-wa-bg-modal p-8 rounded-lg shadow-sm text-center max-w-md">
           <MessageSquare className="w-16 h-16 text-wa-green-primary mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-wa-text-primary dark:text-wa-text-primary mb-2">
+          <h2 className="text-xl font-semibold text-wa-text-primary mb-2">
             WhatsApp Simulator
           </h2>
           <p className="text-wa-text-secondary">
             Selecione um contato para iniciar uma conversa simulada.
           </p>
           {!selectedInstance && (
-            <p className="text-sm text-orange-600 mt-4">
+            <p className="text-sm text-wa-text-danger mt-4">
               Selecione uma instancia conectada primeiro.
             </p>
           )}
@@ -42,8 +42,8 @@ export function ChatArea() {
     return (
       <div className="flex-1 flex flex-col">
         <ChatHeader contact={selectedContact} onOpenSearch={() => setShowSearch(true)} />
-        <div className="flex-1 flex items-center justify-center bg-wa-bg-chat dark:bg-wa-bg-chat chat-bg">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm text-center">
+        <div className="flex-1 flex items-center justify-center bg-wa-bg-chat chat-bg">
+          <div className="bg-wa-bg-modal p-6 rounded-lg shadow-sm text-center">
             <p className="text-wa-text-secondary">
               Selecione uma instancia conectada para enviar mensagens.
             </p>

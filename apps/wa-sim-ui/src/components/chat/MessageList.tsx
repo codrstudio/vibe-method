@@ -27,7 +27,7 @@ function DateSeparator({ date }: { date: Date }) {
 
   return (
     <div className="flex justify-center my-3">
-      <span className="bg-white dark:bg-gray-700 px-3 py-1 rounded-lg text-xs text-wa-text-secondary shadow-sm">
+      <span className="bg-wa-bg-modal px-3 py-1 rounded-lg text-xs text-wa-text-secondary shadow-sm">
         {label}
       </span>
     </div>
@@ -63,8 +63,8 @@ export function MessageList({ contactId, highlightedMessageId }: MessageListProp
 
   if (messages.length === 0 && !isTyping) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-wa-bg-chat dark:bg-wa-bg-chat chat-bg">
-        <div className="bg-white dark:bg-gray-700 px-4 py-2 rounded-lg shadow-sm">
+      <div className="flex-1 flex items-center justify-center bg-wa-bg-chat chat-bg">
+        <div className="bg-wa-bg-modal px-4 py-2 rounded-lg shadow-sm">
           <p className="text-sm text-wa-text-secondary">
             Nenhuma mensagem ainda. Envie uma mensagem para iniciar a conversa.
           </p>
@@ -79,7 +79,7 @@ export function MessageList({ contactId, highlightedMessageId }: MessageListProp
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-y-auto bg-wa-bg-chat dark:bg-wa-bg-chat chat-bg px-16 py-4"
+      className="flex-1 overflow-y-auto bg-wa-bg-chat chat-bg px-16 py-4"
     >
       {messages.map((message) => {
         const messageDate = new Date(message.timestamp)

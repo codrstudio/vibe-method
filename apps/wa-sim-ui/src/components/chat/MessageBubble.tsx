@@ -54,7 +54,7 @@ export function MessageBubble({ message, isOwn, isHighlighted }: MessageBubblePr
         <div
           className={clsx(
             'max-w-[65%] min-w-[120px] rounded-lg px-3 py-2 shadow-sm relative',
-            isOwn ? 'bg-wa-bubble-out dark:bg-wa-bubble-out' : 'bg-wa-bubble-in dark:bg-wa-bubble-in'
+            isOwn ? 'bg-wa-bubble-out' : 'bg-wa-bubble-in'
           )}
         >
           {/* Tail do balao */}
@@ -62,8 +62,8 @@ export function MessageBubble({ message, isOwn, isHighlighted }: MessageBubblePr
             className={clsx(
               'absolute top-0 w-3 h-3',
               isOwn
-                ? 'right-0 -mr-1.5 bg-wa-bubble-out dark:bg-wa-bubble-out'
-                : 'left-0 -ml-1.5 bg-wa-bubble-in dark:bg-wa-bubble-in',
+                ? 'right-0 -mr-1.5 bg-wa-bubble-out'
+                : 'left-0 -ml-1.5 bg-wa-bubble-in',
               isOwn ? 'rounded-bl-full' : 'rounded-br-full'
             )}
             style={{
@@ -88,7 +88,7 @@ export function MessageBubble({ message, isOwn, isHighlighted }: MessageBubblePr
           ) : (
             /* Texto */
             message.text && (
-              <p className="text-wa-text-primary dark:text-wa-text-primary text-sm whitespace-pre-wrap break-words">
+              <p className="text-wa-text-primary text-sm whitespace-pre-wrap break-words">
                 {message.text}
               </p>
             )
@@ -96,8 +96,8 @@ export function MessageBubble({ message, isOwn, isHighlighted }: MessageBubblePr
 
           {/* Documento/Arquivo se houver */}
           {message.media && (
-            <div className="mt-2 p-2 bg-white/50 dark:bg-black/20 rounded flex items-center gap-2">
-              <FileText className="w-8 h-8 text-red-500 flex-shrink-0" />
+            <div className="mt-2 p-2 bg-wa-bg-hover/50 rounded flex items-center gap-2">
+              <FileText className="w-8 h-8 text-wa-text-danger flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate text-wa-text-primary">{message.media.filename}</p>
                 <p className="text-xs text-wa-text-secondary">{formatFileSize(message.media.size)}</p>
@@ -116,17 +116,17 @@ export function MessageBubble({ message, isOwn, isHighlighted }: MessageBubblePr
           {/* Phase 2: Context menu button */}
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="absolute top-1 right-1 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/10 dark:hover:bg-white/10"
+            className="absolute top-1 right-1 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-wa-bg-hover/50"
           >
             <MoreVertical className="w-4 h-4 text-wa-text-secondary" />
           </button>
 
           {/* Context menu dropdown */}
           {showMenu && (
-            <div className="absolute top-8 right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-wa-border dark:border-gray-600 py-1 z-10 min-w-[120px]">
+            <div className="absolute top-8 right-0 bg-wa-bg-dropdown rounded-lg shadow-lg border border-wa-border py-1 z-10 min-w-[120px]">
               <button
                 onClick={handleReply}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                className="w-full px-4 py-2 text-left text-sm text-wa-text-primary hover:bg-wa-bg-hover flex items-center gap-2"
               >
                 <Reply className="w-4 h-4" />
                 Responder

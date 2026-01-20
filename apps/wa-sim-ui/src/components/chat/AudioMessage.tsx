@@ -83,9 +83,9 @@ export function AudioMessage({ duration, isOwn }: AudioMessageProps) {
 
       {/* Waveform / Progress */}
       <div className="flex-1">
-        <div className="relative h-2 bg-black/10 dark:bg-white/20 rounded-full overflow-hidden">
+        <div className="relative h-2 bg-wa-bg-hover/50 rounded-full overflow-hidden">
           <div
-            className="absolute inset-y-0 left-0 bg-wa-green-dark dark:bg-wa-green-primary rounded-full transition-all"
+            className="absolute inset-y-0 left-0 bg-wa-green-dark rounded-full transition-all"
             style={{ width: `${progress * 100}%` }}
           />
           {/* Fake waveform bars */}
@@ -93,7 +93,7 @@ export function AudioMessage({ duration, isOwn }: AudioMessageProps) {
             {Array.from({ length: 20 }).map((_, i) => (
               <div
                 key={i}
-                className="w-0.5 bg-black/20 dark:bg-white/30 rounded-full"
+                className="w-0.5 bg-wa-text-secondary/30 rounded-full"
                 style={{ height: `${Math.random() * 100}%` }}
               />
             ))}
@@ -153,7 +153,7 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
     <div className="flex items-center gap-2">
       {isRecording && (
         <>
-          <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+          <span className="w-2 h-2 bg-wa-text-danger rounded-full animate-pulse" />
           <span className="text-sm text-wa-text-secondary">{formatTime(recordingTime)}</span>
         </>
       )}
@@ -161,8 +161,8 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
         onClick={handleToggleRecording}
         className={`p-2 rounded-full transition-colors ${
           isRecording
-            ? 'bg-red-500 text-white'
-            : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-wa-text-secondary'
+            ? 'bg-wa-text-danger text-white'
+            : 'hover:bg-wa-bg-hover text-wa-text-secondary'
         }`}
         title={isRecording ? 'Parar gravacao' : 'Gravar audio'}
       >

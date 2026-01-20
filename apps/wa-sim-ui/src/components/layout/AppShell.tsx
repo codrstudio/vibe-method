@@ -9,7 +9,7 @@ export function AppShell() {
   return (
     <div className="flex h-screen bg-wa-bg-header">
       {/* Sidebar */}
-      <aside className="w-[400px] border-r border-wa-border flex flex-col bg-white">
+      <aside className="w-[400px] border-r border-wa-border flex flex-col bg-wa-bg-sidebar">
         <Sidebar />
       </aside>
 

@@ -188,3 +188,43 @@ body {
 .badge-pulse {
   animation: badge-pulse 0.3s ease-out;
 }
+
+/* ============================================
+   Utility Classes using CSS Variables
+   These override Tailwind's static color resolution
+   ============================================ */
+
+/* Background colors */
+.bg-wa-bg-chat { background-color: var(--wa-bg-chat) !important; }
+.bg-wa-bg-sidebar { background-color: var(--wa-bg-sidebar) !important; }
+.bg-wa-bg-header { background-color: var(--wa-bg-header) !important; }
+.bg-wa-bg-input { background-color: var(--wa-bg-input) !important; }
+.bg-wa-bg-hover { background-color: var(--wa-bg-hover) !important; }
+.bg-wa-bg-active { background-color: var(--wa-bg-active) !important; }
+.bg-wa-bg-modal { background-color: var(--wa-bg-modal) !important; }
+.bg-wa-bg-dropdown { background-color: var(--wa-bg-dropdown) !important; }
+.bg-wa-bubble-out { background-color: var(--wa-bubble-out) !important; }
+.bg-wa-bubble-in { background-color: var(--wa-bubble-in) !important; }
+.bg-wa-green-primary { background-color: var(--wa-green-primary) !important; }
+.bg-wa-green-dark { background-color: var(--wa-green-dark) !important; }
+.bg-wa-overlay { background-color: var(--wa-overlay) !important; }
+
+/* Text colors */
+.text-wa-text-primary { color: var(--wa-text-primary) !important; }
+.text-wa-text-secondary { color: var(--wa-text-secondary) !important; }
+.text-wa-text-danger { color: var(--wa-text-danger) !important; }
+.text-wa-green-primary { color: var(--wa-green-primary) !important; }
+.text-wa-check-sent { color: var(--wa-check-sent) !important; }
+.text-wa-check-read { color: var(--wa-check-read) !important; }
+
+/* Border colors */
+.border-wa-border { border-color: var(--wa-border) !important; }
+.border-wa-green-primary { border-color: var(--wa-green-primary) !important; }
+
+/* Hover states */
+.hover\:bg-wa-bg-hover:hover { background-color: var(--wa-bg-hover) !important; }
+.hover\:bg-wa-green-dark:hover { background-color: var(--wa-green-dark) !important; }
+.hover\:text-wa-text-primary:hover { color: var(--wa-text-primary) !important; }
+
+/* Focus ring */
+.focus\:ring-wa-green-primary:focus { --tw-ring-color: var(--wa-green-primary); }

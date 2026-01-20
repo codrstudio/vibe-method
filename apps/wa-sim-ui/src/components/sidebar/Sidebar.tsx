@@ -34,9 +34,9 @@ export function Sidebar() {
   return (
     <>
       {/* Header */}
-      <div className="px-4 py-3 bg-wa-bg-header dark:bg-wa-bg-header border-b border-wa-border dark:border-wa-border">
+      <div className="px-4 py-3 bg-wa-bg-header border-b border-wa-border">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-lg font-semibold text-wa-text-primary dark:text-wa-text-primary">WhatsApp Simulator</h1>
+          <h1 className="text-lg font-semibold text-wa-text-primary">WhatsApp Simulator</h1>
           <div className="flex items-center gap-1">
             {/* Phase 2: Theme toggle */}
             <ThemeToggle />
@@ -44,7 +44,7 @@ export function Sidebar() {
             {/* Phase 2: Sound toggle */}
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-wa-text-secondary"
+              className="p-2 rounded-full hover:bg-wa-bg-hover text-wa-text-secondary"
               title={soundEnabled ? 'Desativar som' : 'Ativar som'}
             >
               {soundEnabled ? (
@@ -56,14 +56,14 @@ export function Sidebar() {
 
             <button
               onClick={loadInstances}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-wa-text-secondary"
+              className="p-2 rounded-full hover:bg-wa-bg-hover text-wa-text-secondary"
               title="Atualizar instancias"
             >
               <RefreshCw className="w-5 h-5" />
             </button>
             <button
               onClick={() => setShowContactModal(true)}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-wa-text-secondary"
+              className="p-2 rounded-full hover:bg-wa-bg-hover text-wa-text-secondary"
               title="Novo contato"
             >
               <Plus className="w-5 h-5" />
@@ -76,21 +76,21 @@ export function Sidebar() {
       </div>
 
       {/* Search */}
-      <div className="px-3 py-2 bg-white dark:bg-wa-bg-sidebar">
-        <div className="flex items-center gap-3 px-3 py-1 bg-wa-bg-input dark:bg-wa-bg-input rounded-lg">
+      <div className="px-3 py-2 bg-wa-bg-sidebar">
+        <div className="flex items-center gap-3 px-3 py-1 bg-wa-bg-input rounded-lg">
           <Search className="w-4 h-4 text-wa-text-secondary" />
           <input
             type="text"
             placeholder="Pesquisar contato"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-wa-text-secondary text-wa-text-primary dark:text-wa-text-primary"
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-wa-text-secondary text-wa-text-primary"
           />
         </div>
       </div>
 
       {/* Contact List */}
-      <div className="flex-1 overflow-y-auto bg-white dark:bg-wa-bg-sidebar">
+      <div className="flex-1 overflow-y-auto bg-wa-bg-sidebar">
         <ContactList searchFilter={search} />
       </div>
 

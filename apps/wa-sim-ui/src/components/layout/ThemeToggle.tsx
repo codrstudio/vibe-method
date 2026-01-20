@@ -1,25 +1,41 @@
 /**
  * Phase 2: Theme Toggle
- * Switch between light and dark mode
+ * Switch between light, dark, and system mode
  */
 
-import { Sun, Moon } from 'lucide-react'
+import { Sun, Moon, Monitor } from 'lucide-react'
 import { useThemeStore } from '../../stores/themeStore'
 
+const THEME_CONFIG = {
+  system: {
+    icon: Monitor,
+    title: 'Tema do sistema',
+    next: 'Modo claro'
+  },
+  light: {
+    icon: Sun,
+    title: 'Modo claro',
+    next: 'Modo escuro'
+  },
+  dark: {
+    icon: Moon,
+    title: 'Modo escuro',
+    next: 'Tema do sistema'
+  }
+} as const
+
 export function ThemeToggle() {
-  const { theme, toggleTheme } = useThemeStore()
+  const { preference, cycleTheme } = useThemeStore()
+  const config = THEME_CONFIG[preference]
+  const Icon = config.icon
 
   return (
     <button
-      onClick={toggleTheme}
-      className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-wa-text-secondary transition-colors"
-      title={theme === 'light' ? 'Modo escuro' : 'Modo claro'}
+      onClick={cycleTheme}
+      className="p-2 rounded-full hover:bg-wa-bg-hover text-wa-text-secondary transition-colors"
+      title={`${config.title} (clique para ${config.next})`}
     >
-      {theme === 'light' ? (
-        <Moon className="w-5 h-5" />
-      ) : (
-        <Sun className="w-5 h-5" />
-      )}
+      <Icon className="w-5 h-5" />
     </button>
   )
 }

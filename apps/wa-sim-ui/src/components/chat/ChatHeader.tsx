@@ -48,7 +48,7 @@ export function ChatHeader({ contact, onOpenSearch }: ChatHeaderProps) {
 
   return (
     <>
-      <div className="flex items-center gap-3 px-4 py-2 bg-wa-bg-header dark:bg-wa-bg-header border-b border-wa-border dark:border-wa-border">
+      <div className="flex items-center gap-3 px-4 py-2 bg-wa-bg-header border-b border-wa-border">
         {/* Avatar */}
         <div className={clsx(
           'w-10 h-10 rounded-full flex items-center justify-center',
@@ -61,14 +61,14 @@ export function ChatHeader({ contact, onOpenSearch }: ChatHeaderProps) {
 
         {/* Info */}
         <div className="flex-1">
-          <h2 className="font-medium text-wa-text-primary dark:text-wa-text-primary">{contact.name}</h2>
+          <h2 className="font-medium text-wa-text-primary">{contact.name}</h2>
           <p className="text-xs text-wa-text-secondary">{contact.phone}</p>
         </div>
 
         {/* Phase 2: Search button */}
         <button
           onClick={onOpenSearch}
-          className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-wa-text-secondary"
+          className="p-2 rounded-full hover:bg-wa-bg-hover text-wa-text-secondary"
           title="Buscar mensagens"
         >
           <SearchIcon className="w-5 h-5" />
@@ -78,7 +78,7 @@ export function ChatHeader({ contact, onOpenSearch }: ChatHeaderProps) {
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-wa-text-secondary"
+            className="p-2 rounded-full hover:bg-wa-bg-hover text-wa-text-secondary"
           >
             <MoreVertical className="w-5 h-5" />
           </button>
@@ -89,20 +89,20 @@ export function ChatHeader({ contact, onOpenSearch }: ChatHeaderProps) {
                 className="fixed inset-0 z-10"
                 onClick={() => setShowMenu(false)}
               />
-              <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-wa-border dark:border-gray-600 py-1 z-20 min-w-[150px]">
+              <div className="absolute right-0 top-full mt-1 bg-wa-bg-dropdown rounded-lg shadow-lg border border-wa-border py-1 z-20 min-w-[150px]">
                 <button
                   onClick={() => {
                     setShowEditModal(true)
                     setShowMenu(false)
                   }}
-                  className="w-full px-4 py-2 text-left text-sm text-wa-text-primary dark:text-wa-text-primary hover:bg-wa-bg-input dark:hover:bg-gray-700 flex items-center gap-2"
+                  className="w-full px-4 py-2 text-left text-sm text-wa-text-primary hover:bg-wa-bg-hover flex items-center gap-2"
                 >
                   <Edit className="w-4 h-4" />
                   Editar
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-wa-bg-input dark:hover:bg-gray-700 flex items-center gap-2"
+                  className="w-full px-4 py-2 text-left text-sm text-wa-text-danger hover:bg-wa-bg-hover flex items-center gap-2"
                 >
                   <Trash2 className="w-4 h-4" />
                   Remover
