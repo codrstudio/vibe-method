@@ -19,6 +19,9 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
+// TODO: Reativar quando implementar multi-tenant
+const MENU_ENABLED = false
+
 export function TeamSwitcher({
   teams,
 }: {
@@ -36,24 +39,39 @@ export function TeamSwitcher({
     return null
   }
 
+  const buttonContent = (
+    <SidebarMenuButton
+      size="lg"
+      className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+    >
+      <div className={`flex aspect-square size-8 items-center justify-center rounded-lg ${activeTeam.isImage ? '' : 'bg-sidebar-primary text-sidebar-primary-foreground'}`}>
+        <activeTeam.logo className={activeTeam.isImage ? 'size-8' : 'size-4'} />
+      </div>
+      <div className="grid flex-1 text-left text-sm leading-tight">
+        <span className="truncate font-medium">{activeTeam.name}</span>
+        <span className="truncate text-xs text-sidebar-foreground/70">{activeTeam.plan}</span>
+      </div>
+      {MENU_ENABLED && <ChevronsUpDown className="ml-auto" />}
+    </SidebarMenuButton>
+  )
+
+  // Menu desabilitado - só mostra o brand
+  if (!MENU_ENABLED) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          {buttonContent}
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
+  }
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <div className={`flex aspect-square size-8 items-center justify-center rounded-lg ${activeTeam.isImage ? '' : 'bg-sidebar-primary text-sidebar-primary-foreground'}`}>
-                <activeTeam.logo className={activeTeam.isImage ? 'size-8' : 'size-4'} />
-              </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{activeTeam.name}</span>
-                <span className="truncate text-xs text-sidebar-foreground/70">{activeTeam.plan}</span>
-              </div>
-              <ChevronsUpDown className="ml-auto" />
-            </SidebarMenuButton>
+            {buttonContent}
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"

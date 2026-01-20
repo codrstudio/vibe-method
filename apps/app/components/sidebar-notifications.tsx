@@ -87,13 +87,13 @@ export function SidebarNotifications() {
   }
 
   return (
-    <div className="flex items-center gap-1 px-2 py-1">
+    <div className="flex items-center gap-1 px-2 h-6 overflow-visible mx-auto">
       {/* Notificações */}
       <Tooltip>
         <TooltipTrigger asChild>
           <button
             className={cn(
-              "flex items-center gap-1 px-1.5 py-0.5 rounded-full transition-colors",
+              "flex items-center justify-center gap-1 px-2 h-9 min-w-9 rounded-full transition-colors",
               hasNotifications
                 ? "bg-warning/15 hover:bg-warning/25"
                 : "hover:bg-sidebar-accent"
@@ -122,7 +122,7 @@ export function SidebarNotifications() {
         <TooltipTrigger asChild>
           <button
             className={cn(
-              "flex items-center gap-1 px-1.5 py-0.5 rounded-full transition-colors",
+              "flex items-center justify-center gap-1 px-2 h-9 min-w-9 rounded-full transition-colors",
               hasTasks
                 ? "bg-info/15 hover:bg-info/25"
                 : "hover:bg-sidebar-accent"
