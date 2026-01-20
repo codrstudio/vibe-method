@@ -17,6 +17,10 @@
   --wa-bg-sidebar: #ffffff;
   --wa-bg-header: #f0f2f5;
   --wa-bg-input: #f0f2f5;
+  --wa-bg-hover: #e9edef;
+  --wa-bg-active: #d9dbdf;
+  --wa-bg-modal: #ffffff;
+  --wa-bg-dropdown: #ffffff;
 
   /* Mensagens */
   --wa-bubble-out: #d9fdd3;
@@ -26,6 +30,7 @@
   --wa-text-primary: #111b21;
   --wa-text-secondary: #667781;
   --wa-text-timestamp: #667781;
+  --wa-text-danger: #dc2626;
 
   /* Status checkmarks */
   --wa-check-sent: #667781;
@@ -33,6 +38,9 @@
 
   /* Borders */
   --wa-border: #e9edef;
+
+  /* Overlays */
+  --wa-overlay: rgba(0, 0, 0, 0.3);
 }
 
 /* ============================================
@@ -49,6 +57,10 @@
   --wa-bg-sidebar: #111b21;
   --wa-bg-header: #202c33;
   --wa-bg-input: #2a3942;
+  --wa-bg-hover: #2a3942;
+  --wa-bg-active: #3b4a54;
+  --wa-bg-modal: #233138;
+  --wa-bg-dropdown: #233138;
 
   /* Mensagens */
   --wa-bubble-out: #005c4b;
@@ -58,6 +70,7 @@
   --wa-text-primary: #e9edef;
   --wa-text-secondary: #8696a0;
   --wa-text-timestamp: #8696a0;
+  --wa-text-danger: #f87171;
 
   /* Status checkmarks */
   --wa-check-sent: #8696a0;
@@ -65,6 +78,9 @@
 
   /* Borders */
   --wa-border: #2a3942;
+
+  /* Overlays */
+  --wa-overlay: rgba(0, 0, 0, 0.5);
 }
 
 body {
