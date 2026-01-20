@@ -3,7 +3,7 @@ import { query, queryOne } from "@/lib/db"
 import { verifyJWT } from "@/lib/auth/jwt"
 import { detectContext, getConfig } from "@/lib/auth/config"
 
-interface Notification {
+interface NotificationRow {
   id: string
   type: string
   title: string
@@ -15,6 +15,36 @@ interface Notification {
   read_at: string | null
   created_at: string
   updated_at: string
+}
+
+interface Notification {
+  id: string
+  type: string
+  title: string
+  message: string
+  userId: string
+  status: string
+  metadata: Record<string, unknown> | null
+  actionUrl: string | null
+  readAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+function toCamelCase(row: NotificationRow): Notification {
+  return {
+    id: row.id,
+    type: row.type,
+    title: row.title,
+    message: row.message,
+    userId: row.user_id,
+    status: row.status,
+    metadata: row.metadata,
+    actionUrl: row.action_url,
+    readAt: row.read_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
 }
 
 async function getUserId(request: NextRequest): Promise<string | null> {
@@ -44,7 +74,7 @@ export async function GET(
 
     const { id } = await params
 
-    const notification = await queryOne<Notification>(
+    const row = await queryOne<NotificationRow>(
       `SELECT id, type, title, message, user_id, status, metadata, action_url,
               read_at, created_at, updated_at
        FROM notifications
@@ -52,14 +82,14 @@ export async function GET(
       [id, userId]
     )
 
-    if (!notification) {
+    if (!row) {
       return NextResponse.json(
         { error: "Notification not found" },
         { status: 404 }
       )
     }
 
-    return NextResponse.json({ data: notification })
+    return NextResponse.json({ data: toCamelCase(row) })
   } catch (error) {
     console.error("Failed to fetch notification:", error)
     return NextResponse.json(

@@ -3,7 +3,7 @@ import { query } from "@/lib/db"
 import { verifyJWT } from "@/lib/auth/jwt"
 import { detectContext, getConfig } from "@/lib/auth/config"
 
-interface Notification {
+interface NotificationRow {
   id: string
   type: string
   title: string
@@ -15,6 +15,36 @@ interface Notification {
   read_at: string | null
   created_at: string
   updated_at: string
+}
+
+interface Notification {
+  id: string
+  type: string
+  title: string
+  message: string
+  userId: string
+  status: string
+  metadata: Record<string, unknown> | null
+  actionUrl: string | null
+  readAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+function toCamelCase(row: NotificationRow): Notification {
+  return {
+    id: row.id,
+    type: row.type,
+    title: row.title,
+    message: row.message,
+    userId: row.user_id,
+    status: row.status,
+    metadata: row.metadata,
+    actionUrl: row.action_url,
+    readAt: row.read_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
 }
 
 async function getUserId(request: NextRequest): Promise<string | null> {
@@ -60,7 +90,8 @@ export async function GET(request: NextRequest) {
     sql += ` ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`
     params.push(parseInt(limit, 10), parseInt(offset, 10))
 
-    const notifications = await query<Notification>(sql, params)
+    const rows = await query<NotificationRow>(sql, params)
+    const notifications = rows.map(toCamelCase)
 
     return NextResponse.json({ data: notifications })
   } catch (error) {
@@ -99,7 +130,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const [notification] = await query<Notification>(
+    const [row] = await query<NotificationRow>(
       `INSERT INTO notifications (type, title, message, user_id, metadata, action_url)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id, type, title, message, user_id, status, metadata, action_url,
@@ -107,7 +138,7 @@ export async function POST(request: NextRequest) {
       [type, title, message, userId, metadata ? JSON.stringify(metadata) : null, actionUrl ?? null]
     )
 
-    return NextResponse.json({ data: notification }, { status: 201 })
+    return NextResponse.json({ data: toCamelCase(row) }, { status: 201 })
   } catch (error) {
     console.error("Failed to create notification:", error)
     return NextResponse.json(

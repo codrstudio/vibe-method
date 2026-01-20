@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Bell, ClipboardList } from "lucide-react"
 import { useSidebar } from "@/components/ui/sidebar"
 import {
@@ -29,7 +30,8 @@ export function SidebarNotifications() {
           {/* Notificações */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <button
+              <Link
+                href="/app/notifications"
                 className={cn(
                   "relative flex items-center justify-center h-8 w-8 rounded-md transition-colors",
                   hasNotifications
@@ -50,7 +52,7 @@ export function SidebarNotifications() {
                     {notificationCount}
                   </span>
                 )}
-              </button>
+              </Link>
             </TooltipTrigger>
             <TooltipContent side="right">Notificações</TooltipContent>
           </Tooltip>
@@ -58,7 +60,8 @@ export function SidebarNotifications() {
           {/* Tarefas */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <button
+              <Link
+                href="/app/tasks"
                 className={cn(
                   "relative flex items-center justify-center h-8 w-8 rounded-md transition-colors",
                   hasTasks
@@ -77,7 +80,7 @@ export function SidebarNotifications() {
                     {taskCount}
                   </span>
                 )}
-              </button>
+              </Link>
             </TooltipTrigger>
             <TooltipContent side="right">Tarefas pendentes</TooltipContent>
           </Tooltip>
@@ -91,7 +94,8 @@ export function SidebarNotifications() {
       {/* Notificações */}
       <Tooltip>
         <TooltipTrigger asChild>
-          <button
+          <Link
+            href="/app/notifications"
             className={cn(
               "flex items-center justify-center gap-1 px-2 h-9 min-w-9 rounded-full transition-colors",
               hasNotifications
@@ -112,7 +116,7 @@ export function SidebarNotifications() {
                 {notificationCount}
               </span>
             )}
-          </button>
+          </Link>
         </TooltipTrigger>
         <TooltipContent side="bottom">Notificações</TooltipContent>
       </Tooltip>
@@ -120,7 +124,8 @@ export function SidebarNotifications() {
       {/* Tarefas */}
       <Tooltip>
         <TooltipTrigger asChild>
-          <button
+          <Link
+            href="/app/tasks"
             className={cn(
               "flex items-center justify-center gap-1 px-2 h-9 min-w-9 rounded-full transition-colors",
               hasTasks
@@ -139,7 +144,7 @@ export function SidebarNotifications() {
                 {taskCount}
               </span>
             )}
-          </button>
+          </Link>
         </TooltipTrigger>
         <TooltipContent side="bottom">Tarefas pendentes</TooltipContent>
       </Tooltip>

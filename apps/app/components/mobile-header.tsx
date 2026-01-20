@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { Bell, ClipboardList, Menu } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -37,26 +38,30 @@ export function MobileHeader() {
         {/* Actions */}
         <div className="flex items-center gap-1">
           {/* Tarefas - ações pendentes para o usuário */}
-          <Button variant="ghost" size="icon" className="relative">
-            <ClipboardList className="h-5 w-5" />
-            {hasTasks && (
-              <Badge className="absolute -top-1 -right-1 h-5 min-w-5 px-1 text-xs">
-                {taskCount}
-              </Badge>
-            )}
-            <span className="sr-only">Tarefas pendentes</span>
-          </Button>
+          <Link href="/app/tasks">
+            <Button variant="ghost" size="icon" className="relative">
+              <ClipboardList className="h-5 w-5" />
+              {hasTasks && (
+                <Badge className="absolute -top-1 -right-1 h-5 min-w-5 px-1 text-xs">
+                  {taskCount}
+                </Badge>
+              )}
+              <span className="sr-only">Tarefas pendentes</span>
+            </Button>
+          </Link>
 
           {/* Notificações - informativas */}
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            {hasNotifications && (
-              <Badge className="absolute -top-1 -right-1 h-5 min-w-5 px-1 text-xs">
-                {notificationCount}
-              </Badge>
-            )}
-            <span className="sr-only">Notificações</span>
-          </Button>
+          <Link href="/app/notifications">
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="h-5 w-5" />
+              {hasNotifications && (
+                <Badge className="absolute -top-1 -right-1 h-5 min-w-5 px-1 text-xs">
+                  {notificationCount}
+                </Badge>
+              )}
+              <span className="sr-only">Notificações</span>
+            </Button>
+          </Link>
 
           {/* Menu hamburger */}
           <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)}>
