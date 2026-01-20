@@ -12,6 +12,8 @@ dist/
 
 # Testing
 coverage/
+test-results/
+playwright-report/
 
 # Package manager lock files (yarn não usado)
 yarn.lock
