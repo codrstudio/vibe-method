@@ -5,6 +5,7 @@ import { ollamaShallowProbe, ollamaDeepProbe } from './ollama.probe.js';
 import { knowledgeShallowProbe, knowledgeDeepProbe } from './knowledge.probe.js';
 import { whatsappShallowProbe, whatsappDeepProbe } from './whatsapp.probe.js';
 import { llmSanityShallowProbe, llmSanityDeepProbe } from './llm-sanity.probe.js';
+import { schedulerShallowProbe, schedulerDeepProbe } from './scheduler.probe.js';
 import type { HealthProbe, ProbeResult } from '../types.js';
 
 const shallowProbes: HealthProbe[] = [
@@ -14,6 +15,7 @@ const shallowProbes: HealthProbe[] = [
   ollamaShallowProbe,
   whatsappShallowProbe,
   llmSanityShallowProbe,
+  schedulerShallowProbe,
 ];
 
 const deepProbes: HealthProbe[] = [
@@ -24,6 +26,7 @@ const deepProbes: HealthProbe[] = [
   knowledgeDeepProbe,
   whatsappDeepProbe,
   llmSanityDeepProbe,
+  schedulerDeepProbe,
 ];
 
 const allProbes: Record<string, { shallow: HealthProbe; deep: HealthProbe }> = {
@@ -34,6 +37,7 @@ const allProbes: Record<string, { shallow: HealthProbe; deep: HealthProbe }> = {
   knowledge: { shallow: knowledgeShallowProbe, deep: knowledgeDeepProbe },
   whatsapp: { shallow: whatsappShallowProbe, deep: whatsappDeepProbe },
   'llm-sanity': { shallow: llmSanityShallowProbe, deep: llmSanityDeepProbe },
+  scheduler: { shallow: schedulerShallowProbe, deep: schedulerDeepProbe },
 };
 
 export async function runProbes(options?: { deep?: boolean }): Promise<ProbeResult[]> {

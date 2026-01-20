@@ -3,6 +3,7 @@ import { redisBullMQ } from '../../lib/index.js';
 import { SCHEDULER_QUEUE_NAME } from './queue.js';
 import { repository } from './repository.js';
 import { executeTarget } from './executor.js';
+import { incJobRun, observeRunDuration } from './metrics.js';
 import type { SchedulerJobData, JobRunStatus } from './types.js';
 
 let schedulerWorker: Worker<SchedulerJobData> | null = null;
@@ -56,9 +57,13 @@ export function startWorker(): Worker<SchedulerJobData> {
 
         if (result.success) {
           console.log(`[Scheduler] Job completed: ${slug} (${durationMs}ms)`);
+          incJobRun('success', triggerType, slug);
+          observeRunDuration(durationMs, slug);
           return result.output;
         } else {
           console.error(`[Scheduler] Job failed: ${slug} - ${result.error}`);
+          incJobRun('failed', triggerType, slug);
+          observeRunDuration(durationMs, slug);
           throw new Error(result.error);
         }
       } catch (error) {
@@ -79,6 +84,8 @@ export function startWorker(): Worker<SchedulerJobData> {
         await repository.updateJobLastRun(jobId, runId, 'failed', durationMs, errorMessage);
 
         console.error(`[Scheduler] Job error: ${slug} - ${errorMessage}`);
+        incJobRun('failed', triggerType, slug);
+        observeRunDuration(durationMs, slug);
         throw error;
       }
     },
