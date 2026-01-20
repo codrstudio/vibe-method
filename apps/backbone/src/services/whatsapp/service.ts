@@ -180,6 +180,7 @@ export const whatsappService = {
 
   /**
    * Disconnect (logout) from WhatsApp without deleting the channel
+   * Resilient: always updates DB status even if Evolution/wa-sim fails
    */
   async disconnectChannel(channelId: string): Promise<void> {
     const channel = await channelsRepository.findById(channelId);
@@ -187,8 +188,19 @@ export const whatsappService = {
       throw new Error('Channel not found');
     }
 
-    await evolutionClient.logout(channel.instanceName);
+    // Try to logout from Evolution/wa-sim, but don't fail if it errors
+    // Instance may not exist anymore (e.g., wa-sim was restarted)
+    try {
+      await evolutionClient.logout(channel.instanceName);
+    } catch (error) {
+      // Log warning but continue - the important thing is updating our DB
+      console.warn(
+        `[WhatsApp] Logout failed for ${channel.instanceName}, forcing disconnect:`,
+        error instanceof Error ? error.message : error
+      );
+    }
 
+    // ALWAYS update the status in database - this is the source of truth
     await channelsRepository.updateStatus(channelId, {
       status: 'disconnected',
       statusReason: 'Manually disconnected',

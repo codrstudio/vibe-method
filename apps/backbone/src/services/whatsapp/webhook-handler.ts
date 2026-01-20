@@ -109,7 +109,7 @@ export async function handleEvolutionWebhook(
       stateDebounce.set(
         channel.id,
         setTimeout(() => {
-          handleConnectionUpdate(channel, data as ConnectionData);
+          handleConnectionUpdate(channel, data as unknown as ConnectionData);
         }, RECONNECTION_CONFIG.DEBOUNCE_MS)
       );
       break;
@@ -249,7 +249,7 @@ async function handleDisconnected(
   statusReason?: number
 ): Promise<void> {
   const reason = statusReason ?? 0;
-  const requiresQR = REQUIRES_QR_REASONS.includes(reason);
+  const requiresQR = (REQUIRES_QR_REASONS as readonly number[]).includes(reason);
 
   if (requiresQR) {
     // Requires manual QR scan - no auto-reconnect

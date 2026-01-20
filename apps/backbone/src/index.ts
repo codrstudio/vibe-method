@@ -13,6 +13,7 @@ import { knowledgeRoutes } from './routes/knowledge.js';
 import { authRoutes } from './routes/auth.js';
 import { webhooksRoutes } from './routes/webhooks/index.js';
 import { whatsappRoutes } from './routes/whatsapp.js';
+import { bizRoutes } from './routes/biz/index.js';
 
 // Services initialization
 import { taskClassRegistry } from './services/task-classes/index.js';
@@ -45,6 +46,7 @@ async function main() {
   await app.register(authRoutes, { prefix: '/backbone/auth' });
   await app.register(webhooksRoutes, { prefix: '/backbone/webhooks' });
   await app.register(whatsappRoutes, { prefix: '/backbone/whatsapp' });
+  await app.register(bizRoutes, { prefix: '/backbone/biz' });
 
   // Start server
   try {

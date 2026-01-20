@@ -35,10 +35,10 @@ async function evolutionFetch<T>(
   }
 
   const url = `${baseUrl}${path}`;
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     apikey: apiKey,
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
 
   try {
@@ -84,9 +84,9 @@ async function simulatorFetch<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${WA_SIM_URL}${path}`;
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
 
   try {
