@@ -4,50 +4,43 @@ Documentacao tecnica de referencia da plataforma Vibe Method.
 
 ---
 
-## Navegacao
+## O que eh
 
-| Secao | Conteudo |
-|-------|----------|
-| [configuration/](./configuration/) | Autenticacao, variaveis de ambiente |
-| [llm/](./llm/) | Intents, bindings, resolver |
+Biblioteca estilo MSDN. Cada arquivo documenta **um conceito** do motor.
 
 ---
 
-## Estrutura
+## Organizacao
 
-```
-reference/
-├── configuration/
-│   ├── ai-instructions.md   # Instrucoes para IA (base + local)
-│   └── authentication.md    # NextAuth, providers, sessao
-│
-└── llm/
-    ├── intents.md           # Declaracao de intencao LLM
-    ├── bindings.md          # Configuracao provider/model
-    └── resolver.md          # Resolucao e uso no codigo
-```
+Arquivos agrupados por dominio em pastas.
+
+| Pasta | Dominio |
+|-------|---------|
+| `configuration/` | Setup, autenticacao, variaveis |
+| `llm/` | Intents, bindings, providers |
 
 ---
 
 ## Convencoes
 
-**Arquivos**: Um arquivo por conceito. Nome descreve o conteudo.
+- Um arquivo por conceito
+- Nome do arquivo = nome do conceito
+- Sem README dentro das pastas
 
-**Estrutura interna**: Cada arquivo segue o padrao:
+**Estrutura interna de cada arquivo:**
+
 1. Titulo e descricao curta
 2. Conceito (diagrama se aplicavel)
 3. Uso pratico (codigo)
 4. Arquivos relacionados
-
-**Codigo**: Exemplos sao funcionais, nao pseudocodigo.
 
 ---
 
 ## Quando Consultar
 
 - Antes de implementar feature que usa um motor
-- Quando precisar entender como algo funciona
-- Para verificar assinatura de funcao ou estrutura de dados
+- Para entender como algo funciona
+- Para verificar assinatura ou estrutura
 
 ---
 
@@ -56,5 +49,5 @@ reference/
 | Recurso | Proposito |
 |---------|-----------|
 | `methodology/` | Filosofia e fluxo de trabalho |
-| `specs/` | Artefatos de projeto (features, entities) |
+| `specs/` | Artefatos de projeto |
 | `brainstorming/` | Material de planejamento |

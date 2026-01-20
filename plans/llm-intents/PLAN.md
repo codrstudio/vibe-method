@@ -227,21 +227,38 @@
 
 ---
 
-## Fase 6: Refatoração dos Agentes
+## Fase 6: Refatoração dos Agentes ✅
 
 ### 6.1 Atualizar getLLM
-- [ ] Modificar `apps/backbone/src/lib/llm.ts`
-  - Deprecar `getLLM()` atual
-  - Redirecionar para `llmService.resolve()`
+- [x] ~~Modificar `apps/backbone/src/lib/llm.ts`~~ (mantido para compatibilidade)
+  - ~~Deprecar `getLLM()` atual~~
+  - ~~Redirecionar para `llmService.resolve()`~~
+  - **Nota:** getLLM() mantido, agentes usam llmService.createLLM() diretamente
 
 ### 6.2 Atualizar Copilot
-- [ ] Modificar `apps/backbone/src/agents/copilot/index.ts`
-  - Trocar `getLLM()` por `llmService.resolve('generate')`
+- [x] Modificar `apps/backbone/src/agents/copilot/index.ts`
+  - Trocar `getLLM()` por `llmService.createLLM('generate')`
 
 ### 6.3 Atualizar Triager
-- [ ] Modificar `apps/backbone/src/agents/triager/index.ts`
-  - Trocar `getLLM()` por `llmService.resolve('classify')` no classifyNode
-  - Trocar `getLLM()` por `llmService.resolve('plan')` no planNode
+- [x] Modificar `apps/backbone/src/agents/triager/index.ts`
+  - Trocar `getLLM()` por `llmService.createLLM('classify')` no classifyNode
+  - Trocar `getLLM()` por `llmService.createLLM('plan')` no planNode
+
+### 6.4 Default Bindings (Seed)
+- [x] Atualizar `database/main/seeds/004_llm_intents.sql`
+  - classify → ollama/llama3.2:3b (temp 0.3)
+  - extract → ollama/qwen2.5:7b (temp 0.2)
+  - generate → openrouter/anthropic/claude-3-haiku (temp 0.7)
+  - plan → openrouter/anthropic/claude-3.5-sonnet (temp 0.3)
+  - decide → openrouter/openai/gpt-4o-mini (temp 0.3)
+
+### 6.5 Simplificar Ollama Models
+- [x] Atualizar `config/ollama-models.json`
+  - Reduzido para 3 modelos: llama3.2:3b, llama3.1:8b, qwen2.5:7b
+
+### 6.6 Corrigir Resolver Fallback
+- [x] Atualizar `apps/backbone/src/llm/resolver.ts`
+  - DEFAULT_MODEL: llama3.1:8b
 
 ---
 
@@ -385,8 +402,8 @@ specs/refs/
 
 ## Critérios de Conclusão
 
-- [ ] Intents cadastrados no banco via seed
-- [ ] Catalog carregando e recarregando em hot reload
+- [x] Intents cadastrados no banco via seed
+- [x] Catalog carregando e recarregando em hot reload
 - [ ] Bindings criados/editados via UI
-- [ ] Agentes usando `llmService.resolve()` em vez de `getLLM()` direto
+- [x] Agentes usando `llmService.createLLM()` em vez de `getLLM()` direto
 - [ ] Documentação atualizada
