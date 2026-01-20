@@ -6,7 +6,6 @@
 import { useState } from 'react'
 import { Search, X, ChevronUp, ChevronDown } from 'lucide-react'
 import { useChatStore } from '../../stores/chatStore'
-import type { Message } from '../../types'
 
 interface SearchBarProps {
   contactId: string

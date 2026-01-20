@@ -1,5 +1,5 @@
 import { useState, useRef, type KeyboardEvent } from 'react'
-import { Send, Paperclip, Smile, Mic } from 'lucide-react'
+import { Send, Paperclip, Smile } from 'lucide-react'
 import { useInstanceStore } from '../../stores/instanceStore'
 import { useChatStore } from '../../stores/chatStore'
 import { api } from '../../services/api'
@@ -16,7 +16,6 @@ export function MessageInput({ contact }: MessageInputProps) {
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [isRecordingAudio, setIsRecordingAudio] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -139,7 +138,6 @@ export function MessageInput({ contact }: MessageInputProps) {
       console.error('Erro ao enviar audio:', err)
     } finally {
       setSending(false)
-      setIsRecordingAudio(false)
     }
   }
 
