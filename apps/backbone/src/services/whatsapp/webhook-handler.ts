@@ -5,7 +5,7 @@ import {
   assignmentsRepository,
   operationsRepository,
 } from './repository.js';
-import { messageLogsRepository, type MessageType } from './message-logs-repository.js';
+import { messageLogsRepository, type MessageType, type AttachmentInfo } from './message-logs-repository.js';
 import { evolutionClient } from './evolution-client.js';
 import { alertService } from './alert-service.js';
 import {
@@ -564,7 +564,7 @@ async function handleMessageReceived(
         messageId: key.id,
         messageType,
         content: textContent,
-        attachmentInfo: attachmentInfo as Record<string, unknown> | undefined,
+        attachmentInfo: attachmentInfo as AttachmentInfo | undefined,
         metadata: {
           timestamp: messageData.messageTimestamp,
         },
