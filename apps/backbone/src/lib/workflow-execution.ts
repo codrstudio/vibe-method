@@ -177,7 +177,7 @@ export class WorkflowExecution {
     const totalDuration = Date.now() - this.startTime;
 
     metrics.incCounter('workflow.execution.completed', { workflow: this.workflowName });
-    metrics.observe('workflow.execution.duration', totalDuration, { workflow: this.workflowName });
+    metrics.observeHistogram('workflow.execution.duration', totalDuration, { workflow: this.workflowName });
 
     if (!isDbAvailable() || !this.executionId) {
       return;
@@ -203,7 +203,7 @@ export class WorkflowExecution {
     const totalDuration = Date.now() - this.startTime;
 
     metrics.incCounter('workflow.execution.failed', { workflow: this.workflowName });
-    metrics.observe('workflow.execution.duration', totalDuration, { workflow: this.workflowName });
+    metrics.observeHistogram('workflow.execution.duration', totalDuration, { workflow: this.workflowName });
 
     if (!isDbAvailable() || !this.executionId) {
       return;
