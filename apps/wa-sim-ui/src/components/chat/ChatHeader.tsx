@@ -1,4 +1,4 @@
-import { MoreVertical, Trash2, Edit, Search as SearchIcon } from 'lucide-react'
+import { MoreVertical, Trash2, Edit, Search as SearchIcon, ArrowLeft, LogOut } from 'lucide-react'
 import { useState } from 'react'
 import { clsx } from 'clsx'
 import type { Contact } from '../../types'
@@ -49,6 +49,15 @@ export function ChatHeader({ contact, onOpenSearch }: ChatHeaderProps) {
   return (
     <>
       <div className="flex items-center gap-3 px-4 py-2 bg-wa-bg-header border-b border-wa-border">
+        {/* Back button - mobile only */}
+        <button
+          onClick={() => setSelectedContact(null)}
+          className="p-2 -ml-2 rounded-full hover:bg-wa-bg-hover text-wa-text-secondary md:hidden"
+          title="Voltar"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+
         {/* Avatar */}
         <div className={clsx(
           'w-10 h-10 rounded-full flex items-center justify-center',
@@ -106,6 +115,14 @@ export function ChatHeader({ contact, onOpenSearch }: ChatHeaderProps) {
                 >
                   <Trash2 className="w-4 h-4" />
                   Remover
+                </button>
+                <div className="border-t border-wa-border my-1" />
+                <button
+                  onClick={() => window.location.href = '/app'}
+                  className="w-full px-4 py-2 text-left text-sm text-wa-text-primary hover:bg-wa-bg-hover flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sair
                 </button>
               </div>
             </>

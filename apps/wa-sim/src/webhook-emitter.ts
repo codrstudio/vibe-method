@@ -6,7 +6,7 @@
 import { simulatorState } from './state.js'
 import type { SimulatedMessage, EvolutionWebhookPayload } from './types.js'
 
-const BACKBONE_WEBHOOK_URL = process.env.BACKBONE_WEBHOOK_URL || 'http://localhost:8002/backbone/whatsapp/webhook'
+const BACKBONE_WEBHOOK_URL = process.env.BACKBONE_WEBHOOK_URL || 'http://localhost:8002/backbone/webhooks/evolution'
 
 async function sendWebhook(payload: EvolutionWebhookPayload): Promise<void> {
   try {

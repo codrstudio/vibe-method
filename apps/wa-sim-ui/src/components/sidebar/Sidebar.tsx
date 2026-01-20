@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Plus, RefreshCw, Volume2, VolumeX } from 'lucide-react'
+import { Search, Plus, RefreshCw, Volume2, VolumeX, MoreVertical, LogOut } from 'lucide-react'
 import { ContactList } from './ContactList'
 import { InstanceSelector } from './InstanceSelector'
 import { ContactModal } from '../contacts/ContactModal'
@@ -11,6 +11,7 @@ import { useSoundSettings } from '../../hooks/useNotificationSound'
 export function Sidebar() {
   const [search, setSearch] = useState('')
   const [showContactModal, setShowContactModal] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
   const { setInstances, setLoading } = useInstanceStore()
   const { enabled: soundEnabled, setEnabled: setSoundEnabled } = useSoundSettings()
 
@@ -68,6 +69,32 @@ export function Sidebar() {
             >
               <Plus className="w-5 h-5" />
             </button>
+
+            {/* Menu mobile-only */}
+            <div className="relative md:hidden">
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-2 rounded-full hover:bg-wa-bg-hover text-wa-text-secondary"
+                title="Menu"
+              >
+                <MoreVertical className="w-5 h-5" />
+              </button>
+
+              {showMenu && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                  <div className="absolute right-0 top-full mt-1 bg-wa-bg-dropdown rounded-lg shadow-lg border border-wa-border py-1 z-20 min-w-[120px]">
+                    <button
+                      onClick={() => window.location.href = '/app'}
+                      className="w-full px-4 py-2 text-left text-sm text-wa-text-primary hover:bg-wa-bg-hover flex items-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sair
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
