@@ -8,7 +8,7 @@
     "tooling"
   ],
   "scripts": {
-    "dev": "dotenv -o -e .env -e .env.development -e .env.secrets -- concurrently -n app,socket,backbone,wa-sim -c blue,magenta,yellow,cyan \"npm run dev -w @workspace/app\" \"npm run dev -w @workspace/socket\" \"npm run dev -w @workspace/backbone\" \"npm run dev -w @workspace/wa-sim\"",
+    "dev": "dotenv -o -e .env -e .env.development -e .env.secrets -- concurrently -n app,socket,backbone,wa-sim,wa-sim-ui -c blue,magenta,yellow,cyan,green \"npm run dev -w @workspace/app\" \"npm run dev -w @workspace/socket\" \"npm run dev -w @workspace/backbone\" \"npm run dev -w @workspace/wa-sim\" \"npm run dev -w @workspace/wa-sim-ui\"",
     "dev:wa-sim": "dotenv -o -e .env -e .env.development -e .env.secrets -- npm run dev -w @workspace/wa-sim",
     "dev:wa-sim-ui": "dotenv -o -e .env -e .env.development -e .env.secrets -- npm run dev -w @workspace/wa-sim-ui",
     "build": "npm run build --workspaces --if-present",

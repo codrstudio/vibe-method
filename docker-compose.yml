@@ -609,6 +609,35 @@ services:
         aliases:
           - wa-sim.internal
 
+  # ===========================================================================
+  # WA-SIM-UI (WhatsApp Simulator UI)
+  # ===========================================================================
+  # Acessado via proxy do app principal: /wa/*
+  wa-sim-ui:
+    build:
+      context: ./apps/wa-sim-ui
+      dockerfile: Dockerfile
+    image: ${PROJECT}-wa-sim-ui:latest
+    container_name: ${PROJECT}-wa-sim-ui
+    restart: unless-stopped
+    env_file:
+      - .env
+      - .env.production
+      - path: .env.secrets
+        required: false
+    environment:
+      VITE_WA_SIM_URL: http://wa-sim.internal:${WA_SIM_PORT}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:${WA_SIM_UI_PORT}/app/wa/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      internal:
+        aliases:
+          - wa-sim-ui.internal
+
 networks:
   internal:
     driver: bridge
