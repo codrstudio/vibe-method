@@ -4,7 +4,7 @@ import type { ResolvedLLM } from './types.js';
 
 // Default fallback configuration
 const DEFAULT_PROVIDER = 'ollama';
-const DEFAULT_MODEL = 'llama3:8b';
+const DEFAULT_MODEL = 'llama3.1:8b';
 
 // In-memory cache for resolved bindings
 const resolveCache = new Map<string, { resolved: ResolvedLLM; timestamp: number }>();
