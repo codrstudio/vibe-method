@@ -36,7 +36,7 @@ Sistema de personalização de mensagens do sistema com editor WYSIWYG e suporte
 
 ### Pacotes Novos
 ```bash
-pnpm add @tiptap/react @tiptap/starter-kit @tiptap/extension-placeholder @tiptap/extension-mention --filter app
+npm add @tiptap/react @tiptap/starter-kit @tiptap/extension-placeholder @tiptap/extension-mention --filter app
 ```
 
 ### Infraestrutura Existente

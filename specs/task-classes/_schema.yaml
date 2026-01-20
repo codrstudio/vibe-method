@@ -1,0 +1,96 @@
+# Task Class Schema Definition
+# This file defines the structure for task class YAML files
+
+$schema: task-class
+version: "1.0"
+
+# Required fields
+required:
+  - name           # Unique identifier (kebab-case)
+  - displayName    # Human-readable name
+  - icon           # Lucide icon name
+  - color          # Hex color or named color
+  - tags           # Available lifecycle tags
+  - transitions    # State machine definition
+
+# Field definitions
+fields:
+  name:
+    type: string
+    pattern: "^[a-z][a-z0-9-]*$"
+    description: Unique identifier for the task class (kebab-case)
+    example: "document-approval"
+
+  displayName:
+    type: string
+    description: Human-readable name for UI display
+    example: "Aprovacao de Documento"
+
+  icon:
+    type: string
+    description: Lucide icon name
+    example: "file-signature"
+
+  color:
+    type: string
+    pattern: "^#[0-9A-Fa-f]{6}$|^[a-z]+$"
+    description: Hex color code or named color
+    example: "#3B82F6"
+
+  tags:
+    type: array
+    items: string
+    description: Available lifecycle tags for this class
+    example: ["pending", "signed", "approved", "rejected"]
+
+  transitions:
+    type: object
+    description: |
+      State machine definition.
+      Key: source tag (or 'open' for initial state)
+      Value: array of valid target tags
+    example:
+      open: ["pending"]
+      pending: ["signed", "rejected"]
+      signed: ["approved"]
+
+  closeRequires:
+    type: array
+    items: string
+    description: Tags that allow closing the task
+    example: ["approved", "rejected"]
+
+  sla:
+    type: object
+    description: Service Level Agreement timings
+    properties:
+      warning:
+        type: string
+        description: Duration until warning state (e.g., "2h", "1d")
+      critical:
+        type: string
+        description: Duration until critical state
+    example:
+      warning: "2h"
+      critical: "4h"
+
+  component:
+    type: string
+    nullable: true
+    description: Custom React component name for rendering
+    example: "DocumentApprovalView"
+
+  description:
+    type: string
+    description: Optional description of the task class purpose
+
+# Validation rules
+validation:
+  - rule: all_tags_in_transitions
+    description: Every tag in transitions must exist in tags array
+
+  - rule: closeRequires_subset_of_tags
+    description: closeRequires tags must be a subset of tags
+
+  - rule: no_circular_transitions
+    description: Transitions should not create infinite loops without reaching a close state

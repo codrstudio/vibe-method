@@ -1,0 +1,47 @@
+# Task Class: Document Approval
+# Workflow for document signature and approval process
+
+name: document-approval
+displayName: Aprovacao de Documento
+description: Fluxo de aprovacao de documentos com assinatura
+
+icon: file-signature
+color: "#3B82F6"
+
+tags:
+  - pending      # Aguardando assinatura
+  - signed       # Assinado, aguardando aprovacao
+  - approved     # Aprovado (estado final)
+  - rejected     # Rejeitado (estado final)
+
+transitions:
+  open: [pending]           # Ao abrir, vai para pending
+  pending: [signed, rejected]  # De pending pode assinar ou rejeitar
+  signed: [approved, rejected] # De assinado pode aprovar ou rejeitar
+
+closeRequires: [approved, rejected]
+
+sla:
+  warning: "2h"
+  critical: "4h"
+
+component: null
+
+# Tag display configuration
+tagConfig:
+  pending:
+    label: Pendente
+    color: "#F59E0B"
+    icon: clock
+  signed:
+    label: Assinado
+    color: "#8B5CF6"
+    icon: pen-tool
+  approved:
+    label: Aprovado
+    color: "#10B981"
+    icon: check-circle
+  rejected:
+    label: Rejeitado
+    color: "#EF4444"
+    icon: x-circle

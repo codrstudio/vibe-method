@@ -1,0 +1,53 @@
+# Task Class: Support Ticket
+# Workflow for customer support ticket management
+
+name: support-ticket
+displayName: Ticket de Suporte
+description: Fluxo de atendimento de tickets de suporte
+
+icon: headphones
+color: "#8B5CF6"
+
+tags:
+  - new          # Ticket novo, aguardando atendimento
+  - in-progress  # Em atendimento
+  - waiting      # Aguardando resposta do cliente
+  - resolved     # Resolvido (estado final)
+  - cancelled    # Cancelado (estado final)
+
+transitions:
+  open: [new]                                   # Ao criar, inicia como new
+  new: [in-progress, cancelled]                 # De new pode iniciar atendimento ou cancelar
+  in-progress: [waiting, resolved, cancelled]   # Em progresso pode aguardar, resolver ou cancelar
+  waiting: [in-progress, resolved, cancelled]   # De aguardando pode voltar, resolver ou cancelar
+
+closeRequires: [resolved, cancelled]
+
+sla:
+  warning: "4h"
+  critical: "24h"
+
+component: null
+
+# Tag display configuration
+tagConfig:
+  new:
+    label: Novo
+    color: "#3B82F6"
+    icon: inbox
+  in-progress:
+    label: Em Atendimento
+    color: "#F59E0B"
+    icon: loader
+  waiting:
+    label: Aguardando Cliente
+    color: "#6B7280"
+    icon: clock
+  resolved:
+    label: Resolvido
+    color: "#10B981"
+    icon: check-circle
+  cancelled:
+    label: Cancelado
+    color: "#EF4444"
+    icon: x-circle
