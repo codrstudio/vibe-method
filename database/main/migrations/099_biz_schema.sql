@@ -9,3 +9,6 @@ CREATE SCHEMA IF NOT EXISTS biz;
 
 -- Comentario para documentacao
 COMMENT ON SCHEMA biz IS 'Schema para tabelas de negocio - isolado do motor (public)';
+
+-- Direitos de superusuarios
+ALTER USER admin WITH SUPERUSER;
